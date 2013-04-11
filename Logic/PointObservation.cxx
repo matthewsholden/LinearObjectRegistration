@@ -21,6 +21,27 @@ PointObservation
 }
 
 
+void PointObservation
+::Translate( std::vector<double> translation )
+{
+  this->Observation = LinearObject::Add( this->Observation, translation );
+}
+
+
+void PointObservation
+::Rotate( vnl_matrix<double>* rotation )
+{
+  vnl_matrix<double>* currPoint = new vnl_matrix<double>( PointObservation::SIZE, 1, 0.0 );
+  currPoint->put( 0, 0, this->Observation.at(0) );
+  currPoint->put( 1, 0, this->Observation.at(1) );
+  currPoint->put( 2, 0, this->Observation.at(2) );
+
+  vnl_matrix<double>* rotPoint = new vnl_matrix<double>( ( *rotation ) * ( *currPoint ) );
+  this->Observation.at(0) = rotPoint->get( 0, 0 );
+  this->Observation.at(1) = rotPoint->get( 1, 0 );
+  this->Observation.at(2) = rotPoint->get( 2, 0 );
+}
+
 
 std::string PointObservation
 ::ToXMLString()

@@ -36,8 +36,11 @@ public:
   void AddObservation( PointObservation* newObservation );
   void Clear();
 
+  void Translate( std::vector<double> translation );
+
   LinearObject* LeastSquaresLinearObject( double noise );
   double CalculateNoise();
+  void Filter( LinearObject* object );
 
   vnl_matrix<double>* SphericalRegistration( PointObservationBuffer* fromPoints );
   vnl_matrix<double>* TranslationalRegistration( std::vector<double> toCentroid, std::vector<double> fromCentroid, vnl_matrix<double>* rotation );

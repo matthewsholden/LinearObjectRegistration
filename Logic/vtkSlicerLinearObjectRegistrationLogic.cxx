@@ -313,14 +313,20 @@ void vtkSlicerLinearObjectRegistrationLogic
     if( strcmp( currentObject->Type.c_str(), "Point" ) == 0 )
 	{
       this->RecordPointBuffer->AddLinearObject( currentObject );
+	  this->PointPoints.push_back( LinearObjectPoints.at(i) );
+	  this->PointPoints.at( this->PointPoints.size() - 1 )->Filter( this->RecordPointBuffer->GetLinearObject( this->RecordPointBuffer->Size() - 1 ) );
 	}
     if( strcmp( currentObject->Type.c_str(), "Line" ) == 0 )
 	{
       this->RecordLineBuffer->AddLinearObject( currentObject );
+	  this->LinePoints.push_back( LinearObjectPoints.at(i) );
+      this->LinePoints.at( this->LinePoints.size() - 1 )->Filter( this->RecordLineBuffer->GetLinearObject( this->RecordLineBuffer->Size() - 1 ) );
 	}
 	if( strcmp( currentObject->Type.c_str(), "Plane" ) == 0 )
 	{
       this->RecordPlaneBuffer->AddLinearObject( currentObject );
+	  this->PlanePoints.push_back( LinearObjectPoints.at(i) );
+	  this->PlanePoints.at( this->PlanePoints.size() - 1 )->Filter( this->RecordPlaneBuffer->GetLinearObject( this->RecordPlaneBuffer->Size() - 1 ) );
 	}
 
   }
@@ -391,6 +397,19 @@ void vtkSlicerLinearObjectRegistrationLogic
   this->RecordLineBuffer->Translate( NegativeRecordCentroid );
   this->RecordPlaneBuffer->Translate( NegativeRecordCentroid );
   this->RecordReferenceBuffer->Translate( NegativeRecordCentroid );
+
+  for ( int i = 0; i < PointPoints.size(); i++ )
+  {
+    this->PointPoints.at(i)->Translate( NegativeRecordCentroid );
+  }
+  for ( int i = 0; i < LinePoints.size(); i++ )
+  {
+    this->LinePoints.at(i)->Translate( NegativeRecordCentroid );
+  }
+  for ( int i = 0; i < PlanePoints.size(); i++ )
+  {
+    this->PlanePoints.at(i)->Translate( NegativeRecordCentroid );
+  }
 
 
   // Next, add the base points to the final point observation vectors
@@ -477,7 +496,9 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
   // Finally, calculate the registration
-  vnl_matrix<double>* RecordToGeometryRotation = GeometryPoints->SphericalRegistration( RecordPoints );
+  vnl_matrix<double>* RecordToGeometryRotation;
+  RecordToGeometryRotation = GeometryPoints->SphericalRegistration( RecordPoints );
+  RecordToGeometryRotation = this->LinearObjectICP( this->GeometryPointBuffer, this->GeometryLineBuffer, this->GeometryPlaneBuffer, this->PointPoints, this->LinePoints, this->PlanePoints, RecordToGeometryRotation );
   vnl_matrix<double>* RecordToGeometryTranslation = GeometryPoints->TranslationalRegistration( GeometryCentroid, RecordCentroid, RecordToGeometryRotation ); 
 
 
@@ -501,5 +522,95 @@ void vtkSlicerLinearObjectRegistrationLogic
   this->RegistrationTransformNode->GetMatrixTransformToParent()->SetElement( 3, 1, 0 );
   this->RegistrationTransformNode->GetMatrixTransformToParent()->SetElement( 3, 2, 0 );
   this->RegistrationTransformNode->GetMatrixTransformToParent()->SetElement( 3, 3, 1 );
+
+}
+
+
+
+vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
+::LinearObjectICP( LinearObjectBuffer* pointBuffer, LinearObjectBuffer* lineBuffer, LinearObjectBuffer* planeBuffer,
+				  std::vector<PointObservationBuffer*> pointObservations, std::vector<PointObservationBuffer*> lineObservations, std::vector<PointObservationBuffer*> planeObservations,
+				  vnl_matrix<double>* initialRotation )
+{
+
+  const int CONVERGENCE_THRESHOLD = 1e-6;
+  double currError = -1;
+  double prevError = -1;
+  vnl_matrix<double>* currRotation = initialRotation;
+
+  while ( prevError < 0 || abs( currError - prevError ) < CONVERGENCE_THRESHOLD )
+  {
+    PointObservationBuffer* GeometryPoints = new PointObservationBuffer();
+    PointObservationBuffer* RecordPoints = new PointObservationBuffer();
+
+	prevError = currError;
+
+	// Find the closest point on each linear object to each point so we can do spherical registration
+    for ( int i = 0; i < pointObservations.size(); i++ )
+	{
+      for ( int j = 0; j < pointObservations.at(i)->Size(); j++ )
+	  {
+
+        RecordPoints->AddObservation( pointObservations.at(i)->GetObservation(j) );
+
+		// Rotate the observed point
+		PointObservation* rotPoint = new PointObservation( pointObservations.at(i)->GetObservation(j)->Observation );
+        rotPoint->Rotate( currRotation );
+
+		GeometryPoints->AddObservation( new PointObservation( pointBuffer->GetLinearObject(i)->ProjectVector( rotPoint->Observation ) ) );
+
+	  }
+	}
+
+    for ( int i = 0; i < lineObservations.size(); i++ )
+	{
+      for ( int j = 0; j < lineObservations.at(i)->Size(); j++ )
+	  {
+
+        RecordPoints->AddObservation( lineObservations.at(i)->GetObservation(j) );
+
+		// Rotate the observed point
+		PointObservation* rotPoint = new PointObservation( lineObservations.at(i)->GetObservation(j)->Observation );
+        rotPoint->Rotate( currRotation );
+
+		GeometryPoints->AddObservation( new PointObservation( lineBuffer->GetLinearObject(i)->ProjectVector( rotPoint->Observation ) ) );
+
+	  }
+	}
+
+    for ( int i = 0; i < planeObservations.size(); i++ )
+	{
+      for ( int j = 0; j < planeObservations.at(i)->Size(); j++ )
+	  {
+
+        RecordPoints->AddObservation( planeObservations.at(i)->GetObservation(j) );
+
+		// Rotate the observed point
+		PointObservation* rotPoint = new PointObservation( planeObservations.at(i)->GetObservation(j)->Observation );
+        rotPoint->Rotate( currRotation );
+
+		GeometryPoints->AddObservation( new PointObservation( planeBuffer->GetLinearObject(i)->ProjectVector( rotPoint->Observation ) ) );
+
+	  }
+	}
+
+	// Now perform the spherical registration and calculate the rms error
+    currRotation = GeometryPoints->SphericalRegistration( RecordPoints );
+
+    currError = 0;
+	for ( int i = 0; i < GeometryPoints->Size(); i++ )
+	{
+	  // Rotate the observed point
+	  PointObservation* rotPoint = new PointObservation( RecordPoints->GetObservation(i)->Observation );
+      rotPoint->Rotate( currRotation );
+
+	  currError = currError + LinearObject::Distance( GeometryPoints->GetObservation(i)->Observation, rotPoint->Observation );
+	}
+	currError = sqrt( currError / GeometryPoints->Size() );
+
+  }
+
+
+  return currRotation;
 
 }

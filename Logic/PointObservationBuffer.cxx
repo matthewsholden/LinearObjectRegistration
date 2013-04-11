@@ -39,6 +39,16 @@ void PointObservationBuffer
 }
 
 
+void PointObservationBuffer
+::Translate( std::vector<double> translation )
+{
+  for ( int i = 0; i < this->Size(); i++ )
+  {
+    this->GetObservation(i)->Translate( translation );
+  }
+}
+
+
 vnl_matrix<double>* PointObservationBuffer
 ::SphericalRegistration( PointObservationBuffer* fromPoints )
 {
@@ -145,6 +155,56 @@ double PointObservationBuffer
 ::CalculateNoise()
 {
   return 2.0;
+}
+
+
+void PointObservationBuffer
+::Filter( LinearObject* object )
+{
+  const int NUM_STDEV = 5;
+  const int THRESHOLD = 1e-6; // Deal with the case of very little noise
+  bool changed = true;
+
+  while ( changed )
+  {
+    std::vector<double> distances( this->Size(), 0 );
+	double meanDistance = 0;
+	double stdev = 0;
+
+    // Calculate the distance of each point to the linear object
+    for ( int i = 0; i < this->Size(); i++ )
+	{
+      distances.at(i) = object->DistanceToVector( this->GetObservation(i)->Observation );
+	  meanDistance = meanDistance + distances.at(i);
+	  stdev = stdev + distances.at(i) * distances.at(i);
+	}
+	meanDistance = meanDistance / this->Size();
+	stdev = stdev / this->Size();
+	stdev = sqrt( stdev - meanDistance * meanDistance );
+    
+	// Keep only the points that are within certain number of standard deviations
+	std::vector<PointObservation*> newObservations;
+	for ( int i = 0; i < this->Size(); i++ )
+	{
+      if ( distances.at(i) < NUM_STDEV * stdev || distances.at(i) < THRESHOLD )
+	  {
+        newObservations.push_back( this->GetObservation(i) );
+	  }
+	}
+
+	if ( newObservations.size() < this->Size() )
+	{
+      changed = true;
+	}
+	else
+	{
+      changed = false;
+	}
+
+	this->observations = newObservations;
+
+  }
+  
 }
 
 

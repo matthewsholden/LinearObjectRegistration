@@ -82,7 +82,9 @@ public:
   void Register();
   void SetRegistrationTransformNode( vtkMRMLLinearTransformNode* newRegistrationTransformNode );
 
-
+  vnl_matrix<double>* LinearObjectICP( LinearObjectBuffer* pointBuffer, LinearObjectBuffer* lineBuffer, LinearObjectBuffer* planeBuffer,
+				  std::vector<PointObservationBuffer*> pointObservations, std::vector<PointObservationBuffer*> lineObservations, std::vector<PointObservationBuffer*> planeObservations,
+				  vnl_matrix<double>* initialRotation );
 
 private:
 
@@ -100,6 +102,9 @@ private:
 
   std::vector<PointObservationBuffer*> ReferencePoints;
   std::vector<PointObservationBuffer*> LinearObjectPoints;
+  std::vector<PointObservationBuffer*> PointPoints;
+  std::vector<PointObservationBuffer*> LinePoints;
+  std::vector<PointObservationBuffer*> PlanePoints;
 
   vtkMRMLLinearTransformNode* RegistrationTransformNode;
 
