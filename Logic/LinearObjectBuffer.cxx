@@ -170,8 +170,8 @@ std::vector<double> LinearObjectBuffer
   }
 
   // Now, calculate X
-  vnl_matrix_inverse<double>* X = new vnl_matrix_inverse<double>( (*A).transpose() * (*A) );
-  vnl_matrix<double>* Y = new vnl_matrix<double>( X->inverse() * (*A).transpose() * (*B) );
+  vnl_matrix_inverse<double>* X = new vnl_matrix_inverse<double>( A->transpose() * (*A) );
+  vnl_matrix<double>* Y = new vnl_matrix<double>( X->inverse() * A->transpose() * (*B) );
 
   std::vector<double> centroid( LinearObject::DIMENSION, 0.0 );
   centroid.at(0) = Y->get( 0, 0 );

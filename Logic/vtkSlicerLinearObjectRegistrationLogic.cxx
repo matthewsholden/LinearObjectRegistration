@@ -429,12 +429,12 @@ void vtkSlicerLinearObjectRegistrationLogic
   for ( int i = 0; i < this->GeometryLineBuffer->Size(); i++ )
   {
     Line* CurrentGeometryObject = (Line*) this->GeometryLineBuffer->GetLinearObject(i);
-    GeometryPoints->AddObservation( new PointObservation( CurrentGeometryObject->GetDirection() ) );
+    GeometryPoints->AddObservation( new PointObservation( LinearObject::Multiply( 100, CurrentGeometryObject->GetDirection() ) ) );
   }
   for ( int i = 0; i < this->GeometryPlaneBuffer->Size(); i++ )
   {
     Plane* CurrentGeometryObject = (Plane*) this->GeometryPlaneBuffer->GetLinearObject(i);
-    GeometryPoints->AddObservation( new PointObservation( CurrentGeometryObject->GetNormal() ) );
+    GeometryPoints->AddObservation( new PointObservation( LinearObject::Multiply( 100, CurrentGeometryObject->GetNormal() ) ) );
   }
 
   // TODO: Fix memory leaks
@@ -444,17 +444,17 @@ void vtkSlicerLinearObjectRegistrationLogic
     LinearObjectBuffer* TempGeometryBuffer = new LinearObjectBuffer();
     
 	Line* CurrentRecordObject = (Line*) this->RecordLineBuffer->GetLinearObject(i);
-	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentRecordObject->BasePoint, CurrentRecordObject->GetDirection() ) ) );
-	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Subtract( CurrentRecordObject->BasePoint, CurrentRecordObject->GetDirection() ) ) );
+	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( 100, CurrentRecordObject->GetDirection() ) ) ) );
+	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Subtract( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( 100, CurrentRecordObject->GetDirection() ) ) ) );
     TempRecordBuffer->CalculateSignature( this->RecordReferenceBuffer );
 
 	Line* CurrentGeometryObject = (Line*) this->GeometryLineBuffer->GetLinearObject(i);
-    TempGeometryBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentGeometryObject->BasePoint, CurrentGeometryObject->GetDirection() ) ) );
+    TempGeometryBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentGeometryObject->ProjectVector( BlankVector ), LinearObject::Multiply( 100, CurrentGeometryObject->GetDirection() ) ) ) );
     TempGeometryBuffer->CalculateSignature( this->GeometryReferenceBuffer );
 
 	TempRecordBuffer = TempGeometryBuffer->GetMatches( TempRecordBuffer );
 
-	RecordPoints->AddObservation( new PointObservation( LinearObject::Subtract( TempRecordBuffer->GetLinearObject(0)->BasePoint, CurrentRecordObject->BasePoint ) ) );
+	RecordPoints->AddObservation( new PointObservation( LinearObject::Subtract( TempRecordBuffer->GetLinearObject(0)->BasePoint, CurrentRecordObject->ProjectVector( BlankVector ) ) ) );
   }
   for ( int i = 0; i < this->RecordPlaneBuffer->Size(); i++ )
   {
@@ -462,17 +462,17 @@ void vtkSlicerLinearObjectRegistrationLogic
     LinearObjectBuffer* TempGeometryBuffer = new LinearObjectBuffer();
     
 	Plane* CurrentRecordObject = (Plane*) this->RecordPlaneBuffer->GetLinearObject(i);
-	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentRecordObject->BasePoint, CurrentRecordObject->GetNormal() ) ) );
-	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Subtract( CurrentRecordObject->BasePoint, CurrentRecordObject->GetNormal() ) ) );
+	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( 100,  CurrentRecordObject->GetNormal() ) ) ) );
+	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Subtract( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( 100, CurrentRecordObject->GetNormal() ) ) ) );
     TempRecordBuffer->CalculateSignature( this->RecordReferenceBuffer );
 
 	Plane* CurrentGeometryObject = (Plane*) this->GeometryPlaneBuffer->GetLinearObject(i);
-    TempGeometryBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentGeometryObject->BasePoint, CurrentGeometryObject->GetNormal() ) ) );
+    TempGeometryBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentGeometryObject->ProjectVector( BlankVector ), LinearObject::Multiply( 100, CurrentGeometryObject->GetNormal() ) ) ) );
     TempGeometryBuffer->CalculateSignature( this->GeometryReferenceBuffer );
 
 	TempRecordBuffer = TempGeometryBuffer->GetMatches( TempRecordBuffer );
 
-	RecordPoints->AddObservation( new PointObservation( LinearObject::Subtract( TempRecordBuffer->GetLinearObject(0)->BasePoint, CurrentRecordObject->BasePoint ) ) );
+	RecordPoints->AddObservation( new PointObservation( LinearObject::Subtract( TempRecordBuffer->GetLinearObject(0)->BasePoint, CurrentRecordObject->ProjectVector( BlankVector ) ) ) );
   }
 
 

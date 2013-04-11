@@ -57,17 +57,17 @@ std::vector<double> Line
   // Find the two axis unit vectors least parallel with the direction vector
   std::vector<double> e1( 3, 0.0 );
   std::vector<double> e2( 3, 0.0 );
-  if ( this->GetDirection().at(1) <= this->GetDirection().at(0) && this->GetDirection().at(2) <= this->GetDirection().at(0) )
+  if ( abs( this->GetDirection().at(1) ) <= abs( this->GetDirection().at(0) ) && abs( this->GetDirection().at(2) ) <= abs( this->GetDirection().at(0) ) )
   {
     e1.at(0) = 0; e1.at(1) = 1; e1.at(2) = 0;
 	e2.at(0) = 0; e2.at(1) = 0; e2.at(2) = 1;
   }
-  if ( this->GetDirection().at(0) <= this->GetDirection().at(1) && this->GetDirection().at(2) <= this->GetDirection().at(1) )
+  if ( abs( this->GetDirection().at(0) ) <= abs( this->GetDirection().at(1) ) && abs( this->GetDirection().at(2) ) <= abs( this->GetDirection().at(1) ) )
   {
     e1.at(0) = 1; e1.at(1) = 0; e1.at(2) = 0;
 	e2.at(0) = 0; e2.at(1) = 0; e2.at(2) = 1;
   }
-  if ( this->GetDirection().at(0) <= this->GetDirection().at(2) && this->GetDirection().at(1) <= this->GetDirection().at(2) )
+  if ( abs( this->GetDirection().at(0) ) <= abs( this->GetDirection().at(2) ) && abs( this->GetDirection().at(1) ) <= abs( this->GetDirection().at(2) ) )
   {
     e1.at(0) = 1; e1.at(1) = 0; e1.at(2) = 0;
 	e2.at(0) = 0; e2.at(1) = 1; e2.at(2) = 0;
@@ -89,17 +89,17 @@ std::vector<double> Line
   // Find the two axis unit vectors least parallel with the direction vector
   std::vector<double> e1( 3, 0.0 );
   std::vector<double> e2( 3, 0.0 );
-  if ( this->GetDirection().at(1) <= this->GetDirection().at(0) && this->GetDirection().at(2) <= this->GetDirection().at(0) )
+  if ( abs( this->GetDirection().at(1) ) <= abs( this->GetDirection().at(0) ) && abs( this->GetDirection().at(2) ) <= abs( this->GetDirection().at(0) ) )
   {
     e1.at(0) = 0; e1.at(1) = 1; e1.at(2) = 0;
 	e2.at(0) = 0; e2.at(1) = 0; e2.at(2) = 1;
   }
-  if ( this->GetDirection().at(0) <= this->GetDirection().at(1) && this->GetDirection().at(2) <= this->GetDirection().at(1) )
+  if ( abs( this->GetDirection().at(0) ) <= abs( this->GetDirection().at(1) ) && abs( this->GetDirection().at(2) ) <= abs( this->GetDirection().at(1) ) )
   {
     e1.at(0) = 1; e1.at(1) = 0; e1.at(2) = 0;
 	e2.at(0) = 0; e2.at(1) = 0; e2.at(2) = 1;
   }
-  if ( this->GetDirection().at(0) <= this->GetDirection().at(2) && this->GetDirection().at(1) <= this->GetDirection().at(2) )
+  if ( abs( this->GetDirection().at(0) ) <= abs( this->GetDirection().at(2) ) && abs( this->GetDirection().at(1) ) <= abs( this->GetDirection().at(2) ) )
   {
     e1.at(0) = 1; e1.at(1) = 0; e1.at(2) = 0;
 	e2.at(0) = 0; e2.at(1) = 1; e2.at(2) = 0;
