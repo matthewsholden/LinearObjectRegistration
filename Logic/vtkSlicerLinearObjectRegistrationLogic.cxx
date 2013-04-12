@@ -67,6 +67,8 @@ vtkSlicerLinearObjectRegistrationLogic
   this->RecordReferenceBuffer = new LinearObjectBuffer();
 
   this->RegistrationTransformNode = NULL;
+  this->ErrorRMS = 0.0;
+  this->Status = "";
 }
 
 
@@ -271,6 +273,22 @@ void vtkSlicerLinearObjectRegistrationLogic
 ::SetRegistrationTransformNode( vtkMRMLLinearTransformNode* newRegistrationTransformNode )
 {
   this->RegistrationTransformNode = newRegistrationTransformNode;
+}
+
+
+
+double vtkSlicerLinearObjectRegistrationLogic
+::GetError()
+{
+  return this->ErrorRMS;
+}
+
+
+
+std::string vtkSlicerLinearObjectRegistrationLogic
+::GetStatus()
+{
+  return this->Status;
 }
 
 
@@ -555,7 +573,7 @@ vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
 
   }
 
-
+  this->ErrorRMS = currError;
   return currRotation;
 
 }

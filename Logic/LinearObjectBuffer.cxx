@@ -133,6 +133,8 @@ LinearObjectBuffer* LinearObjectBuffer
 std::vector<double> LinearObjectBuffer
 ::CalculateCentroid()
 {
+  const double CONDITION_THRESHOLD = 1e-3;
+
   // Assume each will take 3 rows. If it doesn't leaving them blank won't affect the result
   vnl_matrix<double>* A = new vnl_matrix<double>( LinearObject::DIMENSION * this->Size(), LinearObject::DIMENSION, 0.0 );
   vnl_matrix<double>* B = new vnl_matrix<double>( LinearObject::DIMENSION * this->Size(), 1, 0.0 );
@@ -181,7 +183,10 @@ std::vector<double> LinearObjectBuffer
 
   // Now, calculate X
   vnl_matrix_inverse<double>* X = new vnl_matrix_inverse<double>( A->transpose() * (*A) );
-  double cond = X->well_condition(); // This is the inverse of the condition number // TODO: Error if ill-conditioned
+  if ( X->well_condition() < CONDITION_THRESHOLD ) // This is the inverse of the condition number
+  {
+    
+  } // TODO: Error if ill-conditioned
   vnl_matrix<double>* Y = new vnl_matrix<double>( X->inverse() * A->transpose() * (*B) );
 
   std::vector<double> centroid( LinearObject::DIMENSION, 0.0 );

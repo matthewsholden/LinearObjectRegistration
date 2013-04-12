@@ -185,6 +185,16 @@ void qSlicerLinearObjectRegistrationModuleWidget
 ::UpdateGUI()
 {
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );
+
+  std::stringstream ss;
+
+  ss.str( "" );
+  ss << "Status: " << d->logic()->GetStatus();
+  d->StatusLabel->setText( ss.str().c_str() );
+
+  ss.str( "" );
+  ss << "RMS Error: " << d->logic()->GetError();
+  d->ErrorLabel->setText( ss.str().c_str() );
   
 }
 

@@ -86,6 +86,9 @@ public:
 				  std::vector<PointObservationBuffer*> pointObservations, std::vector<PointObservationBuffer*> lineObservations, std::vector<PointObservationBuffer*> planeObservations,
 				  vnl_matrix<double>* initialRotation );
 
+  double GetError();
+  std::string GetStatus();
+
 private:
 
   LinearObjectBuffer* GeometryBuffer;
@@ -107,6 +110,9 @@ private:
   std::vector<PointObservationBuffer*> PlanePoints;
 
   vtkMRMLLinearTransformNode* RegistrationTransformNode;
+
+  double ErrorRMS;
+  std::string Status;
 
 };
 

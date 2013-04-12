@@ -53,6 +53,7 @@ vnl_matrix<double>* PointObservationBuffer
 ::SphericalRegistration( PointObservationBuffer* fromPoints )
 {
   // Assume that it is already mean zero
+  const double CONDITION_THRESHOLD = 1e-3;
 
   // Let us construct the data matrix
   vnl_matrix<double>* DataMatrix = new vnl_matrix<double>( PointObservation::SIZE, PointObservation::SIZE, 0.0 );
@@ -72,6 +73,10 @@ vnl_matrix<double>* PointObservationBuffer
 
   // Now we can calculate its svd
   vnl_svd<double>* SVDMatrix = new vnl_svd<double>( *DataMatrix, 0.0 );
+  if ( SVDMatrix->well_condition() < CONDITION_THRESHOLD ) // This is the inverse of the condition number
+  {
+    
+  } // TODO: Error if ill-conditioned
 
   return new vnl_matrix<double>( SVDMatrix->V() * SVDMatrix->U().transpose() );
 }
