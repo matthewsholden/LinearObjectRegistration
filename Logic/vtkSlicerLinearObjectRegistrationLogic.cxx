@@ -208,107 +208,32 @@ void vtkSlicerLinearObjectRegistrationLogic
 
   int numElements = rootElement->GetNumberOfNestedElements();  // Number of saved records (including transforms and messages).
 
-  // We will store the times at which things start
-  std::vector<double> onTimes;
-  std::vector<double> offTimes;
-  std::vector<double> refTimes;
+  PointObservationBuffer* CollectedPoints = new PointObservationBuffer();
 
-  PointObservationBuffer* blank = new PointObservationBuffer();
-  this->LinearObjectPoints = std::vector<PointObservationBuffer*>( 0, blank );
-  this->ReferencePoints = std::vector<PointObservationBuffer*>( 0, blank );
+  vtkXMLDataElement* currElement = NULL;
+  vtkXMLDataElement* prevElement = rootElement->GetNestedElement( 0 ); // We don't really need the first element (or care)
   
   for ( int i = 0; i < numElements; i++ )
   {
-    vtkXMLDataElement* noteElement = rootElement->GetNestedElement( i );
+    vtkXMLDataElement* currElement = rootElement->GetNestedElement( i );
 
-    if ( strcmp( noteElement->GetName(), "log" ) != 0 )
-    {
-      continue;  // If it's not a "log", jump to the next.
-    }
-
-	if ( strcmp( noteElement->GetAttribute( "type" ), "message" ) == 0 )
+	PointObservation* currentObservation = new PointObservation();
+	if ( currentObservation->FromXMLElement( currElement, prevElement ) )
 	{
-	  double time = atoi( noteElement->GetAttribute( "TimeStampSec" ) ) + 1.0e-9 * atoi( noteElement->GetAttribute( "TimeStampNSec" ) );
-
-	  if ( strcmp( noteElement->GetAttribute( "message" ), "on" ) == 0 )
-	  {
-        onTimes.push_back( time );
-		LinearObjectPoints.push_back( new PointObservationBuffer() );
-	  }
-      if ( strcmp( noteElement->GetAttribute( "message" ), "off" ) == 0 )
-	  {
-        offTimes.push_back( time );
-	  }
-      if ( strcmp( noteElement->GetAttribute( "message" ), "reference" ) == 0 )
-	  {
-        refTimes.push_back( time );
-		ReferencePoints.push_back( new PointObservationBuffer() );
-	  }
-
-
+	  CollectedPoints->AddObservation( currentObservation );
 	}
+
+	prevElement = currElement;
   }
 
-  // Now, for each time stamp, determine if it was on, off, or reference
-  for ( int i = 0; i < numElements; i++ )
-  {
-    vtkXMLDataElement* noteElement = rootElement->GetNestedElement( i );
-
-    if ( strcmp( noteElement->GetName(), "log" ) != 0 || strcmp( noteElement->GetAttribute( "type" ), "transform" ) != 0 )
-    {
-      continue;  // If it's not a "log", jump to the next.
-    }
-	
-	double time = atoi( noteElement->GetAttribute( "TimeStampSec" ) ) + 1.0e-9 * atoi( noteElement->GetAttribute( "TimeStampNSec" ) );
-	int bestOnIndex = 0;
-	int bestOffIndex = 0;
-	int bestRefIndex = 0;
-
-	for ( int i = 0; i < onTimes.size(); i++ )
-	{
-      if ( onTimes.at(i) <= time && onTimes.at(i) > onTimes.at(bestOnIndex) )
-	  {
-        bestOnIndex = i;
-	  }
-	}
-
-    for ( int i = 0; i < offTimes.size(); i++ )
-	{
-      if ( offTimes.at(i) <= time && offTimes.at(i) > offTimes.at(bestOffIndex) )
-	  {
-        bestOffIndex = i;
-	  }
-	}
-
-	for ( int i = 0; i < refTimes.size(); i++ )
-	{
-      if ( refTimes.at(i) <= time && refTimes.at(i) > refTimes.at(bestRefIndex) )
-	  {
-        bestRefIndex = i;
-	  }
-	}
-
-    PointObservation* currentObservation = new PointObservation();
-	currentObservation->FromXMLElement( noteElement );
-
-	if ( ( onTimes.at(bestOnIndex) >= offTimes.at(bestOffIndex) || offTimes.at(bestOffIndex) > time ) && ( onTimes.at(bestOnIndex) >= refTimes.at(bestRefIndex) || refTimes.at(bestRefIndex) > time ) && onTimes.at(bestOnIndex) <= time )
-	{
-      LinearObjectPoints.at( bestOnIndex )->AddObservation( currentObservation );
-	}
-	if ( ( refTimes.at(bestRefIndex) >= offTimes.at(bestOffIndex) || offTimes.at(bestOffIndex) > time ) && ( refTimes.at(bestRefIndex) >= onTimes.at(bestOnIndex) || onTimes.at(bestOnIndex) > time ) && refTimes.at(bestRefIndex) <= time )
-	{
-      ReferencePoints.at( bestRefIndex )->AddObservation( currentObservation );
-	}
-	// If its "off" then don't do anything
-
-  }
+  LinearObjectPoints = CollectedPoints->ExtractLinearObjects();
 
   // Sort the linear objects into their appropriate classes
   for ( int i = 0; i < LinearObjectPoints.size(); i++ )
   {
 
     // TODO: Calculate the noise properly
-    LinearObject* currentObject = LinearObjectPoints.at(i)->LeastSquaresLinearObject( LinearObjectPoints.at(i)->CalculateNoise() );
+    LinearObject* currentObject = LinearObjectPoints.at(i)->LeastSquaresLinearObject();
 
     if( strcmp( currentObject->Type.c_str(), "Point" ) == 0 )
 	{
@@ -331,13 +256,8 @@ void vtkSlicerLinearObjectRegistrationLogic
 
   }
 
-  for ( int i = 0; i < ReferencePoints.size(); i++ )
-  {
-    Reference* currentReference = new Reference( ReferencePoints.at(i)->LeastSquaresLinearObject( ReferencePoints.at(i)->CalculateNoise() )->BasePoint );
-    this->RecordReferenceBuffer->AddLinearObject( currentReference );
-  }
-
 }
+
 
 
 
@@ -352,6 +272,24 @@ void vtkSlicerLinearObjectRegistrationLogic
 void vtkSlicerLinearObjectRegistrationLogic
 ::Register()
 {
+  // Grab the collected references
+  LinearObjectBuffer* tempPointBuffer = new LinearObjectBuffer();
+  std::vector<PointObservationBuffer*> tempPointPoints;
+  for ( int i = 0; i < this->RecordPointBuffer->Size(); i++ )
+  {
+    if ( i < this->GeometryReferenceBuffer->Size() )
+	{
+      this->RecordReferenceBuffer->AddLinearObject( this->RecordPointBuffer->GetLinearObject(i) );
+	}
+	else
+	{
+      tempPointBuffer->AddLinearObject( this->RecordPointBuffer->GetLinearObject(i) );
+	  tempPointPoints.push_back( this->PointPoints.at(i) );
+	}
+  }
+  this->RecordPointBuffer = tempPointBuffer;
+  this->PointPoints = tempPointPoints;
+
   // Calculate the signature for all objects
   this->GeometryPointBuffer->CalculateSignature( this->GeometryReferenceBuffer );
   this->GeometryLineBuffer->CalculateSignature( this->GeometryReferenceBuffer );
@@ -445,15 +383,16 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
   // Then, add the direction vector to the final point observation vectors
+  const int DIRECTION_SCALE = 100;
   for ( int i = 0; i < this->GeometryLineBuffer->Size(); i++ )
   {
     Line* CurrentGeometryObject = (Line*) this->GeometryLineBuffer->GetLinearObject(i);
-    GeometryPoints->AddObservation( new PointObservation( LinearObject::Multiply( 100, CurrentGeometryObject->GetDirection() ) ) );
+    GeometryPoints->AddObservation( new PointObservation( LinearObject::Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetDirection() ) ) );
   }
   for ( int i = 0; i < this->GeometryPlaneBuffer->Size(); i++ )
   {
     Plane* CurrentGeometryObject = (Plane*) this->GeometryPlaneBuffer->GetLinearObject(i);
-    GeometryPoints->AddObservation( new PointObservation( LinearObject::Multiply( 100, CurrentGeometryObject->GetNormal() ) ) );
+    GeometryPoints->AddObservation( new PointObservation( LinearObject::Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetNormal() ) ) );
   }
 
   // TODO: Fix memory leaks
@@ -463,12 +402,12 @@ void vtkSlicerLinearObjectRegistrationLogic
     LinearObjectBuffer* TempGeometryBuffer = new LinearObjectBuffer();
     
 	Line* CurrentRecordObject = (Line*) this->RecordLineBuffer->GetLinearObject(i);
-	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( 100, CurrentRecordObject->GetDirection() ) ) ) );
-	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Subtract( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( 100, CurrentRecordObject->GetDirection() ) ) ) );
+	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE, CurrentRecordObject->GetDirection() ) ) ) );
+	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Subtract( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE, CurrentRecordObject->GetDirection() ) ) ) );
     TempRecordBuffer->CalculateSignature( this->RecordReferenceBuffer );
 
 	Line* CurrentGeometryObject = (Line*) this->GeometryLineBuffer->GetLinearObject(i);
-    TempGeometryBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentGeometryObject->ProjectVector( BlankVector ), LinearObject::Multiply( 100, CurrentGeometryObject->GetDirection() ) ) ) );
+    TempGeometryBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentGeometryObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetDirection() ) ) ) );
     TempGeometryBuffer->CalculateSignature( this->GeometryReferenceBuffer );
 
 	TempRecordBuffer = TempGeometryBuffer->GetMatches( TempRecordBuffer );
@@ -481,12 +420,12 @@ void vtkSlicerLinearObjectRegistrationLogic
     LinearObjectBuffer* TempGeometryBuffer = new LinearObjectBuffer();
     
 	Plane* CurrentRecordObject = (Plane*) this->RecordPlaneBuffer->GetLinearObject(i);
-	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( 100,  CurrentRecordObject->GetNormal() ) ) ) );
-	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Subtract( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( 100, CurrentRecordObject->GetNormal() ) ) ) );
+	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE,  CurrentRecordObject->GetNormal() ) ) ) );
+	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Subtract( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE, CurrentRecordObject->GetNormal() ) ) ) );
     TempRecordBuffer->CalculateSignature( this->RecordReferenceBuffer );
 
 	Plane* CurrentGeometryObject = (Plane*) this->GeometryPlaneBuffer->GetLinearObject(i);
-    TempGeometryBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentGeometryObject->ProjectVector( BlankVector ), LinearObject::Multiply( 100, CurrentGeometryObject->GetNormal() ) ) ) );
+    TempGeometryBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentGeometryObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetNormal() ) ) ) );
     TempGeometryBuffer->CalculateSignature( this->GeometryReferenceBuffer );
 
 	TempRecordBuffer = TempGeometryBuffer->GetMatches( TempRecordBuffer );

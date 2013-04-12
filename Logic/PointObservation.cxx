@@ -97,3 +97,52 @@ void PointObservation
   }
 
 }
+
+
+bool PointObservation
+::FromXMLElement( vtkXMLDataElement* currElement, vtkXMLDataElement* prevElement )
+{
+  const double ROTATION_THRESHOLD = 0.005;
+  const double TRANSLATION_THRESHOLD = 0.5;
+
+  // Check to ensure that the transformation has changed since the previously collected element
+  if ( strcmp( currElement->GetName(), "log" ) != 0 || strcmp( currElement->GetAttribute( "type" ), "transform" ) != 0 )
+  {
+    return false;  // If it's not a "log" or is the wrong tool jump to the next.
+  }
+  if ( strcmp( prevElement->GetName(), "log" ) != 0 || strcmp( prevElement->GetAttribute( "type" ), "transform" ) != 0 )
+  {
+    return false;  // If it's not a "log" or is the wrong tool jump to the next.
+  }
+
+  std::stringstream currmatrixstring( std::string( currElement->GetAttribute( "transform" ) ) );
+  std::stringstream prevmatrixstring( std::string( prevElement->GetAttribute( "transform" ) ) );
+  double currValue, prevValue;
+
+  std::vector<double> currRotation, prevRotation;
+  std::vector<double> currTranslation, prevTranslation;
+
+  for ( int i = 0; i < 16; i++ )
+  {
+    currmatrixstring >> currValue;
+	prevmatrixstring >> prevValue;
+	if ( i == 0 || i == 1 || i == 2 || i == 4 || i == 5 || i == 6 || i == 8 || i == 9 || i == 10 )
+	{
+	  currRotation.push_back( currValue );
+	  prevRotation.push_back( prevValue );
+	}
+	if ( i == 3 || i == 7 || i == 11 )
+	{
+	  currTranslation.push_back( currValue );
+	  prevTranslation.push_back( prevValue );
+	}
+  }
+
+  if ( LinearObject::Distance( currRotation, prevRotation ) > ROTATION_THRESHOLD || LinearObject::Distance( currTranslation, prevTranslation ) > TRANSLATION_THRESHOLD )
+  {
+    this->FromXMLElement( currElement );
+	return true;
+  }
+
+  return false;
+}

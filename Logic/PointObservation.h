@@ -31,6 +31,7 @@ public:
 
   std::string ToXMLString();
   void FromXMLElement( vtkXMLDataElement* element );
+  bool FromXMLElement( vtkXMLDataElement* currElement, vtkXMLDataElement* prevElement );
 
 };
 

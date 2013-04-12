@@ -95,8 +95,9 @@ vnl_matrix<double>* PointObservationBuffer
 
 
 LinearObject* PointObservationBuffer
-::LeastSquaresLinearObject( double noise )
+::LeastSquaresLinearObject()
 {
+  const double THRESHOLD = 0.2;
 
   std::vector<double> centroid = this->CalculateCentroid();
   vnl_matrix<double>* cov = this->CovarianceMatrix( centroid );
@@ -124,23 +125,16 @@ LinearObject* PointObservationBuffer
   Eigenvector3.at(1) = eigenvectors.get( 1, 2 );
   Eigenvector3.at(2) = eigenvectors.get( 2, 2 );
 
-  // The threshold noise is calculated from the observed noise in the data
-  double MINIMUM_NOISE = 2.0;
-  double thresholdNoise = 2 * noise * noise;
-  if ( thresholdNoise < MINIMUM_NOISE )
-  {
-    thresholdNoise = MINIMUM_NOISE;
-  }
-
-  if ( eigenvalues.get(2) < thresholdNoise )
+  // The threshold noise is twice the extraction threshold
+  if ( eigenvalues.get(2) < THRESHOLD )
   {
     return new Point( centroid );
   }
-  if ( eigenvalues.get(1) < thresholdNoise )
+  if ( eigenvalues.get(1) < THRESHOLD )
   {
 	return new Line( centroid, LinearObject::Add( centroid, Eigenvector3 ) ); 
   }
-  if ( eigenvalues.get(0) < thresholdNoise )
+  if ( eigenvalues.get(0) < THRESHOLD )
   {
 	return new Plane( centroid, LinearObject::Add( centroid, Eigenvector2 ), LinearObject::Add( centroid, Eigenvector3 ) );
   }
@@ -148,13 +142,6 @@ LinearObject* PointObservationBuffer
   LinearObject* obj = NULL;
   return obj;
 
-}
-
-
-double PointObservationBuffer
-::CalculateNoise()
-{
-  return 2.0;
 }
 
 
@@ -300,4 +287,118 @@ std::vector<double> PointObservationBuffer
   }
 
   return centroid;
+}
+
+
+std::vector<PointObservationBuffer*> PointObservationBuffer
+::ExtractLinearObjects()
+{
+
+  // First, let us identify the segmentation points and the associated DOFs, then we can divide up the points
+  const int TEST_INTERVAL = 21;
+  const int MINIMUM_INTERVAL = 100;
+  const double THRESHOLD = 0.1;
+
+  PointObservationBuffer* eigenBuffer = new PointObservationBuffer(); // Note: 1 < 2 < 3
+  int currStartIndex, currEndIndex;
+  bool collecting = false;
+
+  std::vector<PointObservationBuffer*> linearObjects;
+
+  // Note: i is the start of the interval over which we will exam for linearity
+  for ( int i = 0; i < this->Size() - TEST_INTERVAL; i++ )
+  {
+    // Create a smaller point observation buffer to work with at each iteration with the points of interest
+    PointObservationBuffer* tempBuffer = new PointObservationBuffer();
+    for ( int j = i; j < i + TEST_INTERVAL; j++ )
+	{
+      tempBuffer->AddObservation( this->GetObservation(j) );
+	}
+
+	// Find the eigenvalues of covariance matrix
+    std::vector<double> centroid = tempBuffer->CalculateCentroid();
+    vnl_matrix<double>* cov = tempBuffer->CovarianceMatrix( centroid );
+
+    //Calculate the eigenvectors of the covariance matrix
+    vnl_matrix<double> eigenvectors( PointObservation::SIZE, PointObservation::SIZE, 0.0 );
+    vnl_vector<double> eigenvalues( PointObservation::SIZE, 0.0 );
+    vnl_symmetric_eigensystem_compute( *cov, eigenvectors, eigenvalues );
+    // Note: eigenvectors are ordered in increasing eigenvalue ( 0 = smallest, end = biggest )
+
+	std::vector<double> eigen( 3, 0.0 );
+	eigen.at(0) = eigenvalues.get( 0 );
+	eigen.at(1) = eigenvalues.get( 1 );
+	eigen.at(2) = eigenvalues.get( 2 );
+	eigenBuffer->AddObservation( new PointObservation( eigen ) );
+
+
+	if ( ! collecting )
+	{
+      currStartIndex = i;
+	}
+
+	if ( eigenvalues.get( 0 ) < THRESHOLD )
+	{
+      collecting = true;
+	  continue;
+	}
+	collecting = false;
+	currEndIndex = i;
+
+	// Suppose that we have reached the end of a collecting section
+	// If its too short then skip
+	if ( currEndIndex - currStartIndex < MINIMUM_INTERVAL )
+	{
+      continue;
+	}
+
+	// Now search for the largest interval of points which has the fewest DOF and satisfies the minimum interval
+	for ( int e = PointObservation::SIZE - 1; e >= 0; e-- )
+	{
+	  // Find the intervals where the eigenvalue is less than the threshold
+	  std::vector<int> dofInterval;
+	  dofInterval.push_back( currStartIndex );
+	  for ( int j = currStartIndex; j < currEndIndex; j++ )
+	  {
+        if ( eigenBuffer->GetObservation(j)->Observation.at(e) > THRESHOLD )
+	    {
+          dofInterval.push_back(j);
+	    }
+	  }
+      dofInterval.push_back( currEndIndex );
+
+	  // Find the longest such interval
+	  int maxIntervalLength = 0;
+	  int maxIntervalIndex = 0;
+	  for ( int j = 0; j < dofInterval.size() - 1; j++ )
+	  {
+        if ( dofInterval.at(j+1) - dofInterval.at(j) > maxIntervalLength )
+	    {
+          maxIntervalLength = dofInterval.at(j+1) - dofInterval.at(j);
+		  maxIntervalIndex = j;
+	    }
+	  }
+
+	  // If the longest interval is too short, then ignore
+      if ( maxIntervalLength < MINIMUM_INTERVAL )
+	  {
+        continue; 
+	  }
+
+	  // Otherwise, this is a collected linear object
+	  PointObservationBuffer* foundBuffer = new PointObservationBuffer();
+	  for ( int j = dofInterval.at(maxIntervalIndex); j < dofInterval.at( maxIntervalIndex + 1 ); j++ )
+	  {
+        foundBuffer->AddObservation( this->GetObservation( j + TEST_INTERVAL ) );
+	  }
+
+      linearObjects.push_back( foundBuffer );
+	  break;
+
+    }
+
+  }
+
+  return linearObjects;
+
 }
