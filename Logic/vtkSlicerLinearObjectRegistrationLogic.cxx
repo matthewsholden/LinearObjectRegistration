@@ -314,6 +314,12 @@ void vtkSlicerLinearObjectRegistrationLogic
   this->RecordPointBuffer = tempPointBuffer;
   this->PointPoints = tempPointPoints;
 
+  if ( this->RecordReferenceBuffer->Size() < this->GeometryReferenceBuffer->Size() )
+  {
+    this->Status = "Failed - Could not identify reference(s)!";
+	return;
+  }
+
   // Calculate the signature for all objects
   this->GeometryPointBuffer->CalculateSignature( this->GeometryReferenceBuffer );
   this->GeometryLineBuffer->CalculateSignature( this->GeometryReferenceBuffer );
@@ -336,15 +342,27 @@ void vtkSlicerLinearObjectRegistrationLogic
   GeometryCentroidBuffer->Concatenate( this->GeometryPointBuffer );
   GeometryCentroidBuffer->Concatenate( this->GeometryLineBuffer );
   GeometryCentroidBuffer->Concatenate( this->GeometryPlaneBuffer );
-  std::vector<double> GeometryCentroid = GeometryCentroidBuffer->CalculateCentroid();
-  std::vector<double> NegativeGeometryCentroid( GeometryCentroid.size(), 0.0 );
-  NegativeGeometryCentroid = LinearObject::Subtract( NegativeGeometryCentroid, GeometryCentroid );
 
   LinearObjectBuffer* RecordCentroidBuffer = new LinearObjectBuffer();
   RecordCentroidBuffer->Concatenate( this->RecordPointBuffer );
   RecordCentroidBuffer->Concatenate( this->RecordLineBuffer );
   RecordCentroidBuffer->Concatenate( this->RecordPlaneBuffer );
-  std::vector<double> RecordCentroid = RecordCentroidBuffer->CalculateCentroid();
+
+  std::vector<double> GeometryCentroid, RecordCentroid; 
+  try
+  {
+    GeometryCentroid = GeometryCentroidBuffer->CalculateCentroid();
+	RecordCentroid = RecordCentroidBuffer->CalculateCentroid();
+  }
+  catch( std::logic_error e )
+  {
+    this->Status = e.what();
+	return;
+  }
+
+  std::vector<double> NegativeGeometryCentroid( GeometryCentroid.size(), 0.0 );
+  NegativeGeometryCentroid = LinearObject::Subtract( NegativeGeometryCentroid, GeometryCentroid );
+
   std::vector<double> NegativeRecordCentroid( RecordCentroid.size(), 0.0 );
   NegativeRecordCentroid = LinearObject::Subtract( NegativeRecordCentroid, RecordCentroid );
 
@@ -460,8 +478,18 @@ void vtkSlicerLinearObjectRegistrationLogic
 
   // Finally, calculate the registration
   vnl_matrix<double>* RecordToGeometryRotation;
-  RecordToGeometryRotation = GeometryPoints->SphericalRegistration( RecordPoints );
-  RecordToGeometryRotation = this->LinearObjectICP( this->GeometryPointBuffer, this->GeometryLineBuffer, this->GeometryPlaneBuffer, this->PointPoints, this->LinePoints, this->PlanePoints, RecordToGeometryRotation );
+
+  try
+  {
+    RecordToGeometryRotation = GeometryPoints->SphericalRegistration( RecordPoints );
+	RecordToGeometryRotation = this->LinearObjectICP( this->GeometryPointBuffer, this->GeometryLineBuffer, this->GeometryPlaneBuffer, this->PointPoints, this->LinePoints, this->PlanePoints, RecordToGeometryRotation );
+  }
+  catch( std::logic_error e )
+  {
+    this->Status = e.what();
+	return;
+  }
+
   vnl_matrix<double>* RecordToGeometryTranslation = GeometryPoints->TranslationalRegistration( GeometryCentroid, RecordCentroid, RecordToGeometryRotation ); 
 
 
@@ -485,6 +513,8 @@ void vtkSlicerLinearObjectRegistrationLogic
   this->RegistrationTransformNode->GetMatrixTransformToParent()->SetElement( 3, 1, 0 );
   this->RegistrationTransformNode->GetMatrixTransformToParent()->SetElement( 3, 2, 0 );
   this->RegistrationTransformNode->GetMatrixTransformToParent()->SetElement( 3, 3, 1 );
+
+  this->Status = "Success!";
 
 }
 

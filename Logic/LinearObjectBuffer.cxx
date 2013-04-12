@@ -185,7 +185,7 @@ std::vector<double> LinearObjectBuffer
   vnl_matrix_inverse<double>* X = new vnl_matrix_inverse<double>( A->transpose() * (*A) );
   if ( X->well_condition() < CONDITION_THRESHOLD ) // This is the inverse of the condition number
   {
-    
+    throw std::logic_error("Failed - ill-conditioned geometry!");
   } // TODO: Error if ill-conditioned
   vnl_matrix<double>* Y = new vnl_matrix<double>( X->inverse() * A->transpose() * (*B) );
 
