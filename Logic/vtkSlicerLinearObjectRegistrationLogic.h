@@ -97,7 +97,8 @@ private:
   LinearObjectBuffer* GeometryPlaneBuffer;
   LinearObjectBuffer* GeometryReferenceBuffer;
 
-  LinearObjectBuffer* RecordBuffer;
+  void ResetGeometry();
+
   LinearObjectBuffer* RecordPointBuffer;
   LinearObjectBuffer* RecordLineBuffer;
   LinearObjectBuffer* RecordPlaneBuffer;
@@ -108,6 +109,8 @@ private:
   std::vector<PointObservationBuffer*> PointPoints;
   std::vector<PointObservationBuffer*> LinePoints;
   std::vector<PointObservationBuffer*> PlanePoints;
+
+  void ResetRecord();
 
   vtkMRMLLinearTransformNode* RegistrationTransformNode;
 

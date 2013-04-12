@@ -60,7 +60,6 @@ vtkSlicerLinearObjectRegistrationLogic
   this->GeometryPlaneBuffer = new LinearObjectBuffer();
   this->GeometryReferenceBuffer = new LinearObjectBuffer();
 
-  this->RecordBuffer = new LinearObjectBuffer();
   this->RecordPointBuffer = new LinearObjectBuffer();
   this->RecordLineBuffer = new LinearObjectBuffer();
   this->RecordPlaneBuffer = new LinearObjectBuffer();
@@ -72,17 +71,11 @@ vtkSlicerLinearObjectRegistrationLogic
 }
 
 
-
 vtkSlicerLinearObjectRegistrationLogic::
 ~vtkSlicerLinearObjectRegistrationLogic()
 {
   delete this->GeometryBuffer;
-  delete this->GeometryPointBuffer;
-  delete this->GeometryLineBuffer;
-  delete this->GeometryPlaneBuffer;
-  delete this->GeometryReferenceBuffer;
 
-  delete this->RecordBuffer;
   delete this->RecordPointBuffer;
   delete this->RecordLineBuffer;
   delete this->RecordPlaneBuffer;
@@ -161,9 +154,25 @@ vtkSlicerLinearObjectRegistrationLogic
 
 // Linear Object Registration ----------------------------------------------------
 
+
+void vtkSlicerLinearObjectRegistrationLogic
+::ResetGeometry()
+{
+  delete this->GeometryBuffer; // This should delete everything
+
+  this->GeometryBuffer = new LinearObjectBuffer();
+  this->GeometryPointBuffer = new LinearObjectBuffer();
+  this->GeometryLineBuffer = new LinearObjectBuffer();
+  this->GeometryPlaneBuffer = new LinearObjectBuffer();
+  this->GeometryReferenceBuffer = new LinearObjectBuffer();
+}
+
+
+
 void vtkSlicerLinearObjectRegistrationLogic
 ::ImportGeometry( std::string fileName )
 {
+  this->ResetGeometry();
 
   // Read the record log from XML file
   vtkSmartPointer< vtkXMLDataParser > parser = vtkSmartPointer< vtkXMLDataParser >::New();
@@ -199,8 +208,33 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
+::ResetRecord()
+{
+  delete this->RecordPointBuffer;
+  delete this->RecordLineBuffer;
+  delete this->RecordPlaneBuffer;
+  delete this->RecordReferenceBuffer;
+
+  this->RecordPointBuffer = new LinearObjectBuffer();
+  this->RecordLineBuffer = new LinearObjectBuffer();
+  this->RecordPlaneBuffer = new LinearObjectBuffer();
+  this->RecordReferenceBuffer = new LinearObjectBuffer();
+
+  // Clear should call the destructor on each of the vector's elements
+  this->LinearObjectPoints.clear();
+  this->ReferencePoints.clear();
+  this->PointPoints.clear();
+  this->LinePoints.clear();
+  this->PlanePoints.clear();
+}
+
+
+
+
+void vtkSlicerLinearObjectRegistrationLogic
 ::ImportRecord( std::string fileName )
 {
+  this->ResetRecord();
 
   // Read the record log from XML file
   vtkSmartPointer< vtkXMLDataParser > parser = vtkSmartPointer< vtkXMLDataParser >::New();
@@ -317,6 +351,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   if ( this->RecordReferenceBuffer->Size() < this->GeometryReferenceBuffer->Size() )
   {
     this->Status = "Failed - Could not identify reference(s)!";
+	this->ErrorRMS = 0.0;
 	return;
   }
 
@@ -357,6 +392,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   catch( std::logic_error e )
   {
     this->Status = e.what();
+	this->ErrorRMS = 0.0;
 	return;
   }
 
@@ -487,6 +523,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   catch( std::logic_error e )
   {
     this->Status = e.what();
+	this->ErrorRMS = 0.0;
 	return;
   }
 
