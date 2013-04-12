@@ -97,7 +97,7 @@ vnl_matrix<double>* PointObservationBuffer
 LinearObject* PointObservationBuffer
 ::LeastSquaresLinearObject()
 {
-  const double THRESHOLD = 0.2;
+  const double THRESHOLD = 0.5;
 
   std::vector<double> centroid = this->CalculateCentroid();
   vnl_matrix<double>* cov = this->CovarianceMatrix( centroid );

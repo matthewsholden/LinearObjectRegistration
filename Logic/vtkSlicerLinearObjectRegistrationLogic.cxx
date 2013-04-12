@@ -235,6 +235,12 @@ void vtkSlicerLinearObjectRegistrationLogic
     // TODO: Calculate the noise properly
     LinearObject* currentObject = LinearObjectPoints.at(i)->LeastSquaresLinearObject();
 
+	// May be what we thought was linear actually isn't linear
+	if ( currentObject == NULL )
+	{
+      continue;
+	}
+
     if( strcmp( currentObject->Type.c_str(), "Point" ) == 0 )
 	{
       this->RecordPointBuffer->AddLinearObject( currentObject );

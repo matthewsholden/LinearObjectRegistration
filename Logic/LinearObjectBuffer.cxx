@@ -95,8 +95,11 @@ void LinearObjectBuffer
 LinearObjectBuffer* LinearObjectBuffer
 ::GetMatches( LinearObjectBuffer* candidates )
 {
+  const double MATCHING_THRESHOLD = 10;
+
   // For each object in this, find the object in candidates that has the closest signature
   LinearObjectBuffer* matchedCandidates = new LinearObjectBuffer();
+  std::vector<LinearObject*> matchedObjects;
   for ( int i = 0; i < this->Size(); i++ )
   {
 
@@ -112,9 +115,16 @@ LinearObjectBuffer* LinearObjectBuffer
 	  }
 	}
 
-	matchedCandidates->AddLinearObject( closestObject );
+	// Only accept the matching if it is sufficiently good (this throws away potentially wrongly identified collected objects)
+	if ( closestDistance < MATCHING_THRESHOLD )
+	{
+	  matchedObjects.push_back( this->GetLinearObject(i) );
+	  matchedCandidates->AddLinearObject( closestObject );
+	}
 
   }
+
+  this->objects = matchedObjects;
 
   return matchedCandidates;
 }
@@ -171,6 +181,7 @@ std::vector<double> LinearObjectBuffer
 
   // Now, calculate X
   vnl_matrix_inverse<double>* X = new vnl_matrix_inverse<double>( A->transpose() * (*A) );
+  double cond = X->well_condition(); // This is the inverse of the condition number // TODO: Error if ill-conditioned
   vnl_matrix<double>* Y = new vnl_matrix<double>( X->inverse() * A->transpose() * (*B) );
 
   std::vector<double> centroid( LinearObject::DIMENSION, 0.0 );
