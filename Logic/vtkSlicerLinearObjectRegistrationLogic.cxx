@@ -232,7 +232,7 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::ImportRecord( std::string fileName )
+::ImportRecord( std::string fileName, int filterWidth, int collectionFrames, double extractionThreshold, double dimensionThreshold )
 {
   this->ResetRecord();
 
@@ -262,14 +262,14 @@ void vtkSlicerLinearObjectRegistrationLogic
 	prevElement = currElement;
   }
 
-  LinearObjectPoints = CollectedPoints->ExtractLinearObjects();
+  LinearObjectPoints = CollectedPoints->ExtractLinearObjects( collectionFrames, extractionThreshold );
 
   // Sort the linear objects into their appropriate classes
   for ( int i = 0; i < LinearObjectPoints.size(); i++ )
   {
 
     // TODO: Calculate the noise properly
-    LinearObject* currentObject = LinearObjectPoints.at(i)->LeastSquaresLinearObject();
+    LinearObject* currentObject = LinearObjectPoints.at(i)->LeastSquaresLinearObject( dimensionThreshold );
 
 	// May be what we thought was linear actually isn't linear
 	if ( currentObject == NULL )
@@ -281,19 +281,19 @@ void vtkSlicerLinearObjectRegistrationLogic
 	{
       this->RecordPointBuffer->AddLinearObject( currentObject );
 	  this->PointPoints.push_back( LinearObjectPoints.at(i) );
-	  this->PointPoints.at( this->PointPoints.size() - 1 )->Filter( this->RecordPointBuffer->GetLinearObject( this->RecordPointBuffer->Size() - 1 ) );
+	  this->PointPoints.at( this->PointPoints.size() - 1 )->Filter( this->RecordPointBuffer->GetLinearObject( this->RecordPointBuffer->Size() - 1 ), filterWidth );
 	}
     if( strcmp( currentObject->Type.c_str(), "Line" ) == 0 )
 	{
       this->RecordLineBuffer->AddLinearObject( currentObject );
 	  this->LinePoints.push_back( LinearObjectPoints.at(i) );
-      this->LinePoints.at( this->LinePoints.size() - 1 )->Filter( this->RecordLineBuffer->GetLinearObject( this->RecordLineBuffer->Size() - 1 ) );
+      this->LinePoints.at( this->LinePoints.size() - 1 )->Filter( this->RecordLineBuffer->GetLinearObject( this->RecordLineBuffer->Size() - 1 ), filterWidth );
 	}
 	if( strcmp( currentObject->Type.c_str(), "Plane" ) == 0 )
 	{
       this->RecordPlaneBuffer->AddLinearObject( currentObject );
 	  this->PlanePoints.push_back( LinearObjectPoints.at(i) );
-	  this->PlanePoints.at( this->PlanePoints.size() - 1 )->Filter( this->RecordPlaneBuffer->GetLinearObject( this->RecordPlaneBuffer->Size() - 1 ) );
+	  this->PlanePoints.at( this->PlanePoints.size() - 1 )->Filter( this->RecordPlaneBuffer->GetLinearObject( this->RecordPlaneBuffer->Size() - 1 ), filterWidth );
 	}
 
   }
@@ -328,7 +328,7 @@ std::string vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::Register()
+::Register( double matchingThreshold )
 {
   // Grab the collected references
   LinearObjectBuffer* tempPointBuffer = new LinearObjectBuffer();
@@ -367,9 +367,9 @@ void vtkSlicerLinearObjectRegistrationLogic
 
   // Next, match objects based on their signatures
   // TODO: Check for memory leak here
-  this->GeometryPointBuffer = this->RecordPointBuffer->GetMatches( this->GeometryPointBuffer );
-  this->GeometryLineBuffer = this->RecordLineBuffer->GetMatches( this->GeometryLineBuffer );
-  this->GeometryPlaneBuffer = this->RecordPlaneBuffer->GetMatches( this->GeometryPlaneBuffer );
+  this->GeometryPointBuffer = this->RecordPointBuffer->GetMatches( this->GeometryPointBuffer, matchingThreshold );
+  this->GeometryLineBuffer = this->RecordLineBuffer->GetMatches( this->GeometryLineBuffer, matchingThreshold );
+  this->GeometryPlaneBuffer = this->RecordPlaneBuffer->GetMatches( this->GeometryPlaneBuffer, matchingThreshold );
 
 
   // Calculate the centroids
@@ -488,7 +488,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     TempGeometryBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentGeometryObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetDirection() ) ) ) );
     TempGeometryBuffer->CalculateSignature( this->GeometryReferenceBuffer );
 
-	TempRecordBuffer = TempGeometryBuffer->GetMatches( TempRecordBuffer );
+	TempRecordBuffer = TempGeometryBuffer->GetMatches( TempRecordBuffer, matchingThreshold );
 
 	RecordPoints->AddObservation( new PointObservation( LinearObject::Subtract( TempRecordBuffer->GetLinearObject(0)->BasePoint, CurrentRecordObject->ProjectVector( BlankVector ) ) ) );
   }
@@ -506,7 +506,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     TempGeometryBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentGeometryObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetNormal() ) ) ) );
     TempGeometryBuffer->CalculateSignature( this->GeometryReferenceBuffer );
 
-	TempRecordBuffer = TempGeometryBuffer->GetMatches( TempRecordBuffer );
+	TempRecordBuffer = TempGeometryBuffer->GetMatches( TempRecordBuffer, matchingThreshold );
 
 	RecordPoints->AddObservation( new PointObservation( LinearObject::Subtract( TempRecordBuffer->GetLinearObject(0)->BasePoint, CurrentRecordObject->ProjectVector( BlankVector ) ) ) );
   }

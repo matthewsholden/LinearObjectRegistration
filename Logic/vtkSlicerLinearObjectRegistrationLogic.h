@@ -78,8 +78,8 @@ private:
 
 public:
   void ImportGeometry( std::string fileName );
-  void ImportRecord( std::string fileName );
-  void Register();
+  void ImportRecord( std::string fileName, int filterWidth, int collectionFrames, double extractionThreshold, double dimensionThreshold );
+  void Register( double matchingThreshold );
   void SetRegistrationTransformNode( vtkMRMLLinearTransformNode* newRegistrationTransformNode );
 
   vnl_matrix<double>* LinearObjectICP( LinearObjectBuffer* pointBuffer, LinearObjectBuffer* lineBuffer, LinearObjectBuffer* planeBuffer,
@@ -88,6 +88,7 @@ public:
 
   double GetError();
   std::string GetStatus();
+
 
 private:
 

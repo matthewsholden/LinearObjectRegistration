@@ -38,13 +38,13 @@ public:
 
   void Translate( std::vector<double> translation );
 
-  LinearObject* LeastSquaresLinearObject();
-  void Filter( LinearObject* object );
+  LinearObject* LeastSquaresLinearObject( double dimensionThreshold );
+  void Filter( LinearObject* object, int filterWidth );
 
   vnl_matrix<double>* SphericalRegistration( PointObservationBuffer* fromPoints );
   vnl_matrix<double>* TranslationalRegistration( std::vector<double> toCentroid, std::vector<double> fromCentroid, vnl_matrix<double>* rotation );
 
-  std::vector<PointObservationBuffer*> ExtractLinearObjects();
+  std::vector<PointObservationBuffer*> ExtractLinearObjects( int collectionFrames, double extractionThreshold );
 
   std::string ToXMLString();
   void FromXMLElement( vtkXMLDataElement* element );

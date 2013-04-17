@@ -120,7 +120,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
     dialog.show();
     dialog.setValue( 10 );
     
-    d->logic()->ImportRecord( filename.toStdString() );
+    d->logic()->ImportRecord( filename.toStdString(), d->FilterWidthSpinBox->value(), d->CollectionFramesSpinBox->value(), d->ExtractionThresholdSpinBox->value(), d->DimensionThresholdSpinBox->value() );
 
     dialog.close();
     
@@ -142,7 +142,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   dialog.show();
   dialog.setValue( 10 );
     
-  d->logic()->Register();
+  d->logic()->Register( d->MatchingThresholdSpinBox->value() );
 
   dialog.close();
   

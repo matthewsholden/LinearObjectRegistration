@@ -100,10 +100,8 @@ vnl_matrix<double>* PointObservationBuffer
 
 
 LinearObject* PointObservationBuffer
-::LeastSquaresLinearObject()
+::LeastSquaresLinearObject( double dimensionThreshold )
 {
-  const double THRESHOLD = 0.5;
-
   std::vector<double> centroid = this->CalculateCentroid();
   vnl_matrix<double>* cov = this->CovarianceMatrix( centroid );
 
@@ -131,15 +129,15 @@ LinearObject* PointObservationBuffer
   Eigenvector3.at(2) = eigenvectors.get( 2, 2 );
 
   // The threshold noise is twice the extraction threshold
-  if ( eigenvalues.get(2) < THRESHOLD )
+  if ( eigenvalues.get(2) < dimensionThreshold )
   {
     return new Point( centroid );
   }
-  if ( eigenvalues.get(1) < THRESHOLD )
+  if ( eigenvalues.get(1) < dimensionThreshold )
   {
 	return new Line( centroid, LinearObject::Add( centroid, Eigenvector3 ) ); 
   }
-  if ( eigenvalues.get(0) < THRESHOLD )
+  if ( eigenvalues.get(0) < dimensionThreshold )
   {
 	return new Plane( centroid, LinearObject::Add( centroid, Eigenvector2 ), LinearObject::Add( centroid, Eigenvector3 ) );
   }
@@ -151,10 +149,9 @@ LinearObject* PointObservationBuffer
 
 
 void PointObservationBuffer
-::Filter( LinearObject* object )
+::Filter( LinearObject* object, int filterWidth )
 {
-  const int NUM_STDEV = 5;
-  const int THRESHOLD = 1e-6; // Deal with the case of very little noise
+  const int THRESHOLD = 1e-3; // Deal with the case of very little noise
   bool changed = true;
 
   while ( changed )
@@ -178,7 +175,7 @@ void PointObservationBuffer
 	std::vector<PointObservation*> newObservations;
 	for ( int i = 0; i < this->Size(); i++ )
 	{
-      if ( distances.at(i) < NUM_STDEV * stdev || distances.at(i) < THRESHOLD )
+      if ( distances.at(i) < filterWidth * stdev || distances.at(i) < THRESHOLD )
 	  {
         newObservations.push_back( this->GetObservation(i) );
 	  }
@@ -296,13 +293,11 @@ std::vector<double> PointObservationBuffer
 
 
 std::vector<PointObservationBuffer*> PointObservationBuffer
-::ExtractLinearObjects()
+::ExtractLinearObjects( int collectionFrames, double extractionThreshold )
 {
 
   // First, let us identify the segmentation points and the associated DOFs, then we can divide up the points
-  const int TEST_INTERVAL = 21;
-  const int MINIMUM_INTERVAL = 100;
-  const double THRESHOLD = 0.1;
+  int TEST_INTERVAL = 21;
 
   PointObservationBuffer* eigenBuffer = new PointObservationBuffer(); // Note: 1 < 2 < 3
   int currStartIndex, currEndIndex;
@@ -342,7 +337,7 @@ std::vector<PointObservationBuffer*> PointObservationBuffer
       currStartIndex = i;
 	}
 
-	if ( eigenvalues.get( 0 ) < THRESHOLD )
+	if ( eigenvalues.get( 0 ) < extractionThreshold )
 	{
       collecting = true;
 	  continue;
@@ -352,11 +347,12 @@ std::vector<PointObservationBuffer*> PointObservationBuffer
 
 	// Suppose that we have reached the end of a collecting section
 	// If its too short then skip
-	if ( currEndIndex - currStartIndex < MINIMUM_INTERVAL )
+	if ( currEndIndex - currStartIndex < collectionFrames )
 	{
       continue;
 	}
 
+	
 	// Now search for the largest interval of points which has the fewest DOF and satisfies the minimum interval
 	for ( int e = PointObservation::SIZE - 1; e >= 0; e-- )
 	{
@@ -365,7 +361,7 @@ std::vector<PointObservationBuffer*> PointObservationBuffer
 	  dofInterval.push_back( currStartIndex );
 	  for ( int j = currStartIndex; j < currEndIndex; j++ )
 	  {
-        if ( eigenBuffer->GetObservation(j)->Observation.at(e) > THRESHOLD )
+        if ( eigenBuffer->GetObservation(j)->Observation.at(e) > extractionThreshold )
 	    {
           dofInterval.push_back(j);
 	    }
@@ -385,7 +381,7 @@ std::vector<PointObservationBuffer*> PointObservationBuffer
 	  }
 
 	  // If the longest interval is too short, then ignore
-      if ( maxIntervalLength < MINIMUM_INTERVAL )
+      if ( maxIntervalLength < collectionFrames )
 	  {
         continue; 
 	  }

@@ -93,10 +93,8 @@ void LinearObjectBuffer
 
 
 LinearObjectBuffer* LinearObjectBuffer
-::GetMatches( LinearObjectBuffer* candidates )
+::GetMatches( LinearObjectBuffer* candidates, double matchingThreshold )
 {
-  const double MATCHING_THRESHOLD = 10;
-
   // For each object in this, find the object in candidates that has the closest signature
   LinearObjectBuffer* matchedCandidates = new LinearObjectBuffer();
   std::vector<LinearObject*> matchedObjects;
@@ -116,7 +114,7 @@ LinearObjectBuffer* LinearObjectBuffer
 	}
 
 	// Only accept the matching if it is sufficiently good (this throws away potentially wrongly identified collected objects)
-	if ( closestDistance < MATCHING_THRESHOLD )
+	if ( closestDistance < matchingThreshold )
 	{
 	  matchedObjects.push_back( this->GetLinearObject(i) );
 	  matchedCandidates->AddLinearObject( closestObject );
@@ -169,7 +167,7 @@ std::vector<double> LinearObjectBuffer
 	  B->put( row + 1, 0, LinearObject::Dot( LineObject->GetOrthogonalNormal2(), LineObject->BasePoint ) );
 	}
 
-	// A = Normal 1, Normal 2, B = Dot( Normal 1, BasePoint ), Dot( Normal 2, BasePoint )
+	// A = Normal, B = Dot( Normal, BasePoint )
 	if ( strcmp( this->GetLinearObject(i)->Type.c_str(), "Plane" ) == 0 )
 	{
 	  Plane* PlaneObject = (Plane*) this->GetLinearObject(i);

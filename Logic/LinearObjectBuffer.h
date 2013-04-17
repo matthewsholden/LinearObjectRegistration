@@ -37,7 +37,7 @@ public:
 
   void CalculateSignature( LinearObjectBuffer* refBuffer );
 
-  LinearObjectBuffer* GetMatches( LinearObjectBuffer* candidates );
+  LinearObjectBuffer* GetMatches( LinearObjectBuffer* candidates, double matchingThreshold );
 
   std::vector<double> CalculateCentroid();
 
