@@ -75,7 +75,7 @@ vnl_matrix<double>* PointObservationBuffer
   vnl_svd<double>* SVDMatrix = new vnl_svd<double>( *DataMatrix, 0.0 );
   if ( SVDMatrix->well_condition() < CONDITION_THRESHOLD ) // This is the inverse of the condition number
   {
-    throw std::logic_error("Failed - ill-conditioned geometry!");
+    throw std::logic_error("Failed - spherical registration is ill-conditioned!");
   } // TODO: Error if ill-conditioned
 
   return new vnl_matrix<double>( SVDMatrix->V() * SVDMatrix->U().transpose() );
@@ -100,7 +100,7 @@ vnl_matrix<double>* PointObservationBuffer
 
 
 LinearObject* PointObservationBuffer
-::LeastSquaresLinearObject( double dimensionThreshold )
+::LeastSquaresLinearObject( int dof )
 {
   std::vector<double> centroid = this->CalculateCentroid();
   vnl_matrix<double>* cov = this->CovarianceMatrix( centroid );
@@ -129,15 +129,15 @@ LinearObject* PointObservationBuffer
   Eigenvector3.at(2) = eigenvectors.get( 2, 2 );
 
   // The threshold noise is twice the extraction threshold
-  if ( eigenvalues.get(2) < dimensionThreshold )
+  if ( dof == 0 )
   {
     return new Point( centroid );
   }
-  if ( eigenvalues.get(1) < dimensionThreshold )
+  if ( dof == 1 )
   {
 	return new Line( centroid, LinearObject::Add( centroid, Eigenvector3 ) ); 
   }
-  if ( eigenvalues.get(0) < dimensionThreshold )
+  if ( dof == 2 )
   {
 	return new Plane( centroid, LinearObject::Add( centroid, Eigenvector2 ), LinearObject::Add( centroid, Eigenvector3 ) );
   }
@@ -293,7 +293,7 @@ std::vector<double> PointObservationBuffer
 
 
 std::vector<PointObservationBuffer*> PointObservationBuffer
-::ExtractLinearObjects( int collectionFrames, double extractionThreshold )
+::ExtractLinearObjects( int collectionFrames, double extractionThreshold, std::vector<int>* dof )
 {
 
   // First, let us identify the segmentation points and the associated DOFs, then we can divide up the points
@@ -394,6 +394,7 @@ std::vector<PointObservationBuffer*> PointObservationBuffer
 	  }
 
       linearObjects.push_back( foundBuffer );
+	  dof->push_back( PointObservation::SIZE - 1 - e );
 	  break;
 
     }

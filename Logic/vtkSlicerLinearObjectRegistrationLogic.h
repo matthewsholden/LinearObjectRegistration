@@ -78,7 +78,7 @@ private:
 
 public:
   void ImportGeometry( std::string fileName );
-  void ImportRecord( std::string fileName, int filterWidth, int collectionFrames, double extractionThreshold, double dimensionThreshold );
+  void ImportRecord( std::string fileName, int filterWidth, int collectionFrames, double extractionThreshold );
   void Register( double matchingThreshold );
   void SetRegistrationTransformNode( vtkMRMLLinearTransformNode* newRegistrationTransformNode );
 

@@ -232,7 +232,7 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::ImportRecord( std::string fileName, int filterWidth, int collectionFrames, double extractionThreshold, double dimensionThreshold )
+::ImportRecord( std::string fileName, int filterWidth, int collectionFrames, double extractionThreshold )
 {
   this->ResetRecord();
 
@@ -262,14 +262,15 @@ void vtkSlicerLinearObjectRegistrationLogic
 	prevElement = currElement;
   }
 
-  LinearObjectPoints = CollectedPoints->ExtractLinearObjects( collectionFrames, extractionThreshold );
+  std::vector<int>* dof = new std::vector<int>();
+  LinearObjectPoints = CollectedPoints->ExtractLinearObjects( collectionFrames, extractionThreshold, dof );
 
   // Sort the linear objects into their appropriate classes
   for ( int i = 0; i < LinearObjectPoints.size(); i++ )
   {
 
     // TODO: Calculate the noise properly
-    LinearObject* currentObject = LinearObjectPoints.at(i)->LeastSquaresLinearObject( dimensionThreshold );
+    LinearObject* currentObject = LinearObjectPoints.at(i)->LeastSquaresLinearObject( dof->at(i) );
 
 	// May be what we thought was linear actually isn't linear
 	if ( currentObject == NULL )
