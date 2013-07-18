@@ -1,45 +1,54 @@
 
-#include "PointObservationBuffer.h"
+#include "vtkLORPointObservationBuffer.h"
 
-PointObservationBuffer
-::PointObservationBuffer()
+vtkStandardNewMacro( vtkLORPointObservationBuffer );
+
+vtkLORPointObservationBuffer
+::vtkLORPointObservationBuffer()
 {
 }
 
 
-PointObservationBuffer
-::~PointObservationBuffer()
+vtkLORPointObservationBuffer
+::~vtkLORPointObservationBuffer()
 {
-  for ( int i = 0; i < this->Size(); i++ )
-  {
-	delete this->observations.at(i);
-  }
-  this->observations.clear();
+  this->Clear();
 }
 
 
-int PointObservationBuffer
+int vtkLORPointObservationBuffer
 ::Size()
 {
   return this->observations.size();
 }
 
 
-PointObservation* PointObservationBuffer
+vtkLORPointObservation* vtkLORPointObservationBuffer
 ::GetObservation( int index )
 {
   return this->observations.at(index);
 }
 
 
-void PointObservationBuffer
-::AddObservation( PointObservation* newObservation )
+void vtkLORPointObservationBuffer
+::AddObservation( vtkLORPointObservation* newObservation )
 {
   this->observations.push_back( newObservation );
 }
 
 
-void PointObservationBuffer
+void vtkLORPointObservationBuffer
+::Clear()
+{
+  for ( int i = 0; i < this->Size(); i++ )
+  {
+    this->observations.at(i)->Delete();
+  }
+  this->observations.clear();
+}
+
+
+void vtkLORPointObservationBuffer
 ::Translate( std::vector<double> translation )
 {
   for ( int i = 0; i < this->Size(); i++ )
@@ -49,19 +58,19 @@ void PointObservationBuffer
 }
 
 
-vnl_matrix<double>* PointObservationBuffer
-::SphericalRegistration( PointObservationBuffer* fromPoints )
+vnl_matrix<double>* vtkLORPointObservationBuffer
+::SphericalRegistration( vtkLORPointObservationBuffer* fromPoints )
 {
   // Assume that it is already mean zero
   const double CONDITION_THRESHOLD = 1e-3;
 
   // Let us construct the data matrix
-  vnl_matrix<double>* DataMatrix = new vnl_matrix<double>( PointObservation::SIZE, PointObservation::SIZE, 0.0 );
+  vnl_matrix<double>* DataMatrix = new vnl_matrix<double>( vtkLORPointObservation::SIZE, vtkLORPointObservation::SIZE, 0.0 );
 
   // Pick two dimensions, and find their data matrix entry
-  for ( int d1 = 0; d1 < PointObservation::SIZE; d1++ )
+  for ( int d1 = 0; d1 < vtkLORPointObservation::SIZE; d1++ )
   {
-    for ( int d2 = 0; d2 < PointObservation::SIZE; d2++ )
+    for ( int d2 = 0; d2 < vtkLORPointObservation::SIZE; d2++ )
 	{
 	  // Iterate over all times
 	  for ( int i = 0; i < this->Size(); i++ )
@@ -76,20 +85,20 @@ vnl_matrix<double>* PointObservationBuffer
   if ( SVDMatrix->well_condition() < CONDITION_THRESHOLD ) // This is the inverse of the condition number
   {
     throw std::logic_error("Failed - spherical registration is ill-conditioned!");
-  } // TODO: Error if ill-conditioned
+  }
 
   return new vnl_matrix<double>( SVDMatrix->V() * SVDMatrix->U().transpose() );
 }
 
 
-vnl_matrix<double>* PointObservationBuffer
+vnl_matrix<double>* vtkLORPointObservationBuffer
 ::TranslationalRegistration( std::vector<double> toCentroid, std::vector<double> fromCentroid, vnl_matrix<double>* rotation )
 {
   // Make matrices out of the centroids
-  vnl_matrix<double>* toMatrix = new vnl_matrix<double>( PointObservation::SIZE, 1, 0.0 );
-  vnl_matrix<double>* fromMatrix = new vnl_matrix<double>( PointObservation::SIZE, 1, 0.0 );
+  vnl_matrix<double>* toMatrix = new vnl_matrix<double>( vtkLORPointObservation::SIZE, 1, 0.0 );
+  vnl_matrix<double>* fromMatrix = new vnl_matrix<double>( vtkLORPointObservation::SIZE, 1, 0.0 );
 
-  for ( int i = 0; i < PointObservation::SIZE; i++ )
+  for ( int i = 0; i < vtkLORPointObservation::SIZE; i++ )
   {
     toMatrix->put( i, 0, toCentroid.at(i) );
 	fromMatrix->put( i, 0, fromCentroid.at(i) );
@@ -99,22 +108,22 @@ vnl_matrix<double>* PointObservationBuffer
 }
 
 
-LinearObject* PointObservationBuffer
+vtkLORLinearObject* vtkLORPointObservationBuffer
 ::LeastSquaresLinearObject( int dof )
 {
   std::vector<double> centroid = this->CalculateCentroid();
   vnl_matrix<double>* cov = this->CovarianceMatrix( centroid );
 
   //Calculate the eigenvectors of the covariance matrix
-  vnl_matrix<double> eigenvectors( PointObservation::SIZE, PointObservation::SIZE, 0.0 );
-  vnl_vector<double> eigenvalues( PointObservation::SIZE, 0.0 );
+  vnl_matrix<double> eigenvectors( vtkLORPointObservation::SIZE, vtkLORPointObservation::SIZE, 0.0 );
+  vnl_vector<double> eigenvalues( vtkLORPointObservation::SIZE, 0.0 );
   vnl_symmetric_eigensystem_compute( *cov, eigenvectors, eigenvalues );
   // Note: eigenvectors are ordered in increasing eigenvalue ( 0 = smallest, end = biggest )
 
   // Grab only the most important eigenvectors
-  std::vector<double> Eigenvector1( PointObservation::SIZE, 0.0 ); // Smallest
-  std::vector<double> Eigenvector2( PointObservation::SIZE, 0.0 ); // Medium
-  std::vector<double> Eigenvector3( PointObservation::SIZE, 0.0 ); // Largest
+  std::vector<double> Eigenvector1( vtkLORPointObservation::SIZE, 0.0 ); // Smallest
+  std::vector<double> Eigenvector2( vtkLORPointObservation::SIZE, 0.0 ); // Medium
+  std::vector<double> Eigenvector3( vtkLORPointObservation::SIZE, 0.0 ); // Largest
 
   Eigenvector1.at(0) = eigenvectors.get( 0, 0 );
   Eigenvector1.at(1) = eigenvectors.get( 1, 0 );
@@ -131,25 +140,23 @@ LinearObject* PointObservationBuffer
   // The threshold noise is twice the extraction threshold
   if ( dof == 0 )
   {
-    return new Point( centroid );
+    return vtkLORPoint::New( centroid );
   }
   if ( dof == 1 )
   {
-	return new Line( centroid, LinearObject::Add( centroid, Eigenvector3 ) ); 
+    return vtkLORLine::New( centroid, Add( centroid, Eigenvector3 ) ); 
   }
   if ( dof == 2 )
   {
-	return new Plane( centroid, LinearObject::Add( centroid, Eigenvector2 ), LinearObject::Add( centroid, Eigenvector3 ) );
+    return vtkLORPlane::New( centroid, Add( centroid, Eigenvector2 ), Add( centroid, Eigenvector3 ) );
   }
 
-  LinearObject* obj = NULL;
-  return obj;
-
+  return NULL;
 }
 
 
-void PointObservationBuffer
-::Filter( LinearObject* object, int filterWidth )
+void vtkLORPointObservationBuffer
+::Filter( vtkLORLinearObject* object, int filterWidth )
 {
   const int THRESHOLD = 1e-3; // Deal with the case of very little noise
   bool changed = true;
@@ -172,7 +179,7 @@ void PointObservationBuffer
 	stdev = sqrt( stdev - meanDistance * meanDistance );
     
 	// Keep only the points that are within certain number of standard deviations
-	std::vector<PointObservation*> newObservations;
+	std::vector<vtkLORPointObservation*> newObservations;
 	for ( int i = 0; i < this->Size(); i++ )
 	{
       if ( distances.at(i) < filterWidth * stdev || distances.at(i) < THRESHOLD )
@@ -197,7 +204,7 @@ void PointObservationBuffer
 }
 
 
-std::string PointObservationBuffer
+std::string vtkLORPointObservationBuffer
 ::ToXMLString()
 {
   std::stringstream xmlstring;
@@ -211,11 +218,11 @@ std::string PointObservationBuffer
 }
 
 
-void PointObservationBuffer
+void vtkLORPointObservationBuffer
 ::FromXMLElement( vtkXMLDataElement* element )
 {
-  PointObservation* blankObservation = new PointObservation();
-  this->observations = std::vector<PointObservation*>( 0, blankObservation );
+  vtkLORPointObservation* blankObservation = vtkLORPointObservation::New();
+  this->observations = std::vector<vtkLORPointObservation*>( 0, blankObservation );
 
   int numElements = element->GetNumberOfNestedElements();
 
@@ -223,28 +230,27 @@ void PointObservationBuffer
   {
     vtkXMLDataElement* noteElement = element->GetNestedElement( i );
 
-    PointObservation* newObservation = new PointObservation();
+    vtkLORPointObservation* newObservation = vtkLORPointObservation::New();
 	newObservation->FromXMLElement( noteElement );
     this->AddObservation( newObservation );
-
   }
 
 }
 
 
-vnl_matrix<double>* PointObservationBuffer
+vnl_matrix<double>* vtkLORPointObservationBuffer
 ::CovarianceMatrix( std::vector<double> centroid )
 {
   // Construct a buffer for the zero mean data; initialize covariance matrix
-  PointObservationBuffer* zeroMeanBuffer = new PointObservationBuffer();
-  vnl_matrix<double> *cov = new vnl_matrix<double>( PointObservation::SIZE, PointObservation::SIZE );
+  vtkLORPointObservationBuffer* zeroMeanBuffer = vtkLORPointObservationBuffer::New();
+  vnl_matrix<double> *cov = new vnl_matrix<double>( vtkLORPointObservation::SIZE, vtkLORPointObservation::SIZE );
   cov->fill( 0.0 );
 
   // Subtract the mean from each observation
   for ( int i = 0; i < this->Size(); i++ )
   {
-    PointObservation* newObservation = new PointObservation();
-    for( int d = 0; d < PointObservation::SIZE; d++ )
+    vtkLORPointObservation* newObservation = vtkLORPointObservation::New();
+    for( int d = 0; d < vtkLORPointObservation::SIZE; d++ )
 	{
 	  newObservation->Observation.push_back( this->GetObservation(i)->Observation.at(d) - centroid.at(d) );
 	}
@@ -252,9 +258,9 @@ vnl_matrix<double>* PointObservationBuffer
   }
 
   // Pick two dimensions, and find their covariance
-  for ( int d1 = 0; d1 < PointObservation::SIZE; d1++ )
+  for ( int d1 = 0; d1 < vtkLORPointObservation::SIZE; d1++ )
   {
-    for ( int d2 = 0; d2 < PointObservation::SIZE; d2++ )
+    for ( int d2 = 0; d2 < vtkLORPointObservation::SIZE; d2++ )
 	{
 	  // Iterate over all times
 	  for ( int i = 0; i < this->Size(); i++ )
@@ -271,19 +277,19 @@ vnl_matrix<double>* PointObservationBuffer
 }
 
 
-std::vector<double> PointObservationBuffer
+std::vector<double> vtkLORPointObservationBuffer
 ::CalculateCentroid()
 {
   // Calculate the centroid
-  std::vector<double> centroid( PointObservation::SIZE, 0.0 );
+  std::vector<double> centroid( vtkLORPointObservation::SIZE, 0.0 );
   for ( int i = 0; i < this->Size(); i++ )
   {
-	  for ( int d = 0; d < PointObservation::SIZE; d++ )
+	  for ( int d = 0; d < vtkLORPointObservation::SIZE; d++ )
 	{
       centroid.at(d) = centroid.at(d) + this->GetObservation(i)->Observation.at(d);
 	}
   }
-  for ( int d = 0; d < PointObservation::SIZE; d++ )
+  for ( int d = 0; d < vtkLORPointObservation::SIZE; d++ )
   {
     centroid.at(d) = centroid.at(d) / this->Size();
   }
@@ -292,24 +298,24 @@ std::vector<double> PointObservationBuffer
 }
 
 
-std::vector<PointObservationBuffer*> PointObservationBuffer
+std::vector<vtkLORPointObservationBuffer*> vtkLORPointObservationBuffer
 ::ExtractLinearObjects( int collectionFrames, double extractionThreshold, std::vector<int>* dof )
 {
 
   // First, let us identify the segmentation points and the associated DOFs, then we can divide up the points
   int TEST_INTERVAL = 21;
 
-  PointObservationBuffer* eigenBuffer = new PointObservationBuffer(); // Note: 1 < 2 < 3
+  vtkLORPointObservationBuffer* eigenBuffer = vtkLORPointObservationBuffer::New(); // Note: 1 < 2 < 3
   int currStartIndex, currEndIndex;
   bool collecting = false;
 
-  std::vector<PointObservationBuffer*> linearObjects;
+  std::vector<vtkLORPointObservationBuffer*> linearObjects;
 
   // Note: i is the start of the interval over which we will exam for linearity
   for ( int i = 0; i < this->Size() - TEST_INTERVAL; i++ )
   {
     // Create a smaller point observation buffer to work with at each iteration with the points of interest
-    PointObservationBuffer* tempBuffer = new PointObservationBuffer();
+    vtkLORPointObservationBuffer* tempBuffer = vtkLORPointObservationBuffer::New();
     for ( int j = i; j < i + TEST_INTERVAL; j++ )
 	{
       tempBuffer->AddObservation( this->GetObservation(j) );
@@ -320,8 +326,8 @@ std::vector<PointObservationBuffer*> PointObservationBuffer
     vnl_matrix<double>* cov = tempBuffer->CovarianceMatrix( centroid );
 
     //Calculate the eigenvectors of the covariance matrix
-    vnl_matrix<double> eigenvectors( PointObservation::SIZE, PointObservation::SIZE, 0.0 );
-    vnl_vector<double> eigenvalues( PointObservation::SIZE, 0.0 );
+    vnl_matrix<double> eigenvectors( vtkLORPointObservation::SIZE, vtkLORPointObservation::SIZE, 0.0 );
+    vnl_vector<double> eigenvalues( vtkLORPointObservation::SIZE, 0.0 );
     vnl_symmetric_eigensystem_compute( *cov, eigenvectors, eigenvalues );
     // Note: eigenvectors are ordered in increasing eigenvalue ( 0 = smallest, end = biggest )
 
@@ -329,7 +335,7 @@ std::vector<PointObservationBuffer*> PointObservationBuffer
 	eigen.at(0) = eigenvalues.get( 0 );
 	eigen.at(1) = eigenvalues.get( 1 );
 	eigen.at(2) = eigenvalues.get( 2 );
-	eigenBuffer->AddObservation( new PointObservation( eigen ) );
+    eigenBuffer->AddObservation( vtkLORPointObservation::New( eigen ) );
 
 
 	if ( ! collecting )
@@ -354,7 +360,7 @@ std::vector<PointObservationBuffer*> PointObservationBuffer
 
 	
 	// Now search for the largest interval of points which has the fewest DOF and satisfies the minimum interval
-	for ( int e = PointObservation::SIZE - 1; e >= 0; e-- )
+	for ( int e = vtkLORPointObservation::SIZE - 1; e >= 0; e-- )
 	{
 	  // Find the intervals where the eigenvalue is less than the threshold
 	  std::vector<int> dofInterval;
@@ -387,14 +393,14 @@ std::vector<PointObservationBuffer*> PointObservationBuffer
 	  }
 
 	  // Otherwise, this is a collected linear object
-	  PointObservationBuffer* foundBuffer = new PointObservationBuffer();
+      vtkLORPointObservationBuffer* foundBuffer = vtkLORPointObservationBuffer::New();
 	  for ( int j = dofInterval.at(maxIntervalIndex); j < dofInterval.at( maxIntervalIndex + 1 ); j++ )
 	  {
         foundBuffer->AddObservation( this->GetObservation( j + TEST_INTERVAL ) );
 	  }
 
       linearObjects.push_back( foundBuffer );
-	  dof->push_back( PointObservation::SIZE - 1 - e );
+	  dof->push_back( vtkLORPointObservation::SIZE - 1 - e );
 	  break;
 
     }

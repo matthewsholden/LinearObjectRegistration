@@ -1,35 +1,39 @@
 
-#include "Point.h"
+#include "vtkLORPoint.h"
 
-Point
-::Point()
+vtkStandardNewMacro( vtkLORPoint );
+
+
+vtkLORPoint* vtkLORPoint
+::New( std::vector<double> newBasePoint )
+{
+  vtkLORPoint* newPoint = vtkLORPoint::New();
+  newPoint->BasePoint = newBasePoint;
+  return newPoint;
+}
+
+
+vtkLORPoint
+::vtkLORPoint()
 {
   this->Type = "Point";
 }
 
 
-Point
-::Point( std::vector<double> newBasePoint )
-{
-  this->Type = "Point";
-  this->BasePoint = newBasePoint;
-}
-
-
-Point
-::~Point()
+vtkLORPoint
+::~vtkLORPoint()
 {
 }
 
 
-std::vector<double> Point
+std::vector<double> vtkLORPoint
 ::ProjectVector( std::vector<double> vector )
 {
   return this->BasePoint;
 }
 
 
-void Point
+void vtkLORPoint
 ::Translate( std::vector<double> vector )
 {
   for ( int i = 0; i < vector.size(); i++ )
@@ -39,7 +43,7 @@ void Point
 }
 
 
-std::string Point
+std::string vtkLORPoint
 ::ToXMLString()
 {
   std::stringstream xmlstring;
@@ -53,7 +57,7 @@ std::string Point
 }
 
 
-void Point
+void vtkLORPoint
 ::FromXMLElement( vtkXMLDataElement* element )
 {
 

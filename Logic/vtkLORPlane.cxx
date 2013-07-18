@@ -1,32 +1,36 @@
 
-#include "Plane.h"
+#include "vtkLORPlane.h"
 
-Plane
-::Plane()
+vtkStandardNewMacro( vtkLORPlane );
+
+
+vtkLORPlane* vtkLORPlane
+::New( std::vector<double> newBasePoint, std::vector<double> newEndPoint1, std::vector<double> newEndPoint2 )
+{
+  vtkLORPlane* newPlane = vtkLORPlane::New();
+  newPlane->BasePoint = newBasePoint;
+  newPlane->EndPoint1 = newEndPoint1;
+  newPlane->EndPoint2 = newEndPoint2;
+  return newPlane;
+}
+
+
+vtkLORPlane
+::vtkLORPlane()
 {
   this->Type = "Plane";
 }
 
 
-Plane
-::Plane( std::vector<double> newBasePoint, std::vector<double> newEndPoint1, std::vector<double> newEndPoint2 )
-{
-  this->Type = "Plane";
-  this->BasePoint = newBasePoint;
-  this->EndPoint1 = newEndPoint1;
-  this->EndPoint2 = newEndPoint2;
-}
-
-
-Plane
-::~Plane()
+vtkLORPlane
+::~vtkLORPlane()
 {
   this->EndPoint1.clear();
   this->EndPoint2.clear();
 }
 
 
-std::vector<double> Plane
+std::vector<double> vtkLORPlane
 ::GetNormal()
 {
   std::vector<double> vector = Cross( Subtract( this->EndPoint1, this->BasePoint ), Subtract( this->EndPoint2, this->BasePoint ) );
@@ -35,7 +39,7 @@ std::vector<double> Plane
 }
 
 
-std::vector<double> Plane
+std::vector<double> vtkLORPlane
 ::ProjectVector( std::vector<double> vector )
 {
   std::vector<double> outVec = Subtract( vector, this->BasePoint );
@@ -43,7 +47,7 @@ std::vector<double> Plane
 }
 
 
-void Plane
+void vtkLORPlane
 ::Translate( std::vector<double> vector )
 {
   for ( int i = 0; i < vector.size(); i++ )
@@ -55,7 +59,7 @@ void Plane
 }
 
 
-std::string Plane
+std::string vtkLORPlane
 ::ToXMLString()
 {
   std::stringstream xmlstring;
@@ -71,7 +75,7 @@ std::string Plane
 }
 
 
-void Plane
+void vtkLORPlane
 ::FromXMLElement( vtkXMLDataElement* element )
 {
 

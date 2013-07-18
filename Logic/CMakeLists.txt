@@ -10,22 +10,22 @@ set(${KIT}_INCLUDE_DIRECTORIES
 set(${KIT}_SRCS
   vtkSlicer${MODULE_NAME}Logic.cxx
   vtkSlicer${MODULE_NAME}Logic.h
-  LinearObject.cxx
-  LinearObject.h
-  Reference.cxx
-  Reference.h
-  Point.cxx
-  Point.h
-  Line.cxx
-  Line.h
-  Plane.cxx
-  Plane.h
-  LinearObjectBuffer.cxx
-  LinearObjectBuffer.h
-  PointObservation.cxx
-  PointObservation.h
-  PointObservationBuffer.cxx
-  PointObservationBuffer.h
+  vtkLORLinearObject.cxx
+  vtkLORLinearObject.h
+  vtkLORReference.cxx
+  vtkLORReference.h
+  vtkLORPoint.cxx
+  vtkLORPoint.h
+  vtkLORLine.cxx
+  vtkLORLine.h
+  vtkLORPlane.cxx
+  vtkLORPlane.h
+  vtkLORLinearObjectBuffer.cxx
+  vtkLORLinearObjectBuffer.h
+  vtkLORPointObservation.cxx
+  vtkLORPointObservation.h
+  vtkLORPointObservationBuffer.cxx
+  vtkLORPointObservationBuffer.h
   )
 
 set(${KIT}_TARGET_LIBRARIES

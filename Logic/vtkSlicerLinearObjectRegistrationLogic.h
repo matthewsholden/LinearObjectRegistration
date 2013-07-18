@@ -8,40 +8,50 @@
 #ifndef __vtkSlicerLinearObjectRegistrationLogic_h
 #define __vtkSlicerLinearObjectRegistrationLogic_h
 
-#include "LinearObject.h"
-#include "LinearObjectBuffer.h"
-#include "Point.h"
-#include "Line.h"
-#include "Plane.h"
-#include "Reference.h"
-#include "PointObservation.h"
-#include "PointObservationBuffer.h"
 
+// Standard includes
+#include <string>
+#include <sstream>
+#include <vector>
+#include <cmath>
+#include <ctime>
+
+// VTK includes
+#include "vtkObject.h"
+#include "vtkObjectBase.h"
+#include "vtkObjectFactory.h"
+#include "vtkXMLDataElement.h"
+#include "vtkSmartPointer.h"
+#include "vtkXMLDataParser.h"
+#include "vtkNew.h"
+#include "vtkIntArray.h"
+#include "vtkMatrix4x4.h"
+
+// VNL includes
+#include "vnl/vnl_matrix.h"
 
 // Slicer includes
 #include "vtkSlicerModuleLogic.h"
-
-// MRML includes
-#include "vtkMRML.h"
 #include "vtkMRMLLinearTransformNode.h"
 #include "vtkMRMLModelNode.h"
 
-// STD includes
-#include <cstdlib>
-
-#include "vtkSmartPointer.h"
-#include "vtkXMLDataParser.h"
-
+// LinearObjectRegistration includes
+#include "vtkLORLinearObject.h"
+#include "vtkLORLinearObjectBuffer.h"
+#include "vtkLORPoint.h"
+#include "vtkLORLine.h"
+#include "vtkLORPlane.h"
+#include "vtkLORReference.h"
+#include "vtkLORPointObservation.h"
+#include "vtkLORPointObservationBuffer.h"
 #include "vtkSlicerLinearObjectRegistrationModuleLogicExport.h"
 
-#include "vnl/vnl_matrix.h"
 
 
 
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_LOGIC_EXPORT
-vtkSlicerLinearObjectRegistrationLogic
- : public vtkSlicerModuleLogic
+vtkSlicerLinearObjectRegistrationLogic : public vtkSlicerModuleLogic
 {
 
 // This is general logic ----------------------------------------------------------------
@@ -82,8 +92,8 @@ public:
   void Register( double matchingThreshold );
   void SetRegistrationTransformNode( vtkMRMLLinearTransformNode* newRegistrationTransformNode );
 
-  vnl_matrix<double>* LinearObjectICP( LinearObjectBuffer* pointBuffer, LinearObjectBuffer* lineBuffer, LinearObjectBuffer* planeBuffer,
-				  std::vector<PointObservationBuffer*> pointObservations, std::vector<PointObservationBuffer*> lineObservations, std::vector<PointObservationBuffer*> planeObservations,
+  vnl_matrix<double>* LinearObjectICP( vtkLORLinearObjectBuffer* pointBuffer, vtkLORLinearObjectBuffer* lineBuffer, vtkLORLinearObjectBuffer* planeBuffer,
+				  std::vector<vtkLORPointObservationBuffer*> pointObservations, std::vector<vtkLORPointObservationBuffer*> lineObservations, std::vector<vtkLORPointObservationBuffer*> planeObservations,
 				  vnl_matrix<double>* initialRotation );
 
   double GetError();
@@ -92,24 +102,24 @@ public:
 
 private:
 
-  LinearObjectBuffer* GeometryBuffer;
-  LinearObjectBuffer* GeometryPointBuffer;
-  LinearObjectBuffer* GeometryLineBuffer;
-  LinearObjectBuffer* GeometryPlaneBuffer;
-  LinearObjectBuffer* GeometryReferenceBuffer;
+  vtkLORLinearObjectBuffer* GeometryBuffer;
+  vtkLORLinearObjectBuffer* GeometryPointBuffer;
+  vtkLORLinearObjectBuffer* GeometryLineBuffer;
+  vtkLORLinearObjectBuffer* GeometryPlaneBuffer;
+  vtkLORLinearObjectBuffer* GeometryReferenceBuffer;
 
   void ResetGeometry();
 
-  LinearObjectBuffer* RecordPointBuffer;
-  LinearObjectBuffer* RecordLineBuffer;
-  LinearObjectBuffer* RecordPlaneBuffer;
-  LinearObjectBuffer* RecordReferenceBuffer;
+  vtkLORLinearObjectBuffer* RecordPointBuffer;
+  vtkLORLinearObjectBuffer* RecordLineBuffer;
+  vtkLORLinearObjectBuffer* RecordPlaneBuffer;
+  vtkLORLinearObjectBuffer* RecordReferenceBuffer;
 
-  std::vector<PointObservationBuffer*> ReferencePoints;
-  std::vector<PointObservationBuffer*> LinearObjectPoints;
-  std::vector<PointObservationBuffer*> PointPoints;
-  std::vector<PointObservationBuffer*> LinePoints;
-  std::vector<PointObservationBuffer*> PlanePoints;
+  std::vector<vtkLORPointObservationBuffer*> ReferencePoints;
+  std::vector<vtkLORPointObservationBuffer*> LinearObjectPoints;
+  std::vector<vtkLORPointObservationBuffer*> PointPoints;
+  std::vector<vtkLORPointObservationBuffer*> LinePoints;
+  std::vector<vtkLORPointObservationBuffer*> PlanePoints;
 
   void ResetRecord();
 

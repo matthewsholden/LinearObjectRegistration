@@ -1,30 +1,34 @@
 
-#include "Line.h"
+#include "vtkLORLine.h"
 
-Line
-::Line()
+vtkStandardNewMacro( vtkLORLine )
+
+
+vtkLORLine* vtkLORLine
+::New( std::vector<double> newBasePoint, std::vector<double> newEndPoint )
+{
+  vtkLORLine* newLine = vtkLORLine::New();
+  newLine->BasePoint = newBasePoint;
+  newLine->EndPoint = newEndPoint;
+  return newLine;
+}
+
+
+vtkLORLine
+::vtkLORLine()
 {
   this->Type = "Line";
 }
 
 
-Line
-::Line( std::vector<double> newBasePoint, std::vector<double> newEndPoint )
-{
-  this->Type = "Line";
-  this->BasePoint = newBasePoint;
-  this->EndPoint = newEndPoint;
-}
-
-
-Line
-::~Line()
+vtkLORLine
+::~vtkLORLine()
 {
   this->EndPoint.clear();
 }
 
 
-std::vector<double> Line
+std::vector<double> vtkLORLine
 ::GetDirection()
 {
   std::vector<double> vector = Subtract( this->EndPoint, this->BasePoint );
@@ -32,7 +36,7 @@ std::vector<double> Line
 }
 
 
-std::vector<double> Line
+std::vector<double> vtkLORLine
 ::ProjectVector( std::vector<double> vector )
 {
   std::vector<double> outVec = Subtract( vector, this->BasePoint );
@@ -40,7 +44,7 @@ std::vector<double> Line
 }
 
 
-void Line
+void vtkLORLine
 ::Translate( std::vector<double> vector )
 {
   for ( int i = 0; i < vector.size(); i++ )
@@ -51,7 +55,7 @@ void Line
 }
 
 
-std::vector<double> Line
+std::vector<double> vtkLORLine
 ::GetOrthogonalNormal1()
 {
   // Find the two axis unit vectors least parallel with the direction vector
@@ -83,7 +87,7 @@ std::vector<double> Line
 }
 
 
-std::vector<double> Line
+std::vector<double> vtkLORLine
 ::GetOrthogonalNormal2()
 {
   // Find the two axis unit vectors least parallel with the direction vector
@@ -115,7 +119,7 @@ std::vector<double> Line
 }
 
 
-std::string Line
+std::string vtkLORLine
 ::ToXMLString()
 {
   std::stringstream xmlstring;
@@ -130,7 +134,7 @@ std::string Line
 }
 
 
-void Line
+void vtkLORLine
 ::FromXMLElement( vtkXMLDataElement* element )
 {
 

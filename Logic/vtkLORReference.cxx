@@ -1,35 +1,39 @@
 
-#include "Reference.h"
+#include "vtkLORReference.h"
 
-Reference
-::Reference()
+vtkStandardNewMacro( vtkLORReference );
+
+
+vtkLORReference* vtkLORReference
+::New( std::vector<double> newBasePoint )
+{
+  vtkLORReference* newReference = vtkLORReference::New();
+  newReference->BasePoint = newBasePoint;
+  return newReference;
+}
+
+
+vtkLORReference
+::vtkLORReference()
 {
   this->Type = "Reference";
 }
 
 
-Reference
-::Reference( std::vector<double> newBasePoint )
-{
-  this->Type = "Reference";
-  this->BasePoint = newBasePoint;
-}
-
-
-Reference
-::~Reference()
+vtkLORReference
+::~vtkLORReference()
 {
 }
 
 
-std::vector<double> Reference
+std::vector<double> vtkLORReference
 ::ProjectVector( std::vector<double> vector )
 {
   return this->BasePoint;
 }
 
 
-void Reference
+void vtkLORReference
 ::Translate( std::vector<double> vector )
 {
   for ( int i = 0; i < vector.size(); i++ )
@@ -39,7 +43,7 @@ void Reference
 }
 
 
-std::string Reference
+std::string vtkLORReference
 ::ToXMLString()
 {
   std::stringstream xmlstring;
@@ -53,7 +57,7 @@ std::string Reference
 }
 
 
-void Reference
+void vtkLORReference
 ::FromXMLElement( vtkXMLDataElement* element )
 {
 

@@ -2,33 +2,6 @@
 // LinearObjectRegistration Logic includes
 #include "vtkSlicerLinearObjectRegistrationLogic.h"
 
-// MRML includes
-#include "vtkMRMLLinearTransformNode.h"
-#include "vtkMRMLModelNode.h"
-#include "vtkMRMLTransformNode.h"
-
-// VTK includes
-#include <vtkDataArray.h>
-#include <vtkIntArray.h>
-#include <vtkMath.h>
-#include <vtkMatrix4x4.h>
-#include <vtkModifiedBSPTree.h>
-#include <vtkNew.h>
-#include <vtkPointData.h>
-#include <vtkPoints.h>
-#include <vtkPolyData.h>
-#include <vtkSelectEnclosedPoints.h>
-#include <vtkSmartPointer.h>
-
-// STD includes
-#include <cassert>
-#include <ctime>
-#include <fstream>
-#include <iostream>
-#include <limits>
-#include <sstream>
-
-
 
 void PrintToFile( std::string str )
 {
@@ -41,12 +14,7 @@ void PrintToFile( std::string str )
 
 //----------------------------------------------------------------------------
 
-
-
 vtkStandardNewMacro( vtkSlicerLinearObjectRegistrationLogic );
-
-
-
 
 
 // Constructor ---------------------------------------------------------------------------
@@ -54,16 +22,16 @@ vtkStandardNewMacro( vtkSlicerLinearObjectRegistrationLogic );
 vtkSlicerLinearObjectRegistrationLogic
 ::vtkSlicerLinearObjectRegistrationLogic()
 {
-  this->GeometryBuffer = new LinearObjectBuffer();
-  this->GeometryPointBuffer = new LinearObjectBuffer();
-  this->GeometryLineBuffer = new LinearObjectBuffer();
-  this->GeometryPlaneBuffer = new LinearObjectBuffer();
-  this->GeometryReferenceBuffer = new LinearObjectBuffer();
+  this->GeometryBuffer = vtkLORLinearObjectBuffer::New();
+  this->GeometryPointBuffer = vtkLORLinearObjectBuffer::New();
+  this->GeometryLineBuffer = vtkLORLinearObjectBuffer::New();
+  this->GeometryPlaneBuffer = vtkLORLinearObjectBuffer::New();
+  this->GeometryReferenceBuffer = vtkLORLinearObjectBuffer::New();
 
-  this->RecordPointBuffer = new LinearObjectBuffer();
-  this->RecordLineBuffer = new LinearObjectBuffer();
-  this->RecordPlaneBuffer = new LinearObjectBuffer();
-  this->RecordReferenceBuffer = new LinearObjectBuffer();
+  this->RecordPointBuffer = vtkLORLinearObjectBuffer::New();
+  this->RecordLineBuffer = vtkLORLinearObjectBuffer::New();
+  this->RecordPlaneBuffer =  vtkLORLinearObjectBuffer::New();
+  this->RecordReferenceBuffer = vtkLORLinearObjectBuffer::New();
 
   this->RegistrationTransformNode = NULL;
   this->ErrorRMS = 0.0;
@@ -74,12 +42,13 @@ vtkSlicerLinearObjectRegistrationLogic
 vtkSlicerLinearObjectRegistrationLogic::
 ~vtkSlicerLinearObjectRegistrationLogic()
 {
-  delete this->GeometryBuffer;
+  // Do not delete from the specific buffers - this general buffer has references to all the geometry linear objects
+  this->GeometryBuffer->Delete();
 
-  delete this->RecordPointBuffer;
-  delete this->RecordLineBuffer;
-  delete this->RecordPlaneBuffer;
-  delete this->RecordReferenceBuffer;
+  this->RecordPointBuffer->Delete();
+  this->RecordLineBuffer->Delete();
+  this->RecordPlaneBuffer->Delete();
+  this->RecordReferenceBuffer->Delete();
 }
 
 
@@ -158,13 +127,13 @@ vtkSlicerLinearObjectRegistrationLogic
 void vtkSlicerLinearObjectRegistrationLogic
 ::ResetGeometry()
 {
-  delete this->GeometryBuffer; // This should delete everything
+  this->GeometryBuffer->Delete(); // This should delete everything
 
-  this->GeometryBuffer = new LinearObjectBuffer();
-  this->GeometryPointBuffer = new LinearObjectBuffer();
-  this->GeometryLineBuffer = new LinearObjectBuffer();
-  this->GeometryPlaneBuffer = new LinearObjectBuffer();
-  this->GeometryReferenceBuffer = new LinearObjectBuffer();
+  this->GeometryBuffer = vtkLORLinearObjectBuffer::New();
+  this->GeometryPointBuffer = vtkLORLinearObjectBuffer::New();
+  this->GeometryLineBuffer = vtkLORLinearObjectBuffer::New();
+  this->GeometryPlaneBuffer = vtkLORLinearObjectBuffer::New();
+  this->GeometryReferenceBuffer = vtkLORLinearObjectBuffer::New();
 }
 
 
@@ -180,7 +149,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   parser->Parse();
   vtkXMLDataElement* rootElement = parser->GetRootElement();
 
-  GeometryBuffer->FromXMLElement( rootElement );
+  this->GeometryBuffer->FromXMLElement( rootElement );
 
   // Sort the linear objects into their appropriate classes
   for ( int i = 0; i < GeometryBuffer->Size(); i++ )
@@ -210,17 +179,17 @@ void vtkSlicerLinearObjectRegistrationLogic
 void vtkSlicerLinearObjectRegistrationLogic
 ::ResetRecord()
 {
-  delete this->RecordPointBuffer;
-  delete this->RecordLineBuffer;
-  delete this->RecordPlaneBuffer;
-  delete this->RecordReferenceBuffer;
+  this->RecordPointBuffer->Delete();
+  this->RecordLineBuffer->Delete();
+  this->RecordPlaneBuffer->Delete();
+  this->RecordReferenceBuffer->Delete();
 
-  this->RecordPointBuffer = new LinearObjectBuffer();
-  this->RecordLineBuffer = new LinearObjectBuffer();
-  this->RecordPlaneBuffer = new LinearObjectBuffer();
-  this->RecordReferenceBuffer = new LinearObjectBuffer();
+  this->RecordPointBuffer = vtkLORLinearObjectBuffer::New();
+  this->RecordLineBuffer = vtkLORLinearObjectBuffer::New();
+  this->RecordPlaneBuffer = vtkLORLinearObjectBuffer::New();
+  this->RecordReferenceBuffer = vtkLORLinearObjectBuffer::New();
 
-  // Clear should call the destructor on each of the vector's elements
+  // TODO: Destruct each object in the vector
   this->LinearObjectPoints.clear();
   this->ReferencePoints.clear();
   this->PointPoints.clear();
@@ -244,16 +213,16 @@ void vtkSlicerLinearObjectRegistrationLogic
 
   int numElements = rootElement->GetNumberOfNestedElements();  // Number of saved records (including transforms and messages).
 
-  PointObservationBuffer* CollectedPoints = new PointObservationBuffer();
+  vtkLORPointObservationBuffer* CollectedPoints = vtkLORPointObservationBuffer::New();
 
   vtkXMLDataElement* currElement = NULL;
   vtkXMLDataElement* prevElement = rootElement->GetNestedElement( 0 ); // We don't really need the first element (or care)
-  
+
   for ( int i = 0; i < numElements; i++ )
   {
     vtkXMLDataElement* currElement = rootElement->GetNestedElement( i );
 
-	PointObservation* currentObservation = new PointObservation();
+    vtkLORPointObservation* currentObservation = vtkLORPointObservation::New();
 	if ( currentObservation->FromXMLElement( currElement, prevElement ) )
 	{
 	  CollectedPoints->AddObservation( currentObservation );
@@ -263,14 +232,14 @@ void vtkSlicerLinearObjectRegistrationLogic
   }
 
   std::vector<int>* dof = new std::vector<int>();
-  LinearObjectPoints = CollectedPoints->ExtractLinearObjects( collectionFrames, extractionThreshold, dof );
+  this->LinearObjectPoints = CollectedPoints->ExtractLinearObjects( collectionFrames, extractionThreshold, dof );
 
   // Sort the linear objects into their appropriate classes
-  for ( int i = 0; i < LinearObjectPoints.size(); i++ )
+  for ( int i = 0; i < this->LinearObjectPoints.size(); i++ )
   {
 
     // TODO: Calculate the noise properly
-    LinearObject* currentObject = LinearObjectPoints.at(i)->LeastSquaresLinearObject( dof->at(i) );
+    vtkLORLinearObject* currentObject = LinearObjectPoints.at(i)->LeastSquaresLinearObject( dof->at(i) );
 
 	// May be what we thought was linear actually isn't linear
 	if ( currentObject == NULL )
@@ -332,8 +301,8 @@ void vtkSlicerLinearObjectRegistrationLogic
 ::Register( double matchingThreshold )
 {
   // Grab the collected references
-  LinearObjectBuffer* tempPointBuffer = new LinearObjectBuffer();
-  std::vector<PointObservationBuffer*> tempPointPoints;
+  vtkLORLinearObjectBuffer* tempPointBuffer = vtkLORLinearObjectBuffer::New();
+  std::vector<vtkLORPointObservationBuffer*> tempPointPoints;
   for ( int i = 0; i < this->RecordPointBuffer->Size(); i++ )
   {
     if ( i < this->GeometryReferenceBuffer->Size() )
@@ -374,12 +343,12 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
   // Calculate the centroids
-  LinearObjectBuffer* GeometryCentroidBuffer = new LinearObjectBuffer();
+  vtkLORLinearObjectBuffer* GeometryCentroidBuffer = vtkLORLinearObjectBuffer::New();
   GeometryCentroidBuffer->Concatenate( this->GeometryPointBuffer );
   GeometryCentroidBuffer->Concatenate( this->GeometryLineBuffer );
   GeometryCentroidBuffer->Concatenate( this->GeometryPlaneBuffer );
 
-  LinearObjectBuffer* RecordCentroidBuffer = new LinearObjectBuffer();
+  vtkLORLinearObjectBuffer* RecordCentroidBuffer = vtkLORLinearObjectBuffer::New();
   RecordCentroidBuffer->Concatenate( this->RecordPointBuffer );
   RecordCentroidBuffer->Concatenate( this->RecordLineBuffer );
   RecordCentroidBuffer->Concatenate( this->RecordPlaneBuffer );
@@ -398,10 +367,10 @@ void vtkSlicerLinearObjectRegistrationLogic
   }
 
   std::vector<double> NegativeGeometryCentroid( GeometryCentroid.size(), 0.0 );
-  NegativeGeometryCentroid = LinearObject::Subtract( NegativeGeometryCentroid, GeometryCentroid );
+  NegativeGeometryCentroid = Subtract( NegativeGeometryCentroid, GeometryCentroid );
 
   std::vector<double> NegativeRecordCentroid( RecordCentroid.size(), 0.0 );
-  NegativeRecordCentroid = LinearObject::Subtract( NegativeRecordCentroid, RecordCentroid );
+  NegativeRecordCentroid = Subtract( NegativeRecordCentroid, RecordCentroid );
 
 
   // Now, translate everything by the negative centroid
@@ -415,15 +384,15 @@ void vtkSlicerLinearObjectRegistrationLogic
   this->RecordPlaneBuffer->Translate( NegativeRecordCentroid );
   this->RecordReferenceBuffer->Translate( NegativeRecordCentroid );
 
-  for ( int i = 0; i < PointPoints.size(); i++ )
+  for ( int i = 0; i < this->PointPoints.size(); i++ )
   {
     this->PointPoints.at(i)->Translate( NegativeRecordCentroid );
   }
-  for ( int i = 0; i < LinePoints.size(); i++ )
+  for ( int i = 0; i < this->LinePoints.size(); i++ )
   {
     this->LinePoints.at(i)->Translate( NegativeRecordCentroid );
   }
-  for ( int i = 0; i < PlanePoints.size(); i++ )
+  for ( int i = 0; i < this->PlanePoints.size(); i++ )
   {
     this->PlanePoints.at(i)->Translate( NegativeRecordCentroid );
   }
@@ -432,32 +401,32 @@ void vtkSlicerLinearObjectRegistrationLogic
   // Next, add the base points to the final point observation vectors
   std::vector<double> BlankVector( GeometryCentroid.size(), 0.0 );
 
-  PointObservationBuffer* GeometryPoints = new PointObservationBuffer();
+  vtkLORPointObservationBuffer* GeometryPoints = vtkLORPointObservationBuffer::New();
   for ( int i = 0; i < this->GeometryPointBuffer->Size(); i++ )
   {
-    GeometryPoints->AddObservation( new PointObservation( this->GeometryPointBuffer->GetLinearObject(i)->ProjectVector( BlankVector ) ) );
+    GeometryPoints->AddObservation( vtkLORPointObservation::New( this->GeometryPointBuffer->GetLinearObject(i)->ProjectVector( BlankVector ) ) );
   }
   for ( int i = 0; i < this->GeometryLineBuffer->Size(); i++ )
   {
-    GeometryPoints->AddObservation( new PointObservation( this->GeometryLineBuffer->GetLinearObject(i)->ProjectVector( BlankVector ) ) );
+    GeometryPoints->AddObservation( vtkLORPointObservation::New( this->GeometryLineBuffer->GetLinearObject(i)->ProjectVector( BlankVector ) ) );
   }
   for ( int i = 0; i < this->GeometryPlaneBuffer->Size(); i++ )
   {
-    GeometryPoints->AddObservation( new PointObservation( this->GeometryPlaneBuffer->GetLinearObject(i)->ProjectVector( BlankVector ) ) );
+    GeometryPoints->AddObservation( vtkLORPointObservation::New( this->GeometryPlaneBuffer->GetLinearObject(i)->ProjectVector( BlankVector ) ) );
   }
 
-  PointObservationBuffer* RecordPoints = new PointObservationBuffer();
+  vtkLORPointObservationBuffer* RecordPoints = vtkLORPointObservationBuffer::New();
   for ( int i = 0; i < this->RecordPointBuffer->Size(); i++ )
   {
-    RecordPoints->AddObservation( new PointObservation( this->RecordPointBuffer->GetLinearObject(i)->ProjectVector( BlankVector ) ) );
+    RecordPoints->AddObservation( vtkLORPointObservation::New( this->RecordPointBuffer->GetLinearObject(i)->ProjectVector( BlankVector ) ) );
   }
   for ( int i = 0; i < this->RecordLineBuffer->Size(); i++ )
   {
-    RecordPoints->AddObservation( new PointObservation( this->RecordLineBuffer->GetLinearObject(i)->ProjectVector( BlankVector ) ) );
+    RecordPoints->AddObservation( vtkLORPointObservation::New( this->RecordLineBuffer->GetLinearObject(i)->ProjectVector( BlankVector ) ) );
   }
   for ( int i = 0; i < this->RecordPlaneBuffer->Size(); i++ )
   {
-    RecordPoints->AddObservation( new PointObservation( this->RecordPlaneBuffer->GetLinearObject(i)->ProjectVector( BlankVector ) ) );
+    RecordPoints->AddObservation( vtkLORPointObservation::New( this->RecordPlaneBuffer->GetLinearObject(i)->ProjectVector( BlankVector ) ) );
   }
 
 
@@ -465,51 +434,51 @@ void vtkSlicerLinearObjectRegistrationLogic
   const int DIRECTION_SCALE = 100;
   for ( int i = 0; i < this->GeometryLineBuffer->Size(); i++ )
   {
-    Line* CurrentGeometryObject = (Line*) this->GeometryLineBuffer->GetLinearObject(i);
-    GeometryPoints->AddObservation( new PointObservation( LinearObject::Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetDirection() ) ) );
+    vtkLORLine* CurrentGeometryObject = (vtkLORLine*) this->GeometryLineBuffer->GetLinearObject(i);
+    GeometryPoints->AddObservation( vtkLORPointObservation::New( Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetDirection() ) ) );
   }
   for ( int i = 0; i < this->GeometryPlaneBuffer->Size(); i++ )
   {
-    Plane* CurrentGeometryObject = (Plane*) this->GeometryPlaneBuffer->GetLinearObject(i);
-    GeometryPoints->AddObservation( new PointObservation( LinearObject::Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetNormal() ) ) );
+    vtkLORPlane* CurrentGeometryObject = (vtkLORPlane*) this->GeometryPlaneBuffer->GetLinearObject(i);
+    GeometryPoints->AddObservation( vtkLORPointObservation::New( Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetNormal() ) ) );
   }
 
   // TODO: Fix memory leaks
   for ( int i = 0; i < this->RecordLineBuffer->Size(); i++ )
   {
-	LinearObjectBuffer* TempRecordBuffer = new LinearObjectBuffer();
-    LinearObjectBuffer* TempGeometryBuffer = new LinearObjectBuffer();
+    vtkLORLinearObjectBuffer* TempRecordBuffer = vtkLORLinearObjectBuffer::New();
+    vtkLORLinearObjectBuffer* TempGeometryBuffer = vtkLORLinearObjectBuffer::New();
     
-	Line* CurrentRecordObject = (Line*) this->RecordLineBuffer->GetLinearObject(i);
-	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE, CurrentRecordObject->GetDirection() ) ) ) );
-	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Subtract( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE, CurrentRecordObject->GetDirection() ) ) ) );
+	vtkLORLine* CurrentRecordObject = (vtkLORLine*) this->RecordLineBuffer->GetLinearObject(i);
+    TempRecordBuffer->AddLinearObject( vtkLORPoint::New( Add( CurrentRecordObject->ProjectVector( BlankVector ), Multiply( DIRECTION_SCALE, CurrentRecordObject->GetDirection() ) ) ) );
+    TempRecordBuffer->AddLinearObject( vtkLORPoint::New( Subtract( CurrentRecordObject->ProjectVector( BlankVector ), Multiply( DIRECTION_SCALE, CurrentRecordObject->GetDirection() ) ) ) );
     TempRecordBuffer->CalculateSignature( this->RecordReferenceBuffer );
 
-	Line* CurrentGeometryObject = (Line*) this->GeometryLineBuffer->GetLinearObject(i);
-    TempGeometryBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentGeometryObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetDirection() ) ) ) );
+	vtkLORLine* CurrentGeometryObject = (vtkLORLine*) this->GeometryLineBuffer->GetLinearObject(i);
+    TempGeometryBuffer->AddLinearObject( vtkLORPoint::New( Add( CurrentGeometryObject->ProjectVector( BlankVector ), Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetDirection() ) ) ) );
     TempGeometryBuffer->CalculateSignature( this->GeometryReferenceBuffer );
 
 	TempRecordBuffer = TempGeometryBuffer->GetMatches( TempRecordBuffer, matchingThreshold );
 
-	RecordPoints->AddObservation( new PointObservation( LinearObject::Subtract( TempRecordBuffer->GetLinearObject(0)->BasePoint, CurrentRecordObject->ProjectVector( BlankVector ) ) ) );
+    RecordPoints->AddObservation( vtkLORPointObservation::New( Subtract( TempRecordBuffer->GetLinearObject(0)->BasePoint, CurrentRecordObject->ProjectVector( BlankVector ) ) ) );
   }
   for ( int i = 0; i < this->RecordPlaneBuffer->Size(); i++ )
   {
-	LinearObjectBuffer* TempRecordBuffer = new LinearObjectBuffer();
-    LinearObjectBuffer* TempGeometryBuffer = new LinearObjectBuffer();
+    vtkLORLinearObjectBuffer* TempRecordBuffer = vtkLORLinearObjectBuffer::New();
+    vtkLORLinearObjectBuffer* TempGeometryBuffer = vtkLORLinearObjectBuffer::New();
     
-	Plane* CurrentRecordObject = (Plane*) this->RecordPlaneBuffer->GetLinearObject(i);
-	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE,  CurrentRecordObject->GetNormal() ) ) ) );
-	TempRecordBuffer->AddLinearObject( new Point( LinearObject::Subtract( CurrentRecordObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE, CurrentRecordObject->GetNormal() ) ) ) );
+	vtkLORPlane* CurrentRecordObject = (vtkLORPlane*) this->RecordPlaneBuffer->GetLinearObject(i);
+    TempRecordBuffer->AddLinearObject( vtkLORPoint::New( Add( CurrentRecordObject->ProjectVector( BlankVector ), Multiply( DIRECTION_SCALE,  CurrentRecordObject->GetNormal() ) ) ) );
+    TempRecordBuffer->AddLinearObject( vtkLORPoint::New( Subtract( CurrentRecordObject->ProjectVector( BlankVector ), Multiply( DIRECTION_SCALE, CurrentRecordObject->GetNormal() ) ) ) );
     TempRecordBuffer->CalculateSignature( this->RecordReferenceBuffer );
 
-	Plane* CurrentGeometryObject = (Plane*) this->GeometryPlaneBuffer->GetLinearObject(i);
-    TempGeometryBuffer->AddLinearObject( new Point( LinearObject::Add( CurrentGeometryObject->ProjectVector( BlankVector ), LinearObject::Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetNormal() ) ) ) );
+	vtkLORPlane* CurrentGeometryObject = (vtkLORPlane*) this->GeometryPlaneBuffer->GetLinearObject(i);
+    TempGeometryBuffer->AddLinearObject( vtkLORPoint::New( Add( CurrentGeometryObject->ProjectVector( BlankVector ), Multiply( DIRECTION_SCALE, CurrentGeometryObject->GetNormal() ) ) ) );
     TempGeometryBuffer->CalculateSignature( this->GeometryReferenceBuffer );
 
 	TempRecordBuffer = TempGeometryBuffer->GetMatches( TempRecordBuffer, matchingThreshold );
 
-	RecordPoints->AddObservation( new PointObservation( LinearObject::Subtract( TempRecordBuffer->GetLinearObject(0)->BasePoint, CurrentRecordObject->ProjectVector( BlankVector ) ) ) );
+    RecordPoints->AddObservation( vtkLORPointObservation::New( Subtract( TempRecordBuffer->GetLinearObject(0)->BasePoint, CurrentRecordObject->ProjectVector( BlankVector ) ) ) );
   }
 
 
@@ -559,8 +528,8 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
-::LinearObjectICP( LinearObjectBuffer* pointBuffer, LinearObjectBuffer* lineBuffer, LinearObjectBuffer* planeBuffer,
-				  std::vector<PointObservationBuffer*> pointObservations, std::vector<PointObservationBuffer*> lineObservations, std::vector<PointObservationBuffer*> planeObservations,
+::LinearObjectICP( vtkLORLinearObjectBuffer* pointBuffer, vtkLORLinearObjectBuffer* lineBuffer, vtkLORLinearObjectBuffer* planeBuffer,
+				  std::vector<vtkLORPointObservationBuffer*> pointObservations, std::vector<vtkLORPointObservationBuffer*> lineObservations, std::vector<vtkLORPointObservationBuffer*> planeObservations,
 				  vnl_matrix<double>* initialRotation )
 {
 
@@ -571,8 +540,8 @@ vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
 
   while ( prevError < 0 || abs( currError - prevError ) < CONVERGENCE_THRESHOLD )
   {
-    PointObservationBuffer* GeometryPoints = new PointObservationBuffer();
-    PointObservationBuffer* RecordPoints = new PointObservationBuffer();
+    vtkLORPointObservationBuffer* GeometryPoints = vtkLORPointObservationBuffer::New();
+    vtkLORPointObservationBuffer* RecordPoints = vtkLORPointObservationBuffer::New();
 
 	prevError = currError;
 
@@ -585,10 +554,10 @@ vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
         RecordPoints->AddObservation( pointObservations.at(i)->GetObservation(j) );
 
 		// Rotate the observed point
-		PointObservation* rotPoint = new PointObservation( pointObservations.at(i)->GetObservation(j)->Observation );
+        vtkLORPointObservation* rotPoint = vtkLORPointObservation::New( pointObservations.at(i)->GetObservation(j)->Observation );
         rotPoint->Rotate( currRotation );
 
-		GeometryPoints->AddObservation( new PointObservation( pointBuffer->GetLinearObject(i)->ProjectVector( rotPoint->Observation ) ) );
+        GeometryPoints->AddObservation( vtkLORPointObservation::New( pointBuffer->GetLinearObject(i)->ProjectVector( rotPoint->Observation ) ) );
 
 	  }
 	}
@@ -601,10 +570,10 @@ vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
         RecordPoints->AddObservation( lineObservations.at(i)->GetObservation(j) );
 
 		// Rotate the observed point
-		PointObservation* rotPoint = new PointObservation( lineObservations.at(i)->GetObservation(j)->Observation );
+        vtkLORPointObservation* rotPoint = vtkLORPointObservation::New( lineObservations.at(i)->GetObservation(j)->Observation );
         rotPoint->Rotate( currRotation );
 
-		GeometryPoints->AddObservation( new PointObservation( lineBuffer->GetLinearObject(i)->ProjectVector( rotPoint->Observation ) ) );
+        GeometryPoints->AddObservation( vtkLORPointObservation::New( lineBuffer->GetLinearObject(i)->ProjectVector( rotPoint->Observation ) ) );
 
 	  }
 	}
@@ -617,10 +586,10 @@ vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
         RecordPoints->AddObservation( planeObservations.at(i)->GetObservation(j) );
 
 		// Rotate the observed point
-		PointObservation* rotPoint = new PointObservation( planeObservations.at(i)->GetObservation(j)->Observation );
+        vtkLORPointObservation* rotPoint = vtkLORPointObservation::New( planeObservations.at(i)->GetObservation(j)->Observation );
         rotPoint->Rotate( currRotation );
 
-		GeometryPoints->AddObservation( new PointObservation( planeBuffer->GetLinearObject(i)->ProjectVector( rotPoint->Observation ) ) );
+        GeometryPoints->AddObservation( vtkLORPointObservation::New( planeBuffer->GetLinearObject(i)->ProjectVector( rotPoint->Observation ) ) );
 
 	  }
 	}
@@ -632,10 +601,10 @@ vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
 	for ( int i = 0; i < GeometryPoints->Size(); i++ )
 	{
 	  // Rotate the observed point
-	  PointObservation* rotPoint = new PointObservation( RecordPoints->GetObservation(i)->Observation );
+      vtkLORPointObservation* rotPoint = vtkLORPointObservation::New( RecordPoints->GetObservation(i)->Observation );
       rotPoint->Rotate( currRotation );
 
-	  currError = currError + LinearObject::Distance( GeometryPoints->GetObservation(i)->Observation, rotPoint->Observation );
+	  currError = currError + Distance( GeometryPoints->GetObservation(i)->Observation, rotPoint->Observation );
 	}
 	currError = sqrt( currError / GeometryPoints->Size() );
 

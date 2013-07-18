@@ -1,32 +1,31 @@
 
-#include "LinearObject.h"
+#include "vtkLORLinearObject.h"
 
 
-LinearObject
-::LinearObject()
+vtkLORLinearObject
+::vtkLORLinearObject()
 {
   this->Name = "";
   this->Type = "LinearObject";
 }
 
 
-LinearObject
-::~LinearObject()
+vtkLORLinearObject
+::~vtkLORLinearObject()
 {
   this->BasePoint.clear();
   this->Signature.clear();
 }
 
 
-double LinearObject
+double vtkLORLinearObject
 ::DistanceToVector( std::vector<double> vector )
 {
   return Distance( vector, this->ProjectVector( vector ) );
 }
 
 
-double LinearObject
-::Distance( std::vector<double> v1, std::vector<double> v2 )
+double Distance( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != v2.size() )
   {
@@ -43,8 +42,7 @@ double LinearObject
 }
 
 
-double LinearObject
-::Norm( std::vector<double> vector )
+double Norm( std::vector<double> vector )
 {
   double norm = 0.0;
   for ( int i = 0; i < vector.size(); i++ )
@@ -56,8 +54,7 @@ double LinearObject
 }
 
 
-double LinearObject
-::Dot( std::vector<double> v1, std::vector<double> v2 )
+double Dot( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != v2.size() )
   {
@@ -74,8 +71,7 @@ double LinearObject
 }
 
 
-std::vector<double> LinearObject
-::Cross( std::vector<double> v1, std::vector<double> v2 )
+std::vector<double> Cross( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != 3 || v2.size() != 3 )
   {
@@ -91,8 +87,7 @@ std::vector<double> LinearObject
 }
 
 
-std::vector<double> LinearObject
-::Add( std::vector<double> v1, std::vector<double> v2 )
+std::vector<double> Add( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != v2.size() )
   {
@@ -109,8 +104,7 @@ std::vector<double> LinearObject
 }
 
 
-std::vector<double> LinearObject
-::Subtract( std::vector<double> v1, std::vector<double> v2 )
+std::vector<double> Subtract( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != v2.size() )
   {
@@ -127,8 +121,7 @@ std::vector<double> LinearObject
 }
 
 
-std::vector<double> LinearObject
-::Multiply( double c, std::vector<double> vector )
+std::vector<double> Multiply( double c, std::vector<double> vector )
 {
   std::vector<double> result( vector.size(), 0.0 );
   for ( int i = 0; i < vector.size(); i++ )
@@ -140,8 +133,7 @@ std::vector<double> LinearObject
 }
 
 
-std::string LinearObject
-::VectorToString( std::vector<double> vector )
+std::string VectorToString( std::vector<double> vector )
 {
   std::stringstream s;
 
@@ -154,8 +146,7 @@ std::string LinearObject
 }
 
 
-std::vector<double> LinearObject
-::StringToVector( std::string s, int size )
+std::vector<double> StringToVector( std::string s, int size )
 {
   std::stringstream ss( s );
   double value;

@@ -1,37 +1,42 @@
 
-#include "PointObservation.h"
+#include "vtkLORPointObservation.h"
 
-PointObservation
-::PointObservation()
+vtkStandardNewMacro( vtkLORPointObservation );
+
+
+vtkLORPointObservation* vtkLORPointObservation
+::New( std::vector<double> newObservation )
+{
+  vtkLORPointObservation* newPointObservation = vtkLORPointObservation::New();
+  newPointObservation->Observation = newObservation;
+  return newPointObservation;
+}
+
+
+vtkLORPointObservation
+::vtkLORPointObservation()
 {
 }
 
 
-PointObservation
-::PointObservation( std::vector<double> newObervation )
-{
-  this->Observation = newObervation;
-}
-
-
-PointObservation
-::~PointObservation()
+vtkLORPointObservation
+::~vtkLORPointObservation()
 {
   this->Observation.clear();
 }
 
 
-void PointObservation
+void vtkLORPointObservation
 ::Translate( std::vector<double> translation )
 {
-  this->Observation = LinearObject::Add( this->Observation, translation );
+  this->Observation = Add( this->Observation, translation );
 }
 
 
-void PointObservation
+void vtkLORPointObservation
 ::Rotate( vnl_matrix<double>* rotation )
 {
-  vnl_matrix<double>* currPoint = new vnl_matrix<double>( PointObservation::SIZE, 1, 0.0 );
+  vnl_matrix<double>* currPoint = new vnl_matrix<double>( vtkLORPointObservation::SIZE, 1, 0.0 );
   currPoint->put( 0, 0, this->Observation.at(0) );
   currPoint->put( 1, 0, this->Observation.at(1) );
   currPoint->put( 2, 0, this->Observation.at(2) );
@@ -43,11 +48,12 @@ void PointObservation
 }
 
 
-std::string PointObservation
+std::string vtkLORPointObservation
 ::ToXMLString()
 {
   std::stringstream xmlstring;
   std::stringstream matrixstring;
+  // TODO: Should the rotation part be the zero matrix or the identity matrix?
   matrixstring << "0 0 0 " << this->Observation.at(0) << " ";
   matrixstring << "0 0 0 " << this->Observation.at(1) << " ";
   matrixstring << "0 0 0 " << this->Observation.at(2) << " ";
@@ -65,7 +71,7 @@ std::string PointObservation
 }
 
 
-void PointObservation
+void vtkLORPointObservation
 ::FromXMLElement( vtkXMLDataElement* element )
 {
 
@@ -79,9 +85,10 @@ void PointObservation
   std::stringstream matrixstring( std::string( element->GetAttribute( "transform" ) ) );
   double value;
 
-  for ( int i = 0; i < 16; i++ )
+  for ( int i = 0; i < this->MATRIX_ELEMENTS; i++ )
   {
     matrixstring >> value;
+    // Note that 3, 7, 11 are the places where the translational components appear
 	if ( i == 3 )
 	{
 	  this->Observation.at(0) = value;
@@ -99,7 +106,7 @@ void PointObservation
 }
 
 
-bool PointObservation
+bool vtkLORPointObservation
 ::FromXMLElement( vtkXMLDataElement* currElement, vtkXMLDataElement* prevElement )
 {
   const double ROTATION_THRESHOLD = 0.005;
@@ -122,23 +129,25 @@ bool PointObservation
   std::vector<double> currRotation, prevRotation;
   std::vector<double> currTranslation, prevTranslation;
 
-  for ( int i = 0; i < 16; i++ )
+  for ( int i = 0; i < this->MATRIX_ELEMENTS; i++ )
   {
     currmatrixstring >> currValue;
 	prevmatrixstring >> prevValue;
-	if ( i == 0 || i == 1 || i == 2 || i == 4 || i == 5 || i == 6 || i == 8 || i == 9 || i == 10 )
+	if ( i == 0 || i == 1 || i == 2 || i == 4 || i == 5 || i == 6 || i == 8 || i == 9 || i == 10 ) // Rotation components
 	{
 	  currRotation.push_back( currValue );
 	  prevRotation.push_back( prevValue );
 	}
-	if ( i == 3 || i == 7 || i == 11 )
+	if ( i == 3 || i == 7 || i == 11 ) // Translation components
 	{
 	  currTranslation.push_back( currValue );
 	  prevTranslation.push_back( prevValue );
 	}
   }
 
-  if ( LinearObject::Distance( currRotation, prevRotation ) > ROTATION_THRESHOLD || LinearObject::Distance( currTranslation, prevTranslation ) > TRANSLATION_THRESHOLD )
+  // Check to ensure that the current observation is appreciably different from the previous
+  // If not, don't record (because the stylus was likely just lying around, not collecting)
+  if ( Distance( currRotation, prevRotation ) > ROTATION_THRESHOLD || Distance( currTranslation, prevTranslation ) > TRANSLATION_THRESHOLD )
   {
     this->FromXMLElement( currElement );
 	return true;
