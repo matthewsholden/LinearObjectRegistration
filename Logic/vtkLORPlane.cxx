@@ -76,7 +76,7 @@ std::string vtkLORPlane
 
 
 void vtkLORPlane
-::FromXMLElement( vtkXMLDataElement* element )
+::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
 {
 
   if ( strcmp( element->GetName(), "Plane" ) != 0 )

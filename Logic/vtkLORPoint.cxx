@@ -58,7 +58,7 @@ std::string vtkLORPoint
 
 
 void vtkLORPoint
-::FromXMLElement( vtkXMLDataElement* element )
+::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
 {
 
   if ( strcmp( element->GetName(), "Point" ) != 0 )

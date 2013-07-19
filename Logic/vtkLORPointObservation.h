@@ -49,8 +49,8 @@ public:
   void Rotate( vnl_matrix<double>* rotation );
 
   std::string ToXMLString();
-  void FromXMLElement( vtkXMLDataElement* element );
-  bool FromXMLElement( vtkXMLDataElement* currElement, vtkXMLDataElement* prevElement ); // Exclude if threshold not exceeded
+  void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
+  bool FromXMLElement( vtkSmartPointer< vtkXMLDataElement > currElement, vtkSmartPointer< vtkXMLDataElement > prevElement ); // Exclude if threshold not exceeded
 
 };
 

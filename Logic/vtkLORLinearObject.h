@@ -9,6 +9,7 @@
 #include <cmath>
 
 // VTK includes
+#include "vtkSmartPointer.h"
 #include "vtkObject.h"
 #include "vtkObjectBase.h"
 #include "vtkObjectFactory.h"
@@ -51,7 +52,7 @@ public:
   virtual void Translate( std::vector<double> vector ) = 0;
 
   virtual std::string ToXMLString() = 0;
-  virtual void FromXMLElement( vtkXMLDataElement* element ) = 0;
+  virtual void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element ) = 0;
 
 };
 

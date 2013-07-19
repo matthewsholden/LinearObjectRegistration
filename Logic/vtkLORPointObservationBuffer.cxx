@@ -23,7 +23,7 @@ int vtkLORPointObservationBuffer
 }
 
 
-vtkLORPointObservation* vtkLORPointObservationBuffer
+vtkSmartPointer< vtkLORPointObservation > vtkLORPointObservationBuffer
 ::GetObservation( int index )
 {
   return this->observations.at(index);
@@ -31,7 +31,7 @@ vtkLORPointObservation* vtkLORPointObservationBuffer
 
 
 void vtkLORPointObservationBuffer
-::AddObservation( vtkLORPointObservation* newObservation )
+::AddObservation( vtkSmartPointer< vtkLORPointObservation > newObservation )
 {
   this->observations.push_back( newObservation );
 }
@@ -40,10 +40,6 @@ void vtkLORPointObservationBuffer
 void vtkLORPointObservationBuffer
 ::Clear()
 {
-  for ( int i = 0; i < this->Size(); i++ )
-  {
-    this->observations.at(i)->Delete();
-  }
   this->observations.clear();
 }
 
@@ -59,7 +55,7 @@ void vtkLORPointObservationBuffer
 
 
 vnl_matrix<double>* vtkLORPointObservationBuffer
-::SphericalRegistration( vtkLORPointObservationBuffer* fromPoints )
+::SphericalRegistration( vtkSmartPointer< vtkLORPointObservationBuffer > fromPoints )
 {
   // Assume that it is already mean zero
   const double CONDITION_THRESHOLD = 1e-3;
@@ -108,7 +104,7 @@ vnl_matrix<double>* vtkLORPointObservationBuffer
 }
 
 
-vtkLORLinearObject* vtkLORPointObservationBuffer
+vtkSmartPointer< vtkLORLinearObject > vtkLORPointObservationBuffer
 ::LeastSquaresLinearObject( int dof )
 {
   std::vector<double> centroid = this->CalculateCentroid();
@@ -140,15 +136,15 @@ vtkLORLinearObject* vtkLORPointObservationBuffer
   // The threshold noise is twice the extraction threshold
   if ( dof == 0 )
   {
-    return vtkLORPoint::New( centroid );
+    return vtkSmartPointer< vtkLORPoint >::Take( vtkLORPoint::New( centroid ) );
   }
   if ( dof == 1 )
   {
-    return vtkLORLine::New( centroid, Add( centroid, Eigenvector3 ) ); 
+    return vtkSmartPointer< vtkLORLine >::Take( vtkLORLine::New( centroid, Add( centroid, Eigenvector3 ) ) ); 
   }
   if ( dof == 2 )
   {
-    return vtkLORPlane::New( centroid, Add( centroid, Eigenvector2 ), Add( centroid, Eigenvector3 ) );
+    return vtkSmartPointer< vtkLORPlane >::Take( vtkLORPlane::New( centroid, Add( centroid, Eigenvector2 ), Add( centroid, Eigenvector3 ) ) );
   }
 
   return NULL;
@@ -156,7 +152,7 @@ vtkLORLinearObject* vtkLORPointObservationBuffer
 
 
 void vtkLORPointObservationBuffer
-::Filter( vtkLORLinearObject* object, int filterWidth )
+::Filter( vtkSmartPointer< vtkLORLinearObject > object, int filterWidth )
 {
   const int THRESHOLD = 1e-3; // Deal with the case of very little noise
   bool changed = true;
@@ -179,7 +175,7 @@ void vtkLORPointObservationBuffer
 	stdev = sqrt( stdev - meanDistance * meanDistance );
     
 	// Keep only the points that are within certain number of standard deviations
-	std::vector<vtkLORPointObservation*> newObservations;
+	std::vector< vtkSmartPointer< vtkLORPointObservation > > newObservations;
 	for ( int i = 0; i < this->Size(); i++ )
 	{
       if ( distances.at(i) < filterWidth * stdev || distances.at(i) < THRESHOLD )
@@ -197,6 +193,7 @@ void vtkLORPointObservationBuffer
       changed = false;
 	}
 
+    this->observations.clear();
 	this->observations = newObservations;
 
   }
@@ -219,18 +216,18 @@ std::string vtkLORPointObservationBuffer
 
 
 void vtkLORPointObservationBuffer
-::FromXMLElement( vtkXMLDataElement* element )
+::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
 {
-  vtkLORPointObservation* blankObservation = vtkLORPointObservation::New();
-  this->observations = std::vector<vtkLORPointObservation*>( 0, blankObservation );
+  vtkSmartPointer< vtkLORPointObservation > blankObservation;
+  this->observations = std::vector< vtkSmartPointer< vtkLORPointObservation > >( 0, blankObservation );
 
   int numElements = element->GetNumberOfNestedElements();
 
   for ( int i = 0; i < numElements; i++ )
   {
-    vtkXMLDataElement* noteElement = element->GetNestedElement( i );
+    vtkSmartPointer< vtkXMLDataElement > noteElement = element->GetNestedElement( i );
 
-    vtkLORPointObservation* newObservation = vtkLORPointObservation::New();
+    vtkSmartPointer< vtkLORPointObservation > newObservation = vtkSmartPointer< vtkLORPointObservation >::New();
 	newObservation->FromXMLElement( noteElement );
     this->AddObservation( newObservation );
   }
@@ -242,14 +239,14 @@ vnl_matrix<double>* vtkLORPointObservationBuffer
 ::CovarianceMatrix( std::vector<double> centroid )
 {
   // Construct a buffer for the zero mean data; initialize covariance matrix
-  vtkLORPointObservationBuffer* zeroMeanBuffer = vtkLORPointObservationBuffer::New();
+  vtkSmartPointer< vtkLORPointObservationBuffer > zeroMeanBuffer = vtkSmartPointer< vtkLORPointObservationBuffer >::New();
   vnl_matrix<double> *cov = new vnl_matrix<double>( vtkLORPointObservation::SIZE, vtkLORPointObservation::SIZE );
   cov->fill( 0.0 );
 
   // Subtract the mean from each observation
   for ( int i = 0; i < this->Size(); i++ )
   {
-    vtkLORPointObservation* newObservation = vtkLORPointObservation::New();
+    vtkSmartPointer< vtkLORPointObservation > newObservation = vtkSmartPointer< vtkLORPointObservation >::New();
     for( int d = 0; d < vtkLORPointObservation::SIZE; d++ )
 	{
 	  newObservation->Observation.push_back( this->GetObservation(i)->Observation.at(d) - centroid.at(d) );
@@ -298,24 +295,24 @@ std::vector<double> vtkLORPointObservationBuffer
 }
 
 
-std::vector<vtkLORPointObservationBuffer*> vtkLORPointObservationBuffer
+std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > vtkLORPointObservationBuffer
 ::ExtractLinearObjects( int collectionFrames, double extractionThreshold, std::vector<int>* dof )
 {
 
   // First, let us identify the segmentation points and the associated DOFs, then we can divide up the points
   int TEST_INTERVAL = 21;
 
-  vtkLORPointObservationBuffer* eigenBuffer = vtkLORPointObservationBuffer::New(); // Note: 1 < 2 < 3
+  vtkSmartPointer< vtkLORPointObservationBuffer > eigenBuffer = vtkSmartPointer< vtkLORPointObservationBuffer >::New(); // Note: 1 < 2 < 3
   int currStartIndex, currEndIndex;
   bool collecting = false;
 
-  std::vector<vtkLORPointObservationBuffer*> linearObjects;
+  std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > linearObjects;
 
   // Note: i is the start of the interval over which we will exam for linearity
   for ( int i = 0; i < this->Size() - TEST_INTERVAL; i++ )
   {
     // Create a smaller point observation buffer to work with at each iteration with the points of interest
-    vtkLORPointObservationBuffer* tempBuffer = vtkLORPointObservationBuffer::New();
+    vtkSmartPointer< vtkLORPointObservationBuffer > tempBuffer = vtkSmartPointer< vtkLORPointObservationBuffer >::New();
     for ( int j = i; j < i + TEST_INTERVAL; j++ )
 	{
       tempBuffer->AddObservation( this->GetObservation(j) );
@@ -335,7 +332,7 @@ std::vector<vtkLORPointObservationBuffer*> vtkLORPointObservationBuffer
 	eigen.at(0) = eigenvalues.get( 0 );
 	eigen.at(1) = eigenvalues.get( 1 );
 	eigen.at(2) = eigenvalues.get( 2 );
-    eigenBuffer->AddObservation( vtkLORPointObservation::New( eigen ) );
+    eigenBuffer->AddObservation( vtkSmartPointer< vtkLORPointObservation >::Take( vtkLORPointObservation::New( eigen ) ) );
 
 
 	if ( ! collecting )
@@ -393,7 +390,7 @@ std::vector<vtkLORPointObservationBuffer*> vtkLORPointObservationBuffer
 	  }
 
 	  // Otherwise, this is a collected linear object
-      vtkLORPointObservationBuffer* foundBuffer = vtkLORPointObservationBuffer::New();
+      vtkSmartPointer< vtkLORPointObservationBuffer > foundBuffer = vtkSmartPointer< vtkLORPointObservationBuffer >::New();
 	  for ( int j = dofInterval.at(maxIntervalIndex); j < dofInterval.at( maxIntervalIndex + 1 ); j++ )
 	  {
         foundBuffer->AddObservation( this->GetObservation( j + TEST_INTERVAL ) );

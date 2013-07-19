@@ -72,7 +72,7 @@ std::string vtkLORPointObservation
 
 
 void vtkLORPointObservation
-::FromXMLElement( vtkXMLDataElement* element )
+::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
 {
 
   if ( strcmp( element->GetName(), "log" ) != 0 || strcmp( element->GetAttribute( "type" ), "transform" ) != 0 )
@@ -107,7 +107,7 @@ void vtkLORPointObservation
 
 
 bool vtkLORPointObservation
-::FromXMLElement( vtkXMLDataElement* currElement, vtkXMLDataElement* prevElement )
+::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > currElement, vtkSmartPointer< vtkXMLDataElement > prevElement )
 {
   const double ROTATION_THRESHOLD = 0.005;
   const double TRANSLATION_THRESHOLD = 0.5;

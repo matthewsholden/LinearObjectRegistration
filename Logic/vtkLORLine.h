@@ -10,6 +10,7 @@
 #include <cmath>
 
 // VTK includes
+#include "vtkSmartPointer.h"
 #include "vtkObject.h"
 #include "vtkObjectBase.h"
 #include "vtkObjectFactory.h"
@@ -52,7 +53,7 @@ public:
 
   // Implement inherited abstract methods
   std::string ToXMLString();
-  void FromXMLElement( vtkXMLDataElement* element );
+  void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
 
 };
 

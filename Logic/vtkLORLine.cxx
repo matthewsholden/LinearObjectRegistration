@@ -135,7 +135,7 @@ std::string vtkLORLine
 
 
 void vtkLORLine
-::FromXMLElement( vtkXMLDataElement* element )
+::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
 {
 
   if ( strcmp( element->GetName(), "Line" ) != 0 )

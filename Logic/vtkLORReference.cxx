@@ -58,7 +58,7 @@ std::string vtkLORReference
 
 
 void vtkLORReference
-::FromXMLElement( vtkXMLDataElement* element )
+::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
 {
 
   if ( strcmp( element->GetName(), "Reference" ) != 0 )

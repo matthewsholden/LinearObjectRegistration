@@ -90,11 +90,9 @@ public:
   void ImportGeometry( std::string fileName );
   void ImportRecord( std::string fileName, int filterWidth, int collectionFrames, double extractionThreshold );
   void Register( double matchingThreshold );
-  void SetRegistrationTransformNode( vtkMRMLLinearTransformNode* newRegistrationTransformNode );
+  void SetRegistrationTransformNode( vtkSmartPointer< vtkMRMLLinearTransformNode > newRegistrationTransformNode );
 
-  vnl_matrix<double>* LinearObjectICP( vtkLORLinearObjectBuffer* pointBuffer, vtkLORLinearObjectBuffer* lineBuffer, vtkLORLinearObjectBuffer* planeBuffer,
-				  std::vector<vtkLORPointObservationBuffer*> pointObservations, std::vector<vtkLORPointObservationBuffer*> lineObservations, std::vector<vtkLORPointObservationBuffer*> planeObservations,
-				  vnl_matrix<double>* initialRotation );
+  vnl_matrix<double>* LinearObjectICP( vnl_matrix<double>* initialRotation );
 
   double GetError();
   std::string GetStatus();
@@ -102,28 +100,28 @@ public:
 
 private:
 
-  vtkLORLinearObjectBuffer* GeometryBuffer;
-  vtkLORLinearObjectBuffer* GeometryPointBuffer;
-  vtkLORLinearObjectBuffer* GeometryLineBuffer;
-  vtkLORLinearObjectBuffer* GeometryPlaneBuffer;
-  vtkLORLinearObjectBuffer* GeometryReferenceBuffer;
+  vtkSmartPointer< vtkLORLinearObjectBuffer > GeometryBuffer;
+  vtkSmartPointer< vtkLORLinearObjectBuffer > GeometryPointBuffer;
+  vtkSmartPointer< vtkLORLinearObjectBuffer > GeometryLineBuffer;
+  vtkSmartPointer< vtkLORLinearObjectBuffer > GeometryPlaneBuffer;
+  vtkSmartPointer< vtkLORLinearObjectBuffer > GeometryReferenceBuffer;
 
   void ResetGeometry();
 
-  vtkLORLinearObjectBuffer* RecordPointBuffer;
-  vtkLORLinearObjectBuffer* RecordLineBuffer;
-  vtkLORLinearObjectBuffer* RecordPlaneBuffer;
-  vtkLORLinearObjectBuffer* RecordReferenceBuffer;
+  vtkSmartPointer< vtkLORLinearObjectBuffer > RecordPointBuffer;
+  vtkSmartPointer< vtkLORLinearObjectBuffer > RecordLineBuffer;
+  vtkSmartPointer< vtkLORLinearObjectBuffer > RecordPlaneBuffer;
+  vtkSmartPointer< vtkLORLinearObjectBuffer > RecordReferenceBuffer;
 
-  std::vector<vtkLORPointObservationBuffer*> ReferencePoints;
-  std::vector<vtkLORPointObservationBuffer*> LinearObjectPoints;
-  std::vector<vtkLORPointObservationBuffer*> PointPoints;
-  std::vector<vtkLORPointObservationBuffer*> LinePoints;
-  std::vector<vtkLORPointObservationBuffer*> PlanePoints;
+  std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > ReferencePoints;
+  std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > LinearObjectPoints;
+  std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > PointPoints;
+  std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > LinePoints;
+  std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > PlanePoints;
 
   void ResetRecord();
 
-  vtkMRMLLinearTransformNode* RegistrationTransformNode;
+  vtkSmartPointer< vtkMRMLLinearTransformNode > RegistrationTransformNode;
 
   double ErrorRMS;
   std::string Status;

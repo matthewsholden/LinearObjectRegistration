@@ -44,28 +44,28 @@ protected:
   virtual ~vtkLORPointObservationBuffer();
 
 private:
-  std::vector<vtkLORPointObservation*> observations;
+  std::vector< vtkSmartPointer< vtkLORPointObservation > > observations;
 
 public:
 
   // Standard collection functionality
   int Size();
-  vtkLORPointObservation* GetObservation( int index );
-  void AddObservation( vtkLORPointObservation* newObservation );
+  vtkSmartPointer< vtkLORPointObservation > GetObservation( int index );
+  void AddObservation( vtkSmartPointer< vtkLORPointObservation > newObservation );
   void Clear();
 
   void Translate( std::vector<double> translation );
 
-  vtkLORLinearObject* LeastSquaresLinearObject( int dof );
-  void Filter( vtkLORLinearObject* object, int filterWidth );
+  vtkSmartPointer< vtkLORLinearObject > LeastSquaresLinearObject( int dof );
+  void Filter( vtkSmartPointer< vtkLORLinearObject > object, int filterWidth );
 
-  vnl_matrix<double>* SphericalRegistration( vtkLORPointObservationBuffer* fromPoints );
+  vnl_matrix<double>* SphericalRegistration( vtkSmartPointer< vtkLORPointObservationBuffer > fromPoints );
   vnl_matrix<double>* TranslationalRegistration( std::vector<double> toCentroid, std::vector<double> fromCentroid, vnl_matrix<double>* rotation );
 
-  std::vector<vtkLORPointObservationBuffer*> ExtractLinearObjects( int collectionFrames, double extractionThreshold, std::vector<int>* dof );
+  std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > ExtractLinearObjects( int collectionFrames, double extractionThreshold, std::vector<int>* dof );
 
   std::string ToXMLString();
-  void FromXMLElement( vtkXMLDataElement* element );
+  void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
 
 private:
   std::vector<double> CalculateCentroid();

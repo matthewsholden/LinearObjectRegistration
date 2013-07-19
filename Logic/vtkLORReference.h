@@ -44,7 +44,7 @@ public:
 
   // Implement inherited abstract methods
   std::string ToXMLString();
-  void FromXMLElement( vtkXMLDataElement* element );
+  void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
 
 };
 

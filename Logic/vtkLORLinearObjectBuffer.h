@@ -9,6 +9,7 @@
 #include <cmath>
 
 // VTK includes
+#include "vtkSmartPointer.h"
 #include "vtkObject.h"
 #include "vtkObjectBase.h"
 #include "vtkObjectFactory.h"
@@ -42,27 +43,27 @@ protected:
   virtual ~vtkLORLinearObjectBuffer();
 
 private:
-	std::vector<vtkLORLinearObject*> objects;
+	std::vector< vtkSmartPointer< vtkLORLinearObject > > objects;
 
 public:
 
   // Basic collection functionality
   int Size();
-  vtkLORLinearObject* GetLinearObject( int index );
-  vtkLORLinearObject* GetLinearObject( std::string name );
-  void AddLinearObject( vtkLORLinearObject* newObject );
-  void Concatenate( vtkLORLinearObjectBuffer* catBuffer );
+  vtkSmartPointer< vtkLORLinearObject > GetLinearObject( int index );
+  vtkSmartPointer< vtkLORLinearObject > GetLinearObject( std::string name );
+  void AddLinearObject( vtkSmartPointer< vtkLORLinearObject > newObject );
+  void Concatenate( vtkSmartPointer< vtkLORLinearObjectBuffer > catBuffer );
 
   void Translate( std::vector<double> vector );
 
-  void CalculateSignature( vtkLORLinearObjectBuffer* refBuffer );
+  void CalculateSignature( vtkSmartPointer< vtkLORLinearObjectBuffer > refBuffer );
 
-  vtkLORLinearObjectBuffer* GetMatches( vtkLORLinearObjectBuffer* candidates, double matchingThreshold );
+  vtkSmartPointer< vtkLORLinearObjectBuffer > GetMatches( vtkSmartPointer< vtkLORLinearObjectBuffer > candidates, double matchingThreshold );
 
   std::vector<double> CalculateCentroid();
 
   std::string ToXMLString();
-  void FromXMLElement( vtkXMLDataElement* element );
+  void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
 
 };
 
