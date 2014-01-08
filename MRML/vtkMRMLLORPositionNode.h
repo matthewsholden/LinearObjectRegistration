@@ -1,6 +1,6 @@
 
-#ifndef __vtkLORPointObservation_h
-#define __vtkLORPointObservation_h
+#ifndef __vtkMRMLLORPositionNode_h
+#define __vtkMRMLLORPositionNode_h
 
 // Standard includes
 #include <string>
@@ -13,33 +13,39 @@
 #include "vtkObjectBase.h"
 #include "vtkObjectFactory.h"
 #include "vtkXMLDataElement.h"
+#include "vtkMatrix4x4.h"
+#include "vtkSmartPointer.h"
 
 // VNL includes
 #include "vnl/vnl_matrix.h"
 
 // LinearObjectRegistration includes
-#include "vtkLORLinearObject.h"
-#include "vtkSlicerLinearObjectRegistrationModuleLogicExport.h"
+#include "vtkMRMLLORVectorMath.h"
+
+#include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
 
 
 // This class stores a vector of values only - we do not care about time
-class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_LOGIC_EXPORT
-vtkLORPointObservation : public vtkObject
+class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
+vtkMRMLLORPositionNode : public vtkObject
 {
 public:
-  vtkTypeMacro( vtkLORPointObservation, vtkObject );
+  vtkTypeMacro( vtkMRMLLORPositionNode, vtkObject );
 
-  static vtkLORPointObservation* New();
-  static vtkLORPointObservation* New( std::vector<double> newObservation );
+  static vtkMRMLLORPositionNode* New();
+  static vtkMRMLLORPositionNode* New( std::vector<double> newPosition );
+  static vtkMRMLLORPositionNode* New( vtkMatrix4x4* newMatrix );
+
+  vtkMRMLLORPositionNode* DeepCopy();
 
 protected:
 
   // Constructor/destructor
-  vtkLORPointObservation();
-  virtual ~vtkLORPointObservation();
+  vtkMRMLLORPositionNode();
+  virtual ~vtkMRMLLORPositionNode();
 
 public:
-  std::vector<double> Observation;
+  std::vector<double> Position;
   static const int SIZE = 3;
   static const int MATRIX_ELEMENTS = 16;
 

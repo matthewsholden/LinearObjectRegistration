@@ -1,50 +1,50 @@
 
-#include "vtkLORLine.h"
+#include "vtkMRMLLORLineNode.h"
 
-vtkStandardNewMacro( vtkLORLine )
+vtkStandardNewMacro( vtkMRMLLORLineNode )
 
 
-vtkLORLine* vtkLORLine
+vtkMRMLLORLineNode* vtkMRMLLORLineNode
 ::New( std::vector<double> newBasePoint, std::vector<double> newEndPoint )
 {
-  vtkLORLine* newLine = vtkLORLine::New();
+  vtkMRMLLORLineNode* newLine = vtkMRMLLORLineNode::New();
   newLine->BasePoint = newBasePoint;
   newLine->EndPoint = newEndPoint;
   return newLine;
 }
 
 
-vtkLORLine
-::vtkLORLine()
+vtkMRMLLORLineNode
+::vtkMRMLLORLineNode()
 {
   this->Type = "Line";
 }
 
 
-vtkLORLine
-::~vtkLORLine()
+vtkMRMLLORLineNode
+::~vtkMRMLLORLineNode()
 {
   this->EndPoint.clear();
 }
 
 
-std::vector<double> vtkLORLine
+std::vector<double> vtkMRMLLORLineNode
 ::GetDirection()
 {
-  std::vector<double> vector = Subtract( this->EndPoint, this->BasePoint );
-  return Multiply( 1 / Norm( vector ), vector );
+  std::vector<double> vector = vtkMRMLLORVectorMath::Subtract( this->EndPoint, this->BasePoint );
+  return vtkMRMLLORVectorMath::Multiply( 1 / vtkMRMLLORVectorMath::Norm( vector ), vector );
 }
 
 
-std::vector<double> vtkLORLine
+std::vector<double> vtkMRMLLORLineNode
 ::ProjectVector( std::vector<double> vector )
 {
-  std::vector<double> outVec = Subtract( vector, this->BasePoint );
-  return Add( Multiply( Dot( this->GetDirection(), outVec ), this->GetDirection() ), this->BasePoint );
+  std::vector<double> outVec = vtkMRMLLORVectorMath::Subtract( vector, this->BasePoint );
+  return vtkMRMLLORVectorMath::Add( vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( this->GetDirection(), outVec ), this->GetDirection() ), this->BasePoint );
 }
 
 
-void vtkLORLine
+void vtkMRMLLORLineNode
 ::Translate( std::vector<double> vector )
 {
   for ( int i = 0; i < vector.size(); i++ )
@@ -55,7 +55,7 @@ void vtkLORLine
 }
 
 
-std::vector<double> vtkLORLine
+std::vector<double> vtkMRMLLORLineNode
 ::GetOrthogonalNormal1()
 {
   // Find the two axis unit vectors least parallel with the direction vector
@@ -77,17 +77,17 @@ std::vector<double> vtkLORLine
 	e2.at(0) = 0; e2.at(1) = 1; e2.at(2) = 0;
   }
 
-  std::vector<double> Normal1 = Subtract( e1, Multiply( Dot( e1, this->GetDirection() ), this->GetDirection() ) );
-  Normal1 = Multiply( 1 / Norm( Normal1 ), Normal1 );
+  std::vector<double> Normal1 = vtkMRMLLORVectorMath::Subtract( e1, vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( e1, this->GetDirection() ), this->GetDirection() ) );
+  Normal1 = vtkMRMLLORVectorMath::Multiply( 1 / vtkMRMLLORVectorMath::Norm( Normal1 ), Normal1 );
 
-  std::vector<double> Normal2 = Subtract( e2, Add( Multiply( Dot( e2, this->GetDirection() ), this->GetDirection() ), Multiply( Dot( e2, Normal1 ), Normal1 ) ) );
-  Normal2 = Multiply( 1 / Norm( Normal2 ), Normal2 );
+  std::vector<double> Normal2 = vtkMRMLLORVectorMath::Subtract( e2, vtkMRMLLORVectorMath::Add( vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( e2, this->GetDirection() ), this->GetDirection() ), vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( e2, Normal1 ), Normal1 ) ) );
+  Normal2 = vtkMRMLLORVectorMath::Multiply( 1 / vtkMRMLLORVectorMath::Norm( Normal2 ), Normal2 );
 
   return Normal1;
 }
 
 
-std::vector<double> vtkLORLine
+std::vector<double> vtkMRMLLORLineNode
 ::GetOrthogonalNormal2()
 {
   // Find the two axis unit vectors least parallel with the direction vector
@@ -109,32 +109,32 @@ std::vector<double> vtkLORLine
 	e2.at(0) = 0; e2.at(1) = 1; e2.at(2) = 0;
   }
 
-  std::vector<double> Normal1 = Subtract( e1, Multiply( Dot( e1, this->GetDirection() ), this->GetDirection() ) );
-  Normal1 = Multiply( 1 / Norm( Normal1 ), Normal1 );
+  std::vector<double> Normal1 = vtkMRMLLORVectorMath::Subtract( e1, vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( e1, this->GetDirection() ), this->GetDirection() ) );
+  Normal1 = vtkMRMLLORVectorMath::Multiply( 1 / vtkMRMLLORVectorMath::Norm( Normal1 ), Normal1 );
 
-  std::vector<double> Normal2 = Subtract( e2, Add( Multiply( Dot( e2, this->GetDirection() ), this->GetDirection() ), Multiply( Dot( e2, Normal1 ), Normal1 ) ) );
-  Normal2 = Multiply( 1 / Norm( Normal2 ), Normal2 );
+  std::vector<double> Normal2 = vtkMRMLLORVectorMath::Subtract( e2, vtkMRMLLORVectorMath::Add( vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( e2, this->GetDirection() ), this->GetDirection() ), vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( e2, Normal1 ), Normal1 ) ) );
+  Normal2 = vtkMRMLLORVectorMath::Multiply( 1 / vtkMRMLLORVectorMath::Norm( Normal2 ), Normal2 );
 
   return Normal2;
 }
 
 
-std::string vtkLORLine
+std::string vtkMRMLLORLineNode
 ::ToXMLString()
 {
   std::stringstream xmlstring;
 
   xmlstring << "  <Line";
   xmlstring << " Name=\"" << this->Name << "\"";
-  xmlstring << " BasePoint=\"" << VectorToString( this->BasePoint ) << "\"";
-  xmlstring << " EndPoint=\"" << VectorToString( this->EndPoint ) << "\"";
+  xmlstring << " BasePoint=\"" << vtkMRMLLORVectorMath::VectorToString( this->BasePoint ) << "\"";
+  xmlstring << " EndPoint=\"" << vtkMRMLLORVectorMath::VectorToString( this->EndPoint ) << "\"";
   xmlstring << " />" << std::endl;
 
   return xmlstring.str();
 }
 
 
-void vtkLORLine
+void vtkMRMLLORLineNode
 ::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
 {
 
@@ -144,7 +144,7 @@ void vtkLORLine
   }
 
   this->Name = std::string( element->GetAttribute( "Name" ) );
-  this->BasePoint = StringToVector( std::string( element->GetAttribute( "BasePoint" ) ), 3 );
-  this->EndPoint = StringToVector( std::string( element->GetAttribute( "EndPoint" ) ), 3 );
+  this->BasePoint = vtkMRMLLORVectorMath::StringToVector( std::string( element->GetAttribute( "BasePoint" ) ), 3 );
+  this->EndPoint = vtkMRMLLORVectorMath::StringToVector( std::string( element->GetAttribute( "EndPoint" ) ), 3 );
 
 }

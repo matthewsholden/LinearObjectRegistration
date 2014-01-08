@@ -8,20 +8,25 @@ set(${KIT}_INCLUDE_DIRECTORIES
   )
 
 set(${KIT}_SRCS
-  qSlicerFooBarWidget.cxx
-  qSlicerFooBarWidget.h
+  qSlicerLinearObjectCollectionWidget.cxx
+  qSlicerLinearObjectCollectionWidget.h
+  qSlicerLORManualDOFWidget.cxx
+  qSlicerLORManualDOFWidget.h
   )
 
 set(${KIT}_MOC_SRCS
-  qSlicerFooBarWidget.h
+  qSlicerLinearObjectCollectionWidget.h
+  qSlicerLORManualDOFWidget.h
   )
 
 set(${KIT}_UI_SRCS
-  ../Resources/UI/qSlicerFooBarWidget.ui
+  ./Resources/UI/qSlicerLinearObjectCollectionWidget.ui
+  ./Resources/UI/qSlicerLORManualDOFWidget.ui
   )
 
 set(${KIT}_RESOURCES
-  ../Resources/UI/qSlicerFooBarWidget.ui
+  ./Resources/UI/qSlicerLinearObjectCollectionWidget.ui
+  ./Resources/UI/qSlicerLORManualDOFWidget.ui
   )
 
 set(${KIT}_TARGET_LIBRARIES

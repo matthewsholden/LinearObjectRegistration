@@ -1,39 +1,39 @@
 
-#include "vtkLORReference.h"
+#include "vtkMRMLLORReferenceNode.h"
 
-vtkStandardNewMacro( vtkLORReference );
+vtkStandardNewMacro( vtkMRMLLORReferenceNode );
 
 
-vtkLORReference* vtkLORReference
+vtkMRMLLORReferenceNode* vtkMRMLLORReferenceNode
 ::New( std::vector<double> newBasePoint )
 {
-  vtkLORReference* newReference = vtkLORReference::New();
+  vtkMRMLLORReferenceNode* newReference = vtkMRMLLORReferenceNode::New();
   newReference->BasePoint = newBasePoint;
   return newReference;
 }
 
 
-vtkLORReference
-::vtkLORReference()
+vtkMRMLLORReferenceNode
+::vtkMRMLLORReferenceNode()
 {
   this->Type = "Reference";
 }
 
 
-vtkLORReference
-::~vtkLORReference()
+vtkMRMLLORReferenceNode
+::~vtkMRMLLORReferenceNode()
 {
 }
 
 
-std::vector<double> vtkLORReference
+std::vector<double> vtkMRMLLORReferenceNode
 ::ProjectVector( std::vector<double> vector )
 {
   return this->BasePoint;
 }
 
 
-void vtkLORReference
+void vtkMRMLLORReferenceNode
 ::Translate( std::vector<double> vector )
 {
   for ( int i = 0; i < vector.size(); i++ )
@@ -43,21 +43,21 @@ void vtkLORReference
 }
 
 
-std::string vtkLORReference
+std::string vtkMRMLLORReferenceNode
 ::ToXMLString()
 {
   std::stringstream xmlstring;
 
   xmlstring << "  <Reference";
   xmlstring << " Name=\"" << this->Name << "\"";
-  xmlstring << " BasePoint=\"" << VectorToString( this->BasePoint ) << "\"";
+  xmlstring << " BasePoint=\"" << vtkMRMLLORVectorMath::VectorToString( this->BasePoint ) << "\"";
   xmlstring << " />" << std::endl;
 
   return xmlstring.str();
 }
 
 
-void vtkLORReference
+void vtkMRMLLORReferenceNode
 ::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
 {
 
@@ -67,6 +67,6 @@ void vtkLORReference
   }
 
   this->Name = std::string( element->GetAttribute( "Name" ) );
-  this->BasePoint = StringToVector( std::string( element->GetAttribute( "BasePoint" ) ), 3 );
+  this->BasePoint = vtkMRMLLORVectorMath::StringToVector( std::string( element->GetAttribute( "BasePoint" ) ), 3 );
 
 }

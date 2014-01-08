@@ -1,31 +1,9 @@
 
-#include "vtkLORLinearObject.h"
+#include "vtkMRMLLORVectorMath.h"
 
 
-vtkLORLinearObject
-::vtkLORLinearObject()
-{
-  this->Name = "";
-  this->Type = "LinearObject";
-}
-
-
-vtkLORLinearObject
-::~vtkLORLinearObject()
-{
-  this->BasePoint.clear();
-  this->Signature.clear();
-}
-
-
-double vtkLORLinearObject
-::DistanceToVector( std::vector<double> vector )
-{
-  return Distance( vector, this->ProjectVector( vector ) );
-}
-
-
-double Distance( std::vector<double> v1, std::vector<double> v2 )
+double vtkMRMLLORVectorMath 
+::Distance( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != v2.size() )
   {
@@ -42,7 +20,8 @@ double Distance( std::vector<double> v1, std::vector<double> v2 )
 }
 
 
-double Norm( std::vector<double> vector )
+double vtkMRMLLORVectorMath 
+::Norm( std::vector<double> vector )
 {
   double norm = 0.0;
   for ( int i = 0; i < vector.size(); i++ )
@@ -54,7 +33,8 @@ double Norm( std::vector<double> vector )
 }
 
 
-double Dot( std::vector<double> v1, std::vector<double> v2 )
+double vtkMRMLLORVectorMath 
+::Dot( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != v2.size() )
   {
@@ -71,7 +51,8 @@ double Dot( std::vector<double> v1, std::vector<double> v2 )
 }
 
 
-std::vector<double> Cross( std::vector<double> v1, std::vector<double> v2 )
+std::vector<double> vtkMRMLLORVectorMath 
+::Cross( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != 3 || v2.size() != 3 )
   {
@@ -87,7 +68,8 @@ std::vector<double> Cross( std::vector<double> v1, std::vector<double> v2 )
 }
 
 
-std::vector<double> Add( std::vector<double> v1, std::vector<double> v2 )
+std::vector<double> vtkMRMLLORVectorMath 
+::Add( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != v2.size() )
   {
@@ -104,7 +86,8 @@ std::vector<double> Add( std::vector<double> v1, std::vector<double> v2 )
 }
 
 
-std::vector<double> Subtract( std::vector<double> v1, std::vector<double> v2 )
+std::vector<double> vtkMRMLLORVectorMath 
+::Subtract( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != v2.size() )
   {
@@ -121,7 +104,8 @@ std::vector<double> Subtract( std::vector<double> v1, std::vector<double> v2 )
 }
 
 
-std::vector<double> Multiply( double c, std::vector<double> vector )
+std::vector<double> vtkMRMLLORVectorMath 
+::Multiply( double c, std::vector<double> vector )
 {
   std::vector<double> result( vector.size(), 0.0 );
   for ( int i = 0; i < vector.size(); i++ )
@@ -133,7 +117,8 @@ std::vector<double> Multiply( double c, std::vector<double> vector )
 }
 
 
-std::string VectorToString( std::vector<double> vector )
+std::string vtkMRMLLORVectorMath 
+::VectorToString( std::vector<double> vector )
 {
   std::stringstream s;
 
@@ -146,7 +131,8 @@ std::string VectorToString( std::vector<double> vector )
 }
 
 
-std::vector<double> StringToVector( std::string s, int size )
+std::vector<double> vtkMRMLLORVectorMath 
+::StringToVector( std::string s, int size )
 {
   std::stringstream ss( s );
   double value;

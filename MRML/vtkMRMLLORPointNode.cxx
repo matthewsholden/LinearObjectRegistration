@@ -1,39 +1,39 @@
 
-#include "vtkLORPoint.h"
+#include "vtkMRMLLORPointNode.h"
 
-vtkStandardNewMacro( vtkLORPoint );
+vtkStandardNewMacro( vtkMRMLLORPointNode );
 
 
-vtkLORPoint* vtkLORPoint
+vtkMRMLLORPointNode* vtkMRMLLORPointNode
 ::New( std::vector<double> newBasePoint )
 {
-  vtkLORPoint* newPoint = vtkLORPoint::New();
+  vtkMRMLLORPointNode* newPoint = vtkMRMLLORPointNode::New();
   newPoint->BasePoint = newBasePoint;
   return newPoint;
 }
 
 
-vtkLORPoint
-::vtkLORPoint()
+vtkMRMLLORPointNode
+::vtkMRMLLORPointNode()
 {
   this->Type = "Point";
 }
 
 
-vtkLORPoint
-::~vtkLORPoint()
+vtkMRMLLORPointNode
+::~vtkMRMLLORPointNode()
 {
 }
 
 
-std::vector<double> vtkLORPoint
+std::vector<double> vtkMRMLLORPointNode
 ::ProjectVector( std::vector<double> vector )
 {
   return this->BasePoint;
 }
 
 
-void vtkLORPoint
+void vtkMRMLLORPointNode
 ::Translate( std::vector<double> vector )
 {
   for ( int i = 0; i < vector.size(); i++ )
@@ -43,21 +43,21 @@ void vtkLORPoint
 }
 
 
-std::string vtkLORPoint
+std::string vtkMRMLLORPointNode
 ::ToXMLString()
 {
   std::stringstream xmlstring;
 
   xmlstring << "  <Point";
   xmlstring << " Name=\"" << this->Name << "\"";
-  xmlstring << " BasePoint=\"" << VectorToString( this->BasePoint ) << "\"";
+  xmlstring << " BasePoint=\"" << vtkMRMLLORVectorMath::VectorToString( this->BasePoint ) << "\"";
   xmlstring << " />" << std::endl;
 
   return xmlstring.str();
 }
 
 
-void vtkLORPoint
+void vtkMRMLLORPointNode
 ::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
 {
 
@@ -67,6 +67,6 @@ void vtkLORPoint
   }
 
   this->Name = std::string( element->GetAttribute( "Name" ) );
-  this->BasePoint = StringToVector( std::string( element->GetAttribute( "BasePoint" ) ), 3 );
+  this->BasePoint = vtkMRMLLORVectorMath::StringToVector( std::string( element->GetAttribute( "BasePoint" ) ), 3 );
 
 }

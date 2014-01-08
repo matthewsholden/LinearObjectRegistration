@@ -1,6 +1,6 @@
 
-#ifndef __vtkLORLinearObject_h
-#define __vtkLORLinearObject_h
+#ifndef __vtkMRMLLORLinearObjectNode_h
+#define __vtkMRMLLORLinearObjectNode_h
 
 // Standard includes
 #include <string>
@@ -16,22 +16,25 @@
 #include "vtkXMLDataElement.h"
 
 // LinearObjectRegistration includes
-#include "vtkSlicerLinearObjectRegistrationModuleLogicExport.h"
+#include "vtkMRMLLORVectorMath.h"
+
+#include "vtkMRMLLORPositionBufferNode.h"
+#include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
 
 // This class stores a vector of values and a string label
-class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_LOGIC_EXPORT
-vtkLORLinearObject : public vtkObject
+class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
+vtkMRMLLORLinearObjectNode : public vtkObject
 {
 public:
-  vtkTypeMacro( vtkLORLinearObject, vtkObject );
+  vtkTypeMacro( vtkMRMLLORLinearObjectNode, vtkObject );
 
   // No "New" function - this class will be abstract
 
 protected:
 
   // Constructor/Destructor
-  vtkLORLinearObject();
-  virtual ~vtkLORLinearObject();
+  vtkMRMLLORLinearObjectNode();
+  virtual ~vtkMRMLLORLinearObjectNode();
 
 public:
 
@@ -40,12 +43,19 @@ public:
   std::vector<double> Signature;
   std::vector<double> BasePoint;
 
+  vtkMRMLLORPositionBufferNode* PositionBuffer;
+
   static const int DIMENSION = 3;
 
 public:
 
 
   double DistanceToVector( std::vector<double> vector );
+
+  vtkMRMLLORPositionBufferNode* GetPositionBuffer();
+  void SetPositionBuffer( vtkMRMLLORPositionBufferNode* newPositionBuffer );
+
+  void Filter( int filterWidth );
 
   // Abstract functions that must be implemented in subclasses
   virtual std::vector<double> ProjectVector( std::vector<double> vector ) = 0;
@@ -55,19 +65,6 @@ public:
   virtual void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element ) = 0;
 
 };
-
-
-double Distance( std::vector<double> v1, std::vector<double> v2 );
-double Norm( std::vector<double> vector );
-double Dot( std::vector<double> v1, std::vector<double> v2 );
-std::vector<double> Cross( std::vector<double> v1, std::vector<double> v2 );
-
-std::vector<double> Add( std::vector<double> v1, std::vector<double> v2 );
-std::vector<double> Subtract( std::vector<double> v1, std::vector<double> v2 );
-std::vector<double> Multiply( double c, std::vector<double> vector ); 
-
-std::string VectorToString( std::vector<double> vector );
-std::vector<double> StringToVector( std::string s, int size );
 
 
 #endif

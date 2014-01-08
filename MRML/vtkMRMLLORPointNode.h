@@ -1,7 +1,7 @@
-#ifndef __vtkLORPoint_h
-#define __vtkLORPoint_h
+#ifndef __vtkMRMLLORPointNode_h
+#define __vtkMRMLLORPointNode_h
 
-#include "vtkLORLinearObject.h"
+#include "vtkMRMLLORLinearObjectNode.h"
 
 // Standard includes
 #include <string>
@@ -16,25 +16,25 @@
 #include "vtkXMLDataElement.h"
 
 // LinearObjectRegistration includes
-#include "vtkLORLinearObject.h"
-#include "vtkSlicerLinearObjectRegistrationModuleLogicExport.h"
+#include "vtkMRMLLORLinearObjectNode.h"
+#include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
 
 
 // This class stores a vector of values and a string label
-class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_LOGIC_EXPORT
-vtkLORPoint : public vtkLORLinearObject
+class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
+vtkMRMLLORPointNode : public vtkMRMLLORLinearObjectNode
 {
 public:
-  vtkTypeMacro( vtkLORPoint, vtkObject );
+  vtkTypeMacro( vtkMRMLLORPointNode, vtkObject );
 
-  static vtkLORPoint* New();
-  static vtkLORPoint* New( std::vector<double> newBasePoint );
+  static vtkMRMLLORPointNode* New();
+  static vtkMRMLLORPointNode* New( std::vector<double> newBasePoint );
 
 protected:
 
   // Constructor/desstructor
-  vtkLORPoint();
-  virtual ~vtkLORPoint();
+  vtkMRMLLORPointNode();
+  virtual ~vtkMRMLLORPointNode();
 
 
 public:

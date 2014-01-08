@@ -15,6 +15,7 @@
 #include <vector>
 #include <cmath>
 #include <ctime>
+#include <limits>
 
 // VTK includes
 #include "vtkObject.h"
@@ -34,16 +35,17 @@
 #include "vtkSlicerModuleLogic.h"
 #include "vtkMRMLLinearTransformNode.h"
 #include "vtkMRMLModelNode.h"
+#include "vtkMRMLScene.h"
 
 // LinearObjectRegistration includes
-#include "vtkLORLinearObject.h"
-#include "vtkLORLinearObjectBuffer.h"
-#include "vtkLORPoint.h"
-#include "vtkLORLine.h"
-#include "vtkLORPlane.h"
-#include "vtkLORReference.h"
-#include "vtkLORPointObservation.h"
-#include "vtkLORPointObservationBuffer.h"
+#include "vtkMRMLLORLinearObjectNode.h"
+#include "vtkMRMLLORLinearObjectCollectionNode.h"
+#include "vtkMRMLLORPointNode.h"
+#include "vtkMRMLLORLineNode.h"
+#include "vtkMRMLLORPlaneNode.h"
+#include "vtkMRMLLORReferenceNode.h"
+#include "vtkMRMLLORPositionNode.h"
+#include "vtkMRMLLORPositionBufferNode.h"
 #include "vtkSlicerLinearObjectRegistrationModuleLogicExport.h"
 
 
@@ -64,6 +66,7 @@ public:
   
   virtual void OnMRMLSceneEndClose();
  
+  void ProcessMRMLNodesEvents( vtkObject* caller, unsigned long event, void* callData );
   
 protected:
   
@@ -87,44 +90,54 @@ private:
 // Specific LinearObjectRegistration logic -----------------------------------------------
 
 public:
-  void ImportGeometry( std::string fileName );
-  void ImportRecord( std::string fileName, int filterWidth, int collectionFrames, double extractionThreshold );
-  void Register( double matchingThreshold );
-  void SetRegistrationTransformNode( vtkSmartPointer< vtkMRMLLinearTransformNode > newRegistrationTransformNode );
+
+  void Register( vtkMRMLLORLinearObjectCollectionNode* fromLinearObjects, vtkMRMLLORLinearObjectCollectionNode* toLinearObjects, vtkMRMLLinearTransformNode* outputTransform );
+  void UpdateOutputTransform( vnl_matrix<double>* newTransformMatrix );
+  void UpdateOutputTransform( vnl_matrix<double>* newRotationMatrix, vnl_matrix<double>* newRotationVector );
+
+  vnl_matrix<double>* SphericalRegistration( vtkSmartPointer< vtkMRMLLORPositionBufferNode > fromPoints, vtkSmartPointer< vtkMRMLLORPositionBufferNode > toPoints );
+  vnl_matrix<double>* TranslationalRegistration( std::vector<double> toCentroid, std::vector<double> fromCentroid, vnl_matrix<double>* rotation );
 
   vnl_matrix<double>* LinearObjectICP( vnl_matrix<double>* initialRotation );
 
-  double GetError();
-  std::string GetStatus();
+  std::string GetOutputMessage();
+
+  void SetOutputTransform( vtkMRMLNode* node );
+
+  vtkMRMLLORLinearObjectNode* PositionBufferToLinearObject( vtkMRMLLORPositionBufferNode* positionBuffer, int dof = -1 );
+
+  void ObserveTransformNode( vtkMRMLNode* node );
+
+  vtkMRMLLORLinearObjectCollectionNode* GetActiveCollectionNode();
+  void SetActiveCollectionNode( vtkMRMLLORLinearObjectCollectionNode* newActiveCollectionNode );
+
+  void FinalizeActivePositionBuffer();
+  void InitializeActivePositionBuffer( std::string collectType );
+
+  void InsertNewLinearObject( vtkMRMLLORLinearObjectNode* linearObject );
+
+  void MatchCollections( vtkMRMLLORLinearObjectCollectionNode* fromCollection, vtkMRMLLORLinearObjectCollectionNode* toCollection );
+  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > GetReferences( vtkMRMLLORLinearObjectCollectionNode* collection );
+  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > GetNonReferences( vtkMRMLLORLinearObjectCollectionNode* collection );
+
+  // Only to be called from the register method
+  void GetFromAndToCollections( vtkMRMLLORLinearObjectCollectionNode* fromReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* fromPointCollection, vtkMRMLLORLinearObjectCollectionNode* fromLineCollection, vtkMRMLLORLinearObjectCollectionNode* fromPlaneCollection,
+                          vtkMRMLLORLinearObjectCollectionNode* toReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* toPointCollection, vtkMRMLLORLinearObjectCollectionNode* toLineCollection, vtkMRMLLORLinearObjectCollectionNode* toPlaneCollection );
 
 
 private:
 
-  vtkSmartPointer< vtkLORLinearObjectBuffer > GeometryBuffer;
-  vtkSmartPointer< vtkLORLinearObjectBuffer > GeometryPointBuffer;
-  vtkSmartPointer< vtkLORLinearObjectBuffer > GeometryLineBuffer;
-  vtkSmartPointer< vtkLORLinearObjectBuffer > GeometryPlaneBuffer;
-  vtkSmartPointer< vtkLORLinearObjectBuffer > GeometryReferenceBuffer;
+  // Only to be used in the collections getting methods
+  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > FromLinearObjects;
+  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > ToLinearObjects;
 
-  void ResetGeometry();
+  vtkMRMLLinearTransformNode* OutputTransform;
+  vtkMRMLLinearTransformNode* ObservedTransformNode;
+  vtkMRMLLORPositionBufferNode* ActivePositionBuffer;
+  vtkMRMLLORLinearObjectCollectionNode* ActiveCollectionNode;
+  std::string CollectType;
 
-  vtkSmartPointer< vtkLORLinearObjectBuffer > RecordPointBuffer;
-  vtkSmartPointer< vtkLORLinearObjectBuffer > RecordLineBuffer;
-  vtkSmartPointer< vtkLORLinearObjectBuffer > RecordPlaneBuffer;
-  vtkSmartPointer< vtkLORLinearObjectBuffer > RecordReferenceBuffer;
-
-  std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > ReferencePoints;
-  std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > LinearObjectPoints;
-  std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > PointPoints;
-  std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > LinePoints;
-  std::vector< vtkSmartPointer< vtkLORPointObservationBuffer > > PlanePoints;
-
-  void ResetRecord();
-
-  vtkSmartPointer< vtkMRMLLinearTransformNode > RegistrationTransformNode;
-
-  double ErrorRMS;
-  std::string Status;
+  std::string OutputMessage;
 
 };
 

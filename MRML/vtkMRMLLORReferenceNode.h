@@ -1,6 +1,6 @@
 
-#ifndef __vtkLORReference_h
-#define __vtkLORReference_h
+#ifndef __vtkMRMLLORReferenceNode_h
+#define __vtkMRMLLORReferenceNode_h
 
 // Standard includes
 #include <string>
@@ -15,26 +15,26 @@
 #include "vtkXMLDataElement.h"
 
 // LinearObjectRegistration includes
-#include "vtkLORLinearObject.h"
-#include "vtkSlicerLinearObjectRegistrationModuleLogicExport.h"
+#include "vtkMRMLLORLinearObjectNode.h"
+#include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
 
 
 
 // This class stores a vector of values and a string label
-class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_LOGIC_EXPORT
-vtkLORReference : public vtkLORLinearObject
+class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
+vtkMRMLLORReferenceNode : public vtkMRMLLORLinearObjectNode
 {
 public:
-  vtkTypeMacro( vtkLORReference, vtkObject );
+  vtkTypeMacro( vtkMRMLLORReferenceNode, vtkObject );
 
-  static vtkLORReference* New();
-  static vtkLORReference* New( std::vector<double> newBasePoint );
+  static vtkMRMLLORReferenceNode* New();
+  static vtkMRMLLORReferenceNode* New( std::vector<double> newBasePoint );
 
 protected:
 
   // Constructor/destructor
-  vtkLORReference();
-  virtual ~vtkLORReference();
+  vtkMRMLLORReferenceNode();
+  virtual ~vtkMRMLLORReferenceNode();
 
 public:
 

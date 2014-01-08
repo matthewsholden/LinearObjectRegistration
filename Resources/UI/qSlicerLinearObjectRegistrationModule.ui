@@ -33,55 +33,108 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="QGroupBox" name="InputBox">
+       <widget class="QGroupBox" name="FromGroupBox">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>800</width>
-          <height>16777215</height>
-         </size>
+        <property name="title">
+         <string>From Linear Objects</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_5"/>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="ToGroupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
         <property name="title">
-         <string>Input</string>
+         <string>To Linear Objects</string>
         </property>
-        <layout class="QGridLayout" name="gridLayout">
-         <property name="verticalSpacing">
-          <number>10</number>
-         </property>
-         <item row="1" column="0">
-          <layout class="QGridLayout" name="InputBoxLayout">
-           <item row="0" column="0">
-            <widget class="QLabel" name="GeometryFileLabel">
+        <layout class="QVBoxLayout" name="verticalLayout_6"/>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="CollectionGroupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="title">
+         <string>Collect Linear Objects</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <layout class="QHBoxLayout" name="CollectionModeLayout">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="CollectionModeLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
-              <string>Select Geometry File:</string>
+              <string>Collection Mode:</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="1">
-            <widget class="QPushButton" name="GeometryFileButton">
-             <property name="text">
-              <string>Geometry File</string>
+           <item>
+            <layout class="QVBoxLayout" name="RadioButtonLayout">
+             <property name="rightMargin">
+              <number>0</number>
              </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="RecordFileLabel">
-             <property name="text">
-              <string>Select Record File:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QPushButton" name="RecordFileButton">
-             <property name="text">
-              <string>Record File</string>
-             </property>
-            </widget>
+             <item>
+              <widget class="QRadioButton" name="AutomaticRadioButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Automatic</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="ManualSegmentationRadioButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Manual Segmentation</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="ManualDOFRadioButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Manual DOF</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </item>
@@ -89,9 +142,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="ResultsBox">
+       <widget class="QGroupBox" name="OutputGroupBox">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -103,21 +156,20 @@
          </size>
         </property>
         <property name="title">
-         <string>Results</string>
+         <string>From-&gt;To Transform</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_4">
          <property name="verticalSpacing">
           <number>10</number>
          </property>
-         <item row="1" column="0">
-          <widget class="QPushButton" name="RegisterButton">
-           <property name="text">
-            <string>Register</string>
+         <item row="2" column="0">
+          <widget class="qMRMLNodeComboBox" name="OutputNodeComboBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="qMRMLNodeComboBox" name="TransformNodeSelector">
            <property name="nodeTypes">
             <stringlist>
              <string>vtkMRMLLinearTransformNode</string>
@@ -128,17 +180,36 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="StatusLabel">
            <property name="text">
             <string>Status:</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="ErrorLabel">
+         <item row="1" column="0">
+          <widget class="QPushButton" name="RegisterButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
-            <string>RMS Error:</string>
+            <string>Register</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QPushButton" name="MatchButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Match</string>
            </property>
           </widget>
          </item>
@@ -160,7 +231,7 @@
       <string>Advanced</string>
      </property>
      <property name="collapsed">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="contentsFrameShape">
       <enum>QFrame::NoFrame</enum>
@@ -333,7 +404,7 @@
   <connection>
    <sender>qSlicerLinearObjectRegistrationModule</sender>
    <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>TransformNodeSelector</receiver>
+   <receiver>OutputNodeComboBox</receiver>
    <slot>setMRMLScene(vtkMRMLScene*)</slot>
    <hints>
     <hint type="sourcelabel">

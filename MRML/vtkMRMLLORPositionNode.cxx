@@ -1,62 +1,87 @@
 
-#include "vtkLORPointObservation.h"
+#include "vtkMRMLLORPositionNode.h"
 
-vtkStandardNewMacro( vtkLORPointObservation );
+vtkStandardNewMacro( vtkMRMLLORPositionNode );
 
 
-vtkLORPointObservation* vtkLORPointObservation
-::New( std::vector<double> newObservation )
+vtkMRMLLORPositionNode* vtkMRMLLORPositionNode
+::New( std::vector< double > newPosition )
 {
-  vtkLORPointObservation* newPointObservation = vtkLORPointObservation::New();
-  newPointObservation->Observation = newObservation;
-  return newPointObservation;
+  vtkMRMLLORPositionNode* newPositionNode = vtkMRMLLORPositionNode::New();
+  newPositionNode->Position = newPosition;
+  return newPositionNode;
+}
+
+vtkMRMLLORPositionNode* vtkMRMLLORPositionNode
+::New( vtkMatrix4x4* newMatrix )
+{
+  vtkMRMLLORPositionNode* newPositionNode = vtkMRMLLORPositionNode::New();
+  std::vector< double > newPosition( SIZE, 0.0 );
+  newPosition.at(0) = newMatrix->GetElement( 0, 3 );
+  newPosition.at(1) = newMatrix->GetElement( 1, 3 );
+  newPosition.at(2) = newMatrix->GetElement( 2, 3 );
+  newPositionNode->Position = newPosition;
+  return newPositionNode;
 }
 
 
-vtkLORPointObservation
-::vtkLORPointObservation()
+vtkMRMLLORPositionNode* vtkMRMLLORPositionNode
+::DeepCopy()
+{
+  vtkMRMLLORPositionNode* positionNodeCopy = vtkMRMLLORPositionNode::New();
+  std::vector< double > positionCopy( SIZE, 0.0 );
+  positionCopy.at(0) = this->Position.at( 0 );
+  positionCopy.at(1) = this->Position.at( 1 );
+  positionCopy.at(2) = this->Position.at( 2 );
+  positionNodeCopy->Position = positionCopy;
+  return positionNodeCopy;
+}
+
+
+vtkMRMLLORPositionNode
+::vtkMRMLLORPositionNode()
 {
 }
 
 
-vtkLORPointObservation
-::~vtkLORPointObservation()
+vtkMRMLLORPositionNode
+::~vtkMRMLLORPositionNode()
 {
-  this->Observation.clear();
+  this->Position.clear();
 }
 
 
-void vtkLORPointObservation
+void vtkMRMLLORPositionNode
 ::Translate( std::vector<double> translation )
 {
-  this->Observation = Add( this->Observation, translation );
+  this->Position = vtkMRMLLORVectorMath::Add( this->Position, translation );
 }
 
 
-void vtkLORPointObservation
+void vtkMRMLLORPositionNode
 ::Rotate( vnl_matrix<double>* rotation )
 {
-  vnl_matrix<double>* currPoint = new vnl_matrix<double>( vtkLORPointObservation::SIZE, 1, 0.0 );
-  currPoint->put( 0, 0, this->Observation.at(0) );
-  currPoint->put( 1, 0, this->Observation.at(1) );
-  currPoint->put( 2, 0, this->Observation.at(2) );
+  vnl_matrix<double>* currPoint = new vnl_matrix<double>( vtkMRMLLORPositionNode::SIZE, 1, 0.0 );
+  currPoint->put( 0, 0, this->Position.at(0) );
+  currPoint->put( 1, 0, this->Position.at(1) );
+  currPoint->put( 2, 0, this->Position.at(2) );
 
   vnl_matrix<double>* rotPoint = new vnl_matrix<double>( ( *rotation ) * ( *currPoint ) );
-  this->Observation.at(0) = rotPoint->get( 0, 0 );
-  this->Observation.at(1) = rotPoint->get( 1, 0 );
-  this->Observation.at(2) = rotPoint->get( 2, 0 );
+  this->Position.at(0) = rotPoint->get( 0, 0 );
+  this->Position.at(1) = rotPoint->get( 1, 0 );
+  this->Position.at(2) = rotPoint->get( 2, 0 );
 }
 
 
-std::string vtkLORPointObservation
+std::string vtkMRMLLORPositionNode
 ::ToXMLString()
 {
   std::stringstream xmlstring;
   std::stringstream matrixstring;
   // TODO: Should the rotation part be the zero matrix or the identity matrix?
-  matrixstring << "0 0 0 " << this->Observation.at(0) << " ";
-  matrixstring << "0 0 0 " << this->Observation.at(1) << " ";
-  matrixstring << "0 0 0 " << this->Observation.at(2) << " ";
+  matrixstring << "0 0 0 " << this->Position.at(0) << " ";
+  matrixstring << "0 0 0 " << this->Position.at(1) << " ";
+  matrixstring << "0 0 0 " << this->Position.at(2) << " ";
   matrixstring << "0 0 0 1";
 
   xmlstring << "  <log";
@@ -71,7 +96,7 @@ std::string vtkLORPointObservation
 }
 
 
-void vtkLORPointObservation
+void vtkMRMLLORPositionNode
 ::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
 {
 
@@ -80,7 +105,7 @@ void vtkLORPointObservation
     return;  // If it's not a "log" or is the wrong tool jump to the next.
   }
 
-  this->Observation = std::vector<double>( SIZE, 0.0 );
+  this->Position = std::vector<double>( SIZE, 0.0 );
 
   std::stringstream matrixstring( std::string( element->GetAttribute( "transform" ) ) );
   double value;
@@ -91,22 +116,22 @@ void vtkLORPointObservation
     // Note that 3, 7, 11 are the places where the translational components appear
 	if ( i == 3 )
 	{
-	  this->Observation.at(0) = value;
+	  this->Position.at(0) = value;
 	}
 	if ( i == 7 )
 	{
-	  this->Observation.at(1) = value;
+	  this->Position.at(1) = value;
 	}
 	if ( i == 11 )
 	{
-	  this->Observation.at(2) = value;
+	  this->Position.at(2) = value;
 	}
   }
 
 }
 
 
-bool vtkLORPointObservation
+bool vtkMRMLLORPositionNode
 ::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > currElement, vtkSmartPointer< vtkXMLDataElement > prevElement )
 {
   const double ROTATION_THRESHOLD = 0.005;
@@ -145,9 +170,9 @@ bool vtkLORPointObservation
 	}
   }
 
-  // Check to ensure that the current observation is appreciably different from the previous
+  // Check to ensure that the current position is appreciably different from the previous
   // If not, don't record (because the stylus was likely just lying around, not collecting)
-  if ( Distance( currRotation, prevRotation ) > ROTATION_THRESHOLD || Distance( currTranslation, prevTranslation ) > TRANSLATION_THRESHOLD )
+  if ( vtkMRMLLORVectorMath::Distance( currRotation, prevRotation ) > ROTATION_THRESHOLD || vtkMRMLLORVectorMath::Distance( currTranslation, prevTranslation ) > TRANSLATION_THRESHOLD )
   {
     this->FromXMLElement( currElement );
 	return true;

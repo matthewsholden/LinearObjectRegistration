@@ -1,0 +1,394 @@
+/*==============================================================================
+
+  Program: 3D Slicer
+
+  Copyright (c) Kitware Inc.
+
+  See COPYRIGHT.txt
+  or http://www.slicer.org/copyright/copyright.txt for details.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc.
+  and was partially funded by NIH grant 3P41RR013218-12S1
+
+==============================================================================*/
+
+// FooBar Widgets includes
+#include "qSlicerLinearObjectCollectionWidget.h"
+
+#include <QtGui>
+
+
+int LINEAROBJECT_NAME_COLUMN = 0;
+int LINEAROBJECT_TYPE_COLUMN = 1;
+int LINEAROBJECT_BUFFER_COLUMN = 2;
+int LINEAROBJECT_COLUMNS = 3;
+
+
+//-----------------------------------------------------------------------------
+/// \ingroup Slicer_QtModules_CreateModels
+class qSlicerLinearObjectCollectionWidgetPrivate
+  : public Ui_qSlicerLinearObjectCollectionWidget
+{
+  Q_DECLARE_PUBLIC(qSlicerLinearObjectCollectionWidget);
+protected:
+  qSlicerLinearObjectCollectionWidget* const q_ptr;
+
+public:
+  qSlicerLinearObjectCollectionWidgetPrivate( qSlicerLinearObjectCollectionWidget& object);
+  ~qSlicerLinearObjectCollectionWidgetPrivate();
+  virtual void setupUi(qSlicerLinearObjectCollectionWidget*);
+};
+
+// --------------------------------------------------------------------------
+qSlicerLinearObjectCollectionWidgetPrivate
+::qSlicerLinearObjectCollectionWidgetPrivate( qSlicerLinearObjectCollectionWidget& object) : q_ptr(&object)
+{
+}
+
+qSlicerLinearObjectCollectionWidgetPrivate
+::~qSlicerLinearObjectCollectionWidgetPrivate()
+{
+}
+
+
+// --------------------------------------------------------------------------
+void qSlicerLinearObjectCollectionWidgetPrivate
+::setupUi(qSlicerLinearObjectCollectionWidget* widget)
+{
+  this->Ui_qSlicerLinearObjectCollectionWidget::setupUi(widget);
+}
+
+//-----------------------------------------------------------------------------
+// qSlicerLinearObjectCollectionWidget methods
+
+//-----------------------------------------------------------------------------
+qSlicerLinearObjectCollectionWidget
+::qSlicerLinearObjectCollectionWidget(QWidget* parentWidget) : Superclass( parentWidget ) , d_ptr( new qSlicerLinearObjectCollectionWidgetPrivate(*this) )
+{
+}
+
+
+qSlicerLinearObjectCollectionWidget
+::~qSlicerLinearObjectCollectionWidget()
+{
+}
+
+
+qSlicerLinearObjectCollectionWidget* qSlicerLinearObjectCollectionWidget
+::New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic )
+{
+  qSlicerLinearObjectCollectionWidget* newLinearObjectCollectionWidget = new qSlicerLinearObjectCollectionWidget();
+  newLinearObjectCollectionWidget->LORLogic = newLORLogic;
+  newLinearObjectCollectionWidget->setup();
+  return newLinearObjectCollectionWidget;
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::setup()
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  d->setupUi(this);
+  this->setMRMLScene( this->LORLogic->GetMRMLScene() );
+
+  connect( d->LinearObjectCollectionNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onCollectionNodeChanged() ) );
+  
+  // Use the pressed signal (otherwise we can unpress buttons without clicking them)
+  connect( d->ActiveButton, SIGNAL( toggled( bool ) ), this, SLOT( SetCurrentActive() ) );
+
+  d->CollectionTableWidget->setContextMenuPolicy( Qt::CustomContextMenu );
+  connect( d->CollectionTableWidget, SIGNAL( customContextMenuRequested(const QPoint&) ), this, SLOT( onCollectionTableContextMenu(const QPoint&) ) );
+  connect( d->CollectionTableWidget, SIGNAL( cellChanged( int, int ) ), this, SLOT( onLinearObjectEdited( int, int ) ) );
+
+  // Connect to the markups mrml events
+  this->qvtkConnect( this->GetCurrentNode(), vtkCommand::ModifiedEvent, this, SLOT( onCollectionNodeModified() ) );
+
+  this->updateWidget();  
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::enter()
+{
+}
+
+
+vtkMRMLNode* qSlicerLinearObjectCollectionWidget
+::GetCurrentNode()
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  return d->LinearObjectCollectionNodeComboBox->currentNode();
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::SetCurrentNode( vtkMRMLNode* currentNode )
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( currentNode );
+  d->LinearObjectCollectionNodeComboBox->setCurrentNode( currentCollectionNode );
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::onCollectionNodeModified()
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  emit collectionNodeModified();
+  this->updateWidget();
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::onCollectionNodeChanged()
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+
+  if ( currentCollectionNode == NULL )
+  {
+    this->updateWidget(); // Have to update the widget anyway
+    return;
+  }
+
+  this->SetCurrentActive();
+
+  // Disconnect and reconnect to new node
+  this->qvtkDisconnectAll();
+  this->qvtkConnect( this->GetCurrentNode(), vtkCommand::ModifiedEvent, this, SLOT( onCollectionNodeModified() ) );
+
+  this->updateWidget();
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::SetCurrentActive()
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+
+  if ( currentCollectionNode == NULL )
+  {
+    return;
+  }
+
+  this->LORLogic->SetActiveCollectionNode( currentCollectionNode );
+
+  // Modify all collection nodes to force the other LOR collection widgets to change the state of their active button
+  vtkCollection* collectionNodeCollection = this->mrmlScene()->GetNodesByClass( "vtkMRMLLORLinearObjectCollectionNode" );
+  for ( int i = 0; i < collectionNodeCollection->GetNumberOfItems(); i++ )
+  {
+    collectionNodeCollection->GetItemAsObject( i )->Modified();
+  }
+
+  this->updateWidget();
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::onCollectionTableContextMenu(const QPoint& position)
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  QPoint globalPosition = d->CollectionTableWidget->viewport()->mapToGlobal( position );
+
+  QMenu* collectionMenu = new QMenu( d->CollectionTableWidget );
+  QAction* activateAction = new QAction( "Make collection active", collectionMenu );
+  QAction* deleteAction = new QAction( "Delete current linear object", collectionMenu );
+  QAction* upAction = new QAction( "Move current linear object up", collectionMenu );
+  QAction* downAction = new QAction( "Move current linear object down", collectionMenu );
+  QAction* shuffleAction = new QAction( "Remove blank linear objects", collectionMenu );
+  QAction* matchAction = new QAction( "Match...", collectionMenu );
+
+  collectionMenu->addAction( activateAction );
+  collectionMenu->addAction( deleteAction );
+  collectionMenu->addAction( upAction );
+  collectionMenu->addAction( downAction );
+  collectionMenu->addAction( shuffleAction );
+  collectionMenu->addAction( matchAction );
+
+  QAction* selectedAction = collectionMenu->exec( globalPosition );
+
+  int currentIndex = d->CollectionTableWidget->currentRow();
+  vtkMRMLLORLinearObjectCollectionNode* currentCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  
+  if ( currentCollection == NULL )
+  {
+    return;
+  }
+
+  // Only do this for non-null node
+  if ( selectedAction == activateAction )
+  {
+    this->SetCurrentActive();
+  }
+
+  if ( selectedAction == deleteAction )
+  {
+    currentCollection->RemoveLinearObject( currentIndex );
+  }
+
+  if ( selectedAction == upAction )
+  {
+    if ( currentIndex > 0 )
+    {
+      currentCollection->Swap( currentIndex, currentIndex - 1 );
+    }
+  }
+
+  if ( selectedAction == downAction )
+  {
+    if ( currentIndex < currentCollection->Size() - 1 )
+    {
+      currentCollection->Swap( currentIndex, currentIndex + 1 );
+    }
+  }
+
+  if ( selectedAction == shuffleAction )
+  {
+    currentCollection->ShuffleOutNull();
+  }
+
+  if ( selectedAction == matchAction )
+  {
+    emit matchRequested( currentIndex );
+  }
+
+  
+  this->updateWidget();
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::onLinearObjectEdited( int row, int column )
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  /*
+  vtkMRMLMarkupsFiducialNode* currentMarkupsFiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast( this->GetCurrentNode() );
+
+  if ( currentMarkupsFiducialNode == NULL )
+  {
+    return;
+  }
+
+  // Find the fiducial's current properties
+  double currentFiducialPosition[3] = { 0, 0, 0 };
+  currentMarkupsFiducialNode->GetNthFiducialPosition( row, currentFiducialPosition );
+  std::string currentFiducialLabel = currentMarkupsFiducialNode->GetNthFiducialLabel( row );
+
+  // Find the entry that we changed
+  QTableWidgetItem* qItem = d->MarkupsFiducialTableWidget->item( row, column );
+  QString qText = qItem->text();
+
+  if ( column == FIDUCIAL_LABEL_COLUMN )
+  {
+    currentMarkupsFiducialNode->SetNthFiducialLabel( row, qText.toStdString() );
+  }
+
+  // Check if the value can be converted to double is already performed implicitly
+  double newFiducialPosition = qText.toDouble();
+
+  // Change the position values
+  if ( column == FIDUCIAL_X_COLUMN )
+  {
+    currentFiducialPosition[ 0 ] = newFiducialPosition;
+  }
+  if ( column == FIDUCIAL_Y_COLUMN )
+  {
+    currentFiducialPosition[ 1 ] = newFiducialPosition;
+  }
+  if ( column == FIDUCIAL_Z_COLUMN )
+  {
+    currentFiducialPosition[ 2 ] = newFiducialPosition;
+  }
+
+  currentMarkupsFiducialNode->SetNthFiducialPositionFromArray( row, currentFiducialPosition );
+  */
+
+  this->updateWidget(); // This may not be necessary the widget is updated whenever a fiducial is changed
+}
+
+
+
+void qSlicerLinearObjectCollectionWidget
+::updateWidget()
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  if ( currentCollectionNode == NULL )
+  {
+    d->CollectionTableWidget->clear();
+    d->CollectionTableWidget->setRowCount( 0 );
+    d->CollectionTableWidget->setColumnCount( 0 );
+    d->ActiveButton->setChecked( false );
+    return;
+  }
+
+  // Set the button indicating if this list is active
+  d->ActiveButton->blockSignals( true );
+
+  if ( strcmp( this->LORLogic->GetActiveCollectionNode()->GetID(), currentCollectionNode->GetID() ) == 0 )
+  {
+    d->ActiveButton->setChecked( true );
+  }
+  else
+  {
+    d->ActiveButton->setChecked( false );
+  }
+
+  d->ActiveButton->blockSignals( false );
+
+  // Update the fiducials table
+  d->CollectionTableWidget->blockSignals( true );
+ 
+  d->CollectionTableWidget->clear();
+  QStringList CollectionTableHeaders;
+  CollectionTableHeaders << "Name" << "Type" << "Buffer";
+  d->CollectionTableWidget->setRowCount( currentCollectionNode->Size() );
+  d->CollectionTableWidget->setColumnCount( LINEAROBJECT_COLUMNS );
+  d->CollectionTableWidget->setHorizontalHeaderLabels( CollectionTableHeaders );
+  d->CollectionTableWidget->horizontalHeader()->setResizeMode( QHeaderView::Stretch );
+  
+  for ( int i = 0; i < currentCollectionNode->Size(); i++ )
+  {
+    if ( currentCollectionNode->GetLinearObject( i ) == NULL )
+    {
+      continue;
+    }
+
+    QTableWidgetItem* nameItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->Name ) );
+    QTableWidgetItem* typeItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->Type ) );
+
+    std::stringstream bufferString;
+    if ( currentCollectionNode->GetLinearObject( i )->GetPositionBuffer() == NULL )
+    {
+      bufferString << "None";
+    }
+    else
+    {
+      bufferString << currentCollectionNode->GetLinearObject( i )->GetPositionBuffer()->Size() << " Positions";
+    }
+    QTableWidgetItem* bufferItem = new QTableWidgetItem( QString::fromStdString( bufferString.str() ) );
+
+
+    d->CollectionTableWidget->setItem( i, LINEAROBJECT_NAME_COLUMN, nameItem );
+    d->CollectionTableWidget->setItem( i, LINEAROBJECT_TYPE_COLUMN, typeItem );
+    d->CollectionTableWidget->setItem( i, LINEAROBJECT_BUFFER_COLUMN, bufferItem );
+  }
+
+  d->CollectionTableWidget->blockSignals( false );
+}

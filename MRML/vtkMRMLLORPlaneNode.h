@@ -1,6 +1,6 @@
 
-#ifndef __vtkLORPlane_h
-#define __vtkLORPlane_h
+#ifndef __vtkMRMLLORPlaneNode_h
+#define __vtkMRMLLORPlaneNode_h
 
 // Standard includes
 #include <string>
@@ -15,25 +15,25 @@
 #include "vtkXMLDataElement.h"
 
 // LinearObjectRegistration includes
-#include "vtkLORLinearObject.h"
-#include "vtkSlicerLinearObjectRegistrationModuleLogicExport.h"
+#include "vtkMRMLLORLinearObjectNode.h"
+#include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
 
 
 // This class stores a vector of values and a string label
-class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_LOGIC_EXPORT
-vtkLORPlane : public vtkLORLinearObject
+class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
+vtkMRMLLORPlaneNode : public vtkMRMLLORLinearObjectNode
 {
 public:
-  vtkTypeMacro( vtkLORPlane, vtkObject );
+  vtkTypeMacro( vtkMRMLLORPlaneNode, vtkObject );
 
-  static vtkLORPlane* New();
-  static vtkLORPlane* New( std::vector<double> newBasePoint, std::vector<double> newEndPoint1, std::vector<double> newEndPoint2 );
+  static vtkMRMLLORPlaneNode* New();
+  static vtkMRMLLORPlaneNode* New( std::vector<double> newBasePoint, std::vector<double> newEndPoint1, std::vector<double> newEndPoint2 );
 
 protected:
 
   // Constructor/destructor
-  vtkLORPlane();
-  virtual ~vtkLORPlane();
+  vtkMRMLLORPlaneNode();
+  virtual ~vtkMRMLLORPlaneNode();
 
 public:
 

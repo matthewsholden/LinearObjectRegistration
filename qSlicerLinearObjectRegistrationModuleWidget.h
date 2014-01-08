@@ -24,11 +24,12 @@ public:
 
 public slots:
 
-  void OnGeometryFileButtonClicked();
-  void OnRecordFileButtonClicked();
-  void OnRegisterButtonClicked();
   void OnTransformNodeSelected( vtkMRMLNode* );
-  
+  void OnRegisterButtonClicked();
+  void OnMatchButtonClicked();
+
+  void OnFromMatchRequested( int matchIndex );
+  void OnToMatchRequested( int matchIndex );
 
 protected:
   QScopedPointer<qSlicerLinearObjectRegistrationModuleWidgetPrivate> d_ptr;
@@ -40,6 +41,9 @@ private:
   Q_DISABLE_COPY(qSlicerLinearObjectRegistrationModuleWidget);
   
   void UpdateGUI();
+
+  int FromMatchState;
+  int ToMatchState;
   
   double TimerIntervalSec;
   QTimer* Timer;

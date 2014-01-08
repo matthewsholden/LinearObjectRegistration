@@ -9,7 +9,10 @@
 #include "qSlicerLinearObjectRegistrationModuleWidget.h"
 #include "ui_qSlicerLinearObjectRegistrationModule.h"
 
+#include "qSlicerLinearObjectCollectionWidget.h"
+
 #include "vtkSlicerLinearObjectRegistrationLogic.h"
+#include "qSlicerLORManualDOFWidget.h"
 
 #include "vtkMRMLModelNode.h"
 #include "vtkMRMLNode.h"
@@ -25,7 +28,13 @@ protected:
   qSlicerLinearObjectRegistrationModuleWidget* const q_ptr;
 public:
   qSlicerLinearObjectRegistrationModuleWidgetPrivate( qSlicerLinearObjectRegistrationModuleWidget& object );
+
   vtkSlicerLinearObjectRegistrationLogic* logic() const;
+
+  // Add embedded widgets here
+  qSlicerLinearObjectCollectionWidget* FromCollectionWidget;
+  qSlicerLinearObjectCollectionWidget* ToCollectionWidget;
+  qSlicerLORManualDOFWidget* ManualDOFWidget;
 };
 
 
@@ -64,91 +73,13 @@ qSlicerLinearObjectRegistrationModuleWidget::qSlicerLinearObjectRegistrationModu
   : Superclass( _parent )
   , d_ptr( new qSlicerLinearObjectRegistrationModuleWidgetPrivate( *this ) )
 {
-  this->Timer = new QTimer( this );
-  this->TimerIntervalSec = 0.1;
 }
 
 
 //-----------------------------------------------------------------------------
 qSlicerLinearObjectRegistrationModuleWidget::~qSlicerLinearObjectRegistrationModuleWidget()
 {
-  delete this->Timer;
 }
-
-
-
-void qSlicerLinearObjectRegistrationModuleWidget
-::OnGeometryFileButtonClicked()
-{
-  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
-  
-  QString filename = QFileDialog::getOpenFileName( this, tr("Open geometry"), "", tr("XML Files (*.xml)") );
-  
-  if ( filename.isEmpty() == false )
-  {
-    
-    QProgressDialog dialog;
-    dialog.setModal( true );
-    dialog.setLabelText( "Please wait while reading XML file..." );
-    dialog.show();
-    dialog.setValue( 10 );
-    
-    d->logic()->ImportGeometry( filename.toStdString() );
-
-    dialog.close();
-    
-  }
-  
-  this->UpdateGUI();
-}
-
-
-
-void qSlicerLinearObjectRegistrationModuleWidget
-::OnRecordFileButtonClicked()
-{
-  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
-  
-  QString filename = QFileDialog::getOpenFileName( this, tr("Open record"), "", tr("XML Files (*.xml)") );
-  
-  if ( filename.isEmpty() == false )
-  {
-    
-    QProgressDialog dialog;
-    dialog.setModal( true );
-    dialog.setLabelText( "Please wait while reading XML file..." );
-    dialog.show();
-    dialog.setValue( 10 );
-    
-    d->logic()->ImportRecord( filename.toStdString(), d->FilterWidthSpinBox->value(), d->CollectionFramesSpinBox->value(), d->ExtractionThresholdSpinBox->value() );
-
-    dialog.close();
-    
-  }
-  
-  this->UpdateGUI();
-}
-
-
-
-void qSlicerLinearObjectRegistrationModuleWidget
-::OnRegisterButtonClicked()
-{
-  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
-    
-  QProgressDialog dialog;
-  dialog.setModal( true );
-  dialog.setLabelText( "Registering..." );
-  dialog.show();
-  dialog.setValue( 10 );
-    
-  d->logic()->Register( d->MatchingThresholdSpinBox->value() );
-
-  dialog.close();
-  
-  this->UpdateGUI();
-}
-
 
 
 void qSlicerLinearObjectRegistrationModuleWidget
@@ -156,11 +87,77 @@ void qSlicerLinearObjectRegistrationModuleWidget
 {
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );
       
-  d->logic()->SetRegistrationTransformNode( vtkMRMLLinearTransformNode::SafeDownCast( newRegistrationTransformNode ) );
+  d->logic()->SetOutputTransform( vtkMRMLLinearTransformNode::SafeDownCast( newRegistrationTransformNode ) );
   
   this->UpdateGUI();
 }
 
+
+void qSlicerLinearObjectRegistrationModuleWidget
+::OnRegisterButtonClicked()
+{
+  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
+
+  vtkMRMLLORLinearObjectCollectionNode* fromCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->FromCollectionWidget->GetCurrentNode() );
+  vtkMRMLLORLinearObjectCollectionNode* toCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->ToCollectionWidget->GetCurrentNode() );
+  vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast( d->OutputNodeComboBox->currentNode() );
+      
+  d->logic()->Register( fromCollection, toCollection, transformNode );
+  
+  this->UpdateGUI();
+}
+
+
+void qSlicerLinearObjectRegistrationModuleWidget
+::OnMatchButtonClicked()
+{
+  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
+
+  vtkMRMLLORLinearObjectCollectionNode* fromCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->FromCollectionWidget->GetCurrentNode() );
+  vtkMRMLLORLinearObjectCollectionNode* toCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->ToCollectionWidget->GetCurrentNode() );
+
+  d->logic()->MatchCollections( fromCollection, toCollection );
+  
+  this->UpdateGUI();
+}
+
+
+void qSlicerLinearObjectRegistrationModuleWidget
+::OnFromMatchRequested( int matchIndex )
+{
+  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
+
+  this->FromMatchState = matchIndex;
+
+  if ( this->ToMatchState >= 0 )
+  {
+    vtkMRMLLORLinearObjectCollectionNode* currentCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->ToCollectionWidget->GetCurrentNode() );
+    currentCollection->Swap( this->ToMatchState, this->FromMatchState );
+
+    this->ToMatchState = -1;
+    this->FromMatchState = -1;
+  }
+
+}
+
+
+void qSlicerLinearObjectRegistrationModuleWidget
+::OnToMatchRequested( int matchIndex )
+{
+  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
+
+  this->ToMatchState = matchIndex;
+
+  if ( this->FromMatchState >= 0 )
+  {
+    vtkMRMLLORLinearObjectCollectionNode* currentCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->FromCollectionWidget->GetCurrentNode() );
+    currentCollection->Swap( this->FromMatchState, this->ToMatchState );
+
+    this->FromMatchState = -1;
+    this->ToMatchState = -1;
+  }
+
+}
 
 
 void
@@ -170,13 +167,28 @@ qSlicerLinearObjectRegistrationModuleWidget
   Q_D(qSlicerLinearObjectRegistrationModuleWidget);
   d->setupUi(this);
   this->Superclass::setup();
+
+  // Embed widgets here
+  d->FromCollectionWidget = qSlicerLinearObjectCollectionWidget::New( d->logic() );
+  d->FromGroupBox->layout()->addWidget( d->FromCollectionWidget );
+
+  d->ToCollectionWidget = qSlicerLinearObjectCollectionWidget::New( d->logic() );
+  d->ToGroupBox->layout()->addWidget( d->ToCollectionWidget );
+
+  d->ManualDOFWidget = qSlicerLORManualDOFWidget::New( d->logic() );
+  d->CollectionGroupBox->layout()->addWidget( d->ManualDOFWidget );
+
+  this->FromMatchState = -1;
+  this->ToMatchState = -1;
   
-  connect( d->GeometryFileButton, SIGNAL( clicked() ), this, SLOT( OnGeometryFileButtonClicked() ) );
-  connect( d->RecordFileButton, SIGNAL( clicked() ), this, SLOT( OnRecordFileButtonClicked() ) );
+  connect( d->OutputNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( OnTransformNodeSelected( vtkMRMLNode* ) ) );
 
   connect( d->RegisterButton, SIGNAL( clicked() ), this, SLOT( OnRegisterButtonClicked() ) );
 
-  connect( d->TransformNodeSelector, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( OnTransformNodeSelected( vtkMRMLNode* ) ) );
+  connect( d->MatchButton, SIGNAL( clicked() ), this, SLOT( OnMatchButtonClicked() ) );
+
+  connect( d->FromCollectionWidget, SIGNAL( matchRequested( int ) ), this, SLOT( OnFromMatchRequested( int ) ) );
+  connect( d->ToCollectionWidget, SIGNAL( matchRequested( int ) ), this, SLOT( OnToMatchRequested( int ) ) );
 }
 
 
@@ -186,15 +198,10 @@ void qSlicerLinearObjectRegistrationModuleWidget
 {
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );
 
-  std::stringstream ss;
-
-  ss.str( "" );
-  ss << "Status: " << d->logic()->GetStatus();
-  d->StatusLabel->setText( ss.str().c_str() );
-
-  ss.str( "" );
-  ss << "RMS Error: " << d->logic()->GetError();
-  d->ErrorLabel->setText( ss.str().c_str() );
+  std::stringstream statusString;
+  statusString << "Status: ";
+  statusString << d->logic()->GetOutputMessage();
+  d->StatusLabel->setText( QString::fromStdString( statusString.str() ) );
   
 }
 
