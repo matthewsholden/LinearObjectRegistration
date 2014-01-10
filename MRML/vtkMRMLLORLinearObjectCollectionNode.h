@@ -11,15 +11,17 @@
 // VTK includes
 #include "vtkSmartPointer.h"
 #include "vtkObjectFactory.h"
-#include "vtkXMLDataElement.h"
+#include "vtkXMLDataParser.h"
 
 #include "vtkMRMLNode.h"
+#include "vtkMRMLStorableNode.h"
 
 // VNL includes
 #include "vnl/vnl_matrix.h"
 #include "vnl/algo/vnl_matrix_inverse.h"
 
 // LinearObjectRegistration includes
+#include "vtkMRMLLORLinearObjectCollectionStorageNode.h"
 #include "vtkMRMLLORLinearObjectNode.h"
 #include "vtkMRMLLORReferenceNode.h"
 #include "vtkMRMLLORPointNode.h"
@@ -29,10 +31,10 @@
 
 // This class stores a vector of values and a string label
 class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
-vtkMRMLLORLinearObjectCollectionNode : public vtkMRMLNode
+vtkMRMLLORLinearObjectCollectionNode : public vtkMRMLStorableNode
 {
 public:
-  vtkTypeMacro( vtkMRMLLORLinearObjectCollectionNode, vtkMRMLNode );
+  vtkTypeMacro( vtkMRMLLORLinearObjectCollectionNode, vtkMRMLStorableNode );
   
   // Standard MRML node methods  
   static vtkMRMLLORLinearObjectCollectionNode *New();  
@@ -43,6 +45,11 @@ public:
   virtual void ReadXMLAttributes( const char** atts );
   virtual void WriteXML( ostream& of, int indent );
   virtual void Copy( vtkMRMLNode *node );
+  
+  // To use the storage node
+  virtual vtkMRMLStorageNode* CreateDefaultStorageNode() { return vtkMRMLLORLinearObjectCollectionStorageNode::New(); };
+  bool GetModifiedSinceRead() { return ( this->GetMTime() > this->GetStoredTime() ); };
+  virtual void UpdateScene( vtkMRMLScene *scene ) { Superclass::UpdateScene(scene); };
   
 protected:
 

@@ -48,10 +48,15 @@ std::string vtkMRMLLORPointNode
 {
   std::stringstream xmlstring;
 
-  xmlstring << "  <Point";
-  xmlstring << " Name=\"" << this->Name << "\"";
-  xmlstring << " BasePoint=\"" << vtkMRMLLORVectorMath::VectorToString( this->BasePoint ) << "\"";
-  xmlstring << " />" << std::endl;
+  xmlstring << "  <Point Name=\"" << this->Name << "\">" << std::endl;
+  xmlstring << "    <BasePoint Value=\"" << vtkMRMLLORVectorMath::VectorToString( this->BasePoint ) << "\"/>" << std::endl;
+
+  if ( this->GetPositionBuffer() != NULL )
+  {
+    xmlstring << this->GetPositionBuffer()->ToXMLString();
+  }
+
+  xmlstring << "  </Point>" << std::endl;
 
   return xmlstring.str();
 }
@@ -63,10 +68,29 @@ void vtkMRMLLORPointNode
 
   if ( strcmp( element->GetName(), "Point" ) != 0 )
   {
-    return;  // If it's not a "log" or is the wrong tool jump to the next.
+    return;  // If it's not a "reference" jump to the next.
   }
 
   this->Name = std::string( element->GetAttribute( "Name" ) );
-  this->BasePoint = vtkMRMLLORVectorMath::StringToVector( std::string( element->GetAttribute( "BasePoint" ) ), 3 );
+
+  int numElements = element->GetNumberOfNestedElements();
+
+  for ( int i = 0; i < numElements; i++ )
+  {
+
+    vtkSmartPointer< vtkXMLDataElement > noteElement = element->GetNestedElement( i );
+    
+	if ( strcmp( noteElement->GetName(), "BasePoint" ) == 0 )
+	{
+      this->BasePoint = vtkMRMLLORVectorMath::StringToVector( std::string( noteElement->GetAttribute( "Value" ) ), vtkMRMLLORLinearObjectNode::DIMENSION );
+	}
+	if ( strcmp( noteElement->GetName(), "Buffer" ) == 0 )
+	{
+      vtkMRMLLORPositionBufferNode* bufferNode = vtkMRMLLORPositionBufferNode::New();
+	  bufferNode->FromXMLElement( noteElement );
+      this->SetPositionBuffer( bufferNode );
+	}
+
+  }
 
 }

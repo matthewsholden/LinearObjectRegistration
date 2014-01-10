@@ -64,12 +64,17 @@ std::string vtkMRMLLORPlaneNode
 {
   std::stringstream xmlstring;
 
-  xmlstring << "  <Plane";
-  xmlstring << " Name=\"" << this->Name << "\"";
-  xmlstring << " BasePoint=\"" << vtkMRMLLORVectorMath::VectorToString( this->BasePoint ) << "\"";
-  xmlstring << " EndPoint1=\"" << vtkMRMLLORVectorMath::VectorToString( this->EndPoint1 ) << "\"";
-  xmlstring << " EndPoint2=\"" << vtkMRMLLORVectorMath::VectorToString( this->EndPoint2 ) << "\"";
-  xmlstring << " />" << std::endl;
+  xmlstring << "  <Plane Name=\"" << this->Name << "\">" << std::endl;
+  xmlstring << "    <BasePoint Value=\"" << vtkMRMLLORVectorMath::VectorToString( this->BasePoint ) << "\"/>" << std::endl;
+  xmlstring << "    <EndPoint1 Value=\"" << vtkMRMLLORVectorMath::VectorToString( this->EndPoint1 ) << "\"/>" << std::endl;
+  xmlstring << "    <EndPoint2 Value=\"" << vtkMRMLLORVectorMath::VectorToString( this->EndPoint2 ) << "\"/>" << std::endl;
+
+  if ( this->GetPositionBuffer() != NULL )
+  {
+    xmlstring << this->GetPositionBuffer()->ToXMLString();
+  }
+
+  xmlstring << "  </Plane>" << std::endl;
 
   return xmlstring.str();
 }
@@ -81,12 +86,37 @@ void vtkMRMLLORPlaneNode
 
   if ( strcmp( element->GetName(), "Plane" ) != 0 )
   {
-    return;  // If it's not a "log" or is the wrong tool jump to the next.
+    return;  // If it's not a "Plane" jump to the next.
   }
 
   this->Name = std::string( element->GetAttribute( "Name" ) );
-  this->BasePoint = vtkMRMLLORVectorMath::StringToVector( std::string( element->GetAttribute( "BasePoint" ) ), 3 );
-  this->EndPoint1 = vtkMRMLLORVectorMath::StringToVector( std::string( element->GetAttribute( "EndPoint1" ) ), 3 );
-  this->EndPoint2 = vtkMRMLLORVectorMath::StringToVector( std::string( element->GetAttribute( "EndPoint2" ) ), 3 );
+
+  int numElements = element->GetNumberOfNestedElements();
+
+  for ( int i = 0; i < numElements; i++ )
+  {
+
+    vtkSmartPointer< vtkXMLDataElement > noteElement = element->GetNestedElement( i );
+    
+	if ( strcmp( noteElement->GetName(), "BasePoint" ) == 0 )
+	{
+      this->BasePoint = vtkMRMLLORVectorMath::StringToVector( std::string( noteElement->GetAttribute( "Value" ) ), vtkMRMLLORLinearObjectNode::DIMENSION );
+	}
+	if ( strcmp( noteElement->GetName(), "EndPoint1" ) == 0 )
+	{
+      this->EndPoint1 = vtkMRMLLORVectorMath::StringToVector( std::string( noteElement->GetAttribute( "Value" ) ), vtkMRMLLORLinearObjectNode::DIMENSION );
+	}
+	if ( strcmp( noteElement->GetName(), "EndPoint2" ) == 0 )
+	{
+      this->EndPoint2 = vtkMRMLLORVectorMath::StringToVector( std::string( noteElement->GetAttribute( "Value" ) ), vtkMRMLLORLinearObjectNode::DIMENSION );
+	}
+	if ( strcmp( noteElement->GetName(), "Buffer" ) == 0 )
+	{
+      vtkMRMLLORPositionBufferNode* bufferNode = vtkMRMLLORPositionBufferNode::New();
+	  bufferNode->FromXMLElement( noteElement );
+      this->SetPositionBuffer( bufferNode );
+	}
+
+  }
 
 }

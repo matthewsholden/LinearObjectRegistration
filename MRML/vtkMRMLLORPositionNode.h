@@ -57,7 +57,7 @@ public:
 
   std::string ToXMLString();
   void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
-  bool FromXMLElement( vtkSmartPointer< vtkXMLDataElement > currElement, vtkSmartPointer< vtkXMLDataElement > prevElement ); // Exclude if threshold not exceeded
+  // bool FromXMLElement( vtkSmartPointer< vtkXMLDataElement > currElement, vtkSmartPointer< vtkXMLDataElement > prevElement ); // Exclude if threshold not exceeded
 
 protected:
 

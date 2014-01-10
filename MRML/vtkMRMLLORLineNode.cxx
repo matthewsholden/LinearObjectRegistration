@@ -124,11 +124,16 @@ std::string vtkMRMLLORLineNode
 {
   std::stringstream xmlstring;
 
-  xmlstring << "  <Line";
-  xmlstring << " Name=\"" << this->Name << "\"";
-  xmlstring << " BasePoint=\"" << vtkMRMLLORVectorMath::VectorToString( this->BasePoint ) << "\"";
-  xmlstring << " EndPoint=\"" << vtkMRMLLORVectorMath::VectorToString( this->EndPoint ) << "\"";
-  xmlstring << " />" << std::endl;
+  xmlstring << "  <Line Name=\"" << this->Name << "\">" << std::endl;
+  xmlstring << "    <BasePoint Value=\"" << vtkMRMLLORVectorMath::VectorToString( this->BasePoint ) << "\"/>" << std::endl;
+  xmlstring << "    <EndPoint Value=\"" << vtkMRMLLORVectorMath::VectorToString( this->EndPoint ) << "\"/>" << std::endl;
+
+  if ( this->GetPositionBuffer() != NULL )
+  {
+    xmlstring << this->GetPositionBuffer()->ToXMLString();
+  }
+
+  xmlstring << "  </Line>" << std::endl;
 
   return xmlstring.str();
 }
@@ -140,11 +145,33 @@ void vtkMRMLLORLineNode
 
   if ( strcmp( element->GetName(), "Line" ) != 0 )
   {
-    return;  // If it's not a "log" or is the wrong tool jump to the next.
+    return;  // If it's not a "Line" jump to the next.
   }
 
   this->Name = std::string( element->GetAttribute( "Name" ) );
-  this->BasePoint = vtkMRMLLORVectorMath::StringToVector( std::string( element->GetAttribute( "BasePoint" ) ), 3 );
-  this->EndPoint = vtkMRMLLORVectorMath::StringToVector( std::string( element->GetAttribute( "EndPoint" ) ), 3 );
+
+  int numElements = element->GetNumberOfNestedElements();
+
+  for ( int i = 0; i < numElements; i++ )
+  {
+
+    vtkSmartPointer< vtkXMLDataElement > noteElement = element->GetNestedElement( i );
+    
+	if ( strcmp( noteElement->GetName(), "BasePoint" ) == 0 )
+	{
+      this->BasePoint = vtkMRMLLORVectorMath::StringToVector( std::string( noteElement->GetAttribute( "Value" ) ), vtkMRMLLORLinearObjectNode::DIMENSION );
+	}
+	if ( strcmp( noteElement->GetName(), "EndPoint" ) == 0 )
+	{
+      this->EndPoint = vtkMRMLLORVectorMath::StringToVector( std::string( noteElement->GetAttribute( "Value" ) ), vtkMRMLLORLinearObjectNode::DIMENSION );
+	}
+	if ( strcmp( noteElement->GetName(), "Buffer" ) == 0 )
+	{
+      vtkMRMLLORPositionBufferNode* bufferNode = vtkMRMLLORPositionBufferNode::New();
+	  bufferNode->FromXMLElement( noteElement );
+      this->SetPositionBuffer( bufferNode );
+	}
+
+  }
 
 }

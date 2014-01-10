@@ -28,6 +28,8 @@ set(${KIT}_SRCS
   vtkMRMLLORPlaneNode.h
   vtkMRMLLORLinearObjectCollectionNode.cxx
   vtkMRMLLORLinearObjectCollectionNode.h
+  vtkMRMLLORLinearObjectCollectionStorageNode.cxx
+  vtkMRMLLORLinearObjectCollectionStorageNode.h
   vtkMRMLLORLinearObjectNode.cxx
   vtkMRMLLORLinearObjectNode.h
   vtkMRMLLORLineNode.cxx

@@ -18,12 +18,16 @@
 // Qt includes
 #include <QtPlugin>
 
-// ExtensionTemplate Logic includes
-#include <vtkSlicerLinearObjectRegistrationLogic.h>
-
-// ExtensionTemplate includes
+// LinearObjectRegistration includes
+#include "vtkSlicerLinearObjectRegistrationLogic.h"
 #include "qSlicerLinearObjectRegistrationModule.h"
 #include "qSlicerLinearObjectRegistrationModuleWidget.h"
+#include "qSlicerLinearObjectRegistrationIO.h"
+
+// Slicer includes
+#include "qSlicerNodeWriter.h"
+#include "qSlicerCoreIOManager.h"
+#include "qSlicerCoreApplication.h"
 
 //-----------------------------------------------------------------------------
 Q_EXPORT_PLUGIN2(qSlicerLinearObjectRegistrationModule, qSlicerLinearObjectRegistrationModule);
@@ -101,6 +105,13 @@ QStringList qSlicerLinearObjectRegistrationModule::dependencies() const
 void qSlicerLinearObjectRegistrationModule::setup()
 {
   this->Superclass::setup();
+
+  qSlicerCoreApplication* app = qSlicerCoreApplication::application();
+  
+  // Register the IO
+  app->coreIOManager()->registerIO( new qSlicerLinearObjectRegistrationIO( this ) );
+  app->coreIOManager()->registerIO( new qSlicerNodeWriter( "LinearObjectRegistration", QString( "LinearObjectCollection" ), QStringList() << "vtkMRMLLORLinearObjectCollectionNode", this ) );
+  
 }
 
 //-----------------------------------------------------------------------------

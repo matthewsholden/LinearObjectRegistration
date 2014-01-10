@@ -94,19 +94,9 @@ std::string vtkMRMLLORPositionNode
 ::ToXMLString()
 {
   std::stringstream xmlstring;
-  std::stringstream matrixstring;
-  // TODO: Should the rotation part be the zero matrix or the identity matrix?
-  matrixstring << "0 0 0 " << this->GetPositionVector().at(0) << " ";
-  matrixstring << "0 0 0 " << this->GetPositionVector().at(1) << " ";
-  matrixstring << "0 0 0 " << this->GetPositionVector().at(2) << " ";
-  matrixstring << "0 0 0 1";
 
-  xmlstring << "  <log";
-  xmlstring << " TimeStampSec=\"" << 0 << "\"";
-  xmlstring << " TimeStampNSec=\"" << 0 << "\"";
-  xmlstring << " type=\"transform\"";
-  xmlstring << " DeviceName=\"" << "Pointer" << "\"";
-  xmlstring << " transform=\"" << matrixstring << "\"";
+  xmlstring << "      <Position";
+  xmlstring << " Value=\"" << vtkMRMLLORVectorMath::VectorToString( this->GetPositionVector() ) << "\"";
   xmlstring << " />" << std::endl;
 
   return xmlstring.str();
@@ -117,38 +107,16 @@ void vtkMRMLLORPositionNode
 ::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
 {
 
-  if ( strcmp( element->GetName(), "log" ) != 0 || strcmp( element->GetAttribute( "type" ), "transform" ) != 0 )
+  if ( strcmp( element->GetName(), "Position" ) != 0 )
   {
-    return;  // If it's not a "log" or is the wrong tool jump to the next.
+    return;  // If it's not a "Position" jump to the next.
   }
 
-  std::vector<double> newPositionVector( SIZE, 0.0 );
-
-  std::stringstream matrixstring( std::string( element->GetAttribute( "transform" ) ) );
-  double value;
-
-  for ( int i = 0; i < this->MATRIX_ELEMENTS; i++ )
-  {
-    matrixstring >> value;
-    // Note that 3, 7, 11 are the places where the translational components appear
-	if ( i == 3 )
-	{
-	  newPositionVector.at(0) = value;
-	}
-	if ( i == 7 )
-	{
-	  newPositionVector.at(1) = value;
-	}
-	if ( i == 11 )
-	{
-	  newPositionVector.at(2) = value;
-	}
-  }
-
-  this->SetPositionVector( newPositionVector );
+  this->SetPositionVector( vtkMRMLLORVectorMath::StringToVector( std::string( element->GetAttribute( "Value" ) ), SIZE ) );
 }
 
 
+/*
 bool vtkMRMLLORPositionNode
 ::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > currElement, vtkSmartPointer< vtkXMLDataElement > prevElement )
 {
@@ -198,3 +166,4 @@ bool vtkMRMLLORPositionNode
 
   return false;
 }
+*/

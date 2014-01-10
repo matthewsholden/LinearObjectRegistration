@@ -76,10 +76,12 @@ std::string vtkMRMLLORPositionBufferNode
 {
   std::stringstream xmlstring;
 
+  xmlstring << "    <Buffer>" << std::endl;
   for ( int i = 0; i < this->Size(); i++ )
   {
     xmlstring << this->GetPosition(i)->ToXMLString();
   }
+  xmlstring << "    </Buffer>" << std::endl;
 
   return xmlstring.str();
 }
@@ -88,6 +90,11 @@ std::string vtkMRMLLORPositionBufferNode
 void vtkMRMLLORPositionBufferNode
 ::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
 {
+  if ( strcmp( element->GetName(), "Buffer" ) != 0 && strcmp( element->GetName(), "PositionBuffer" ) != 0 )
+  {
+    return;
+  }
+
   vtkSmartPointer< vtkMRMLLORPositionNode > blankPosition;
   this->Positions = std::vector< vtkSmartPointer< vtkMRMLLORPositionNode > >( 0, blankPosition );
 
