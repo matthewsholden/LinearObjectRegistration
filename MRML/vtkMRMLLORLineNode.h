@@ -36,9 +36,6 @@ protected:
   vtkMRMLLORLineNode();
   virtual ~vtkMRMLLORLineNode();
 
-public:
-
-  std::vector<double> EndPoint;
 
 public:
 
@@ -54,6 +51,11 @@ public:
   // Implement inherited abstract methods
   std::string ToXMLString();
   void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
+
+
+protected:
+
+  std::vector<double> EndPoint;
 
 };
 

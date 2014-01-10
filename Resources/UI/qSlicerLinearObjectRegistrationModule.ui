@@ -24,7 +24,7 @@
      </property>
      <property name="maximumSize">
       <size>
-       <width>800</width>
+       <width>16777215</width>
        <height>16777215</height>
       </size>
      </property>
@@ -32,6 +32,24 @@
       <string>Display</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="qMRMLNodeComboBox" name="ModuleNodeComboBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="nodeTypes">
+         <stringlist>
+          <string>vtkMRMLLinearObjectRegistrationNode</string>
+         </stringlist>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QGroupBox" name="FromGroupBox">
         <property name="sizePolicy">
@@ -63,7 +81,7 @@
       <item>
        <widget class="QGroupBox" name="CollectionGroupBox">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -132,11 +150,30 @@
                <property name="text">
                 <string>Manual DOF</string>
                </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
             </layout>
            </item>
           </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="AutomaticMatchCheckBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Match Automatically</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -151,7 +188,7 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>800</width>
+          <width>16777215</width>
           <height>16777215</height>
          </size>
         </property>
@@ -162,7 +199,7 @@
          <property name="verticalSpacing">
           <number>10</number>
          </property>
-         <item row="2" column="0">
+         <item row="0" column="0">
           <widget class="qMRMLNodeComboBox" name="OutputNodeComboBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -180,36 +217,10 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="1" column="0">
           <widget class="QLabel" name="StatusLabel">
            <property name="text">
             <string>Status:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QPushButton" name="RegisterButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Register</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QPushButton" name="MatchButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Match</string>
            </property>
           </widget>
          </item>
@@ -414,6 +425,22 @@
     <hint type="destinationlabel">
      <x>195</x>
      <y>166</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>qSlicerLinearObjectRegistrationModule</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>ModuleNodeComboBox</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>195</x>
+     <y>413</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>195</x>
+     <y>50</y>
     </hint>
    </hints>
   </connection>

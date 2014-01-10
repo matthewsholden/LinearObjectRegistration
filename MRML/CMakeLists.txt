@@ -12,6 +12,8 @@ set(${KIT}_INCLUDE_DIRECTORIES
 # Sources
 
 set(${KIT}_SRCS
+  vtkMRMLLinearObjectRegistrationNode.cxx
+  vtkMRMLLinearObjectRegistrationNode.h
   vtkMRMLLORVectorMath.cxx
   vtkMRMLLORVectorMath.h
   vtkMRMLLORReferenceNode.cxx

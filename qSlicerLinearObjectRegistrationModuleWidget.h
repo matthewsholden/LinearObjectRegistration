@@ -24,12 +24,14 @@ public:
 
 public slots:
 
-  void OnTransformNodeSelected( vtkMRMLNode* );
-  void OnRegisterButtonClicked();
-  void OnMatchButtonClicked();
+  //void OnRegisterButtonClicked();
+  //void OnMatchButtonClicked();
 
   void OnFromMatchRequested( int matchIndex );
   void OnToMatchRequested( int matchIndex );
+
+  void UpdateToMRMLNode();
+  void UpdateFromMRMLNode();
 
 protected:
   QScopedPointer<qSlicerLinearObjectRegistrationModuleWidgetPrivate> d_ptr;

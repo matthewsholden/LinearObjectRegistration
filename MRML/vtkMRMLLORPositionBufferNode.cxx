@@ -49,6 +49,7 @@ void vtkMRMLLORPositionBufferNode
 ::AddPosition( vtkSmartPointer< vtkMRMLLORPositionNode > newPosition )
 {
   this->Positions.push_back( newPosition );
+  this->Modified();
 }
 
 
@@ -56,6 +57,7 @@ void vtkMRMLLORPositionBufferNode
 ::Clear()
 {
   this->Positions.clear();
+  this->Modified();
 }
 
 
@@ -115,10 +117,12 @@ vnl_matrix<double>* vtkMRMLLORPositionBufferNode
   for ( int i = 0; i < this->Size(); i++ )
   {
     vtkSmartPointer< vtkMRMLLORPositionNode > newPosition = vtkSmartPointer< vtkMRMLLORPositionNode >::New();
+    std::vector<double> newPositionVector( vtkMRMLLORPositionNode::SIZE, 0.0 );
     for( int d = 0; d < vtkMRMLLORPositionNode::SIZE; d++ )
 	{
-	  newPosition->Position.push_back( this->GetPosition(i)->Position.at(d) - centroid.at(d) );
+	  newPositionVector.push_back( this->GetPosition(i)->GetPositionVector().at(d) - centroid.at(d) );
 	}
+    newPosition->SetPositionVector( newPositionVector );
 	zeroMeanBuffer->AddPosition( newPosition );
   }
 
@@ -130,7 +134,7 @@ vnl_matrix<double>* vtkMRMLLORPositionBufferNode
 	  // Iterate over all times
 	  for ( int i = 0; i < this->Size(); i++ )
 	  {
-	    cov->put( d1, d2, cov->get( d1, d2 ) + zeroMeanBuffer->GetPosition(i)->Position.at(d1) * zeroMeanBuffer->GetPosition(i)->Position.at(d2) );
+	    cov->put( d1, d2, cov->get( d1, d2 ) + zeroMeanBuffer->GetPosition(i)->GetPositionVector().at(d1) * zeroMeanBuffer->GetPosition(i)->GetPositionVector().at(d2) );
 	  }
 	  // Divide by the number of records
 	  cov->put( d1, d2, cov->get( d1, d2 ) / this->Size() );
@@ -151,7 +155,7 @@ std::vector<double> vtkMRMLLORPositionBufferNode
   {
 	  for ( int d = 0; d < vtkMRMLLORPositionNode::SIZE; d++ )
 	{
-      centroid.at(d) = centroid.at(d) + this->GetPosition(i)->Position.at(d);
+      centroid.at(d) = centroid.at(d) + this->GetPosition(i)->GetPositionVector().at(d);
 	}
   }
   for ( int d = 0; d < vtkMRMLLORPositionNode::SIZE; d++ )

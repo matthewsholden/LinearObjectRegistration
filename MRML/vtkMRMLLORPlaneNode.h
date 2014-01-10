@@ -37,11 +37,6 @@ protected:
 
 public:
 
-  std::vector<double> EndPoint1;
-  std::vector<double> EndPoint2;
-
-public:
-
   std::vector<double> GetNormal();
 
   // Implement inherited abstract methods
@@ -51,6 +46,11 @@ public:
   // Implement inherited abstract methods
   std::string ToXMLString();
   void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
+
+protected:
+
+  std::vector<double> EndPoint1;
+  std::vector<double> EndPoint2;
 
 };
 

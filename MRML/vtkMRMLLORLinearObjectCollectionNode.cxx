@@ -72,6 +72,7 @@ void vtkMRMLLORLinearObjectCollectionNode::ReadXMLAttributes( const char** atts 
     // TODO: Implement
   }
 
+  this->Modified();
 }
 
 
@@ -93,6 +94,7 @@ void vtkMRMLLORLinearObjectCollectionNode::Copy( vtkMRMLNode *anode )
     this->AddLinearObject( node->GetLinearObject( i ) );
   }
 
+  this->Modified();
 }
 
 
@@ -133,7 +135,7 @@ vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORLinearObjectCollectionNo
 {
   for ( int i = 0; i < this->Size(); i++ )
   {
-    if ( strcmp( this->GetLinearObject(i)->Name.c_str(), name.c_str() ) == 0 )
+    if ( strcmp( this->GetLinearObject(i)->GetName().c_str(), name.c_str() ) == 0 )
 	{
       return this->GetLinearObject(i);
 	}
@@ -147,6 +149,7 @@ void vtkMRMLLORLinearObjectCollectionNode
 ::AddLinearObject( vtkSmartPointer< vtkMRMLLORLinearObjectNode > newObject )
 {
   this->objects.push_back( newObject );
+  this->Modified();
 }
 
 
@@ -173,6 +176,7 @@ void vtkMRMLLORLinearObjectCollectionNode
     this->AddLinearObject( NULL );
   }
   this->objects.at( index ) = newObject;
+  this->Modified();
 }
 
 void vtkMRMLLORLinearObjectCollectionNode
@@ -183,6 +187,7 @@ void vtkMRMLLORLinearObjectCollectionNode
   {
     this->SetLinearObject( index, NULL );
   }
+  this->Modified();
 }
 
 
@@ -200,6 +205,7 @@ void vtkMRMLLORLinearObjectCollectionNode
   }
 
   this->objects = newObjects;
+  this->Modified();
 }
 
 
@@ -217,6 +223,8 @@ void vtkMRMLLORLinearObjectCollectionNode
 
   this->SetLinearObject( index0, linearObject1 );
   this->SetLinearObject( index1, linearObject0 );
+
+  this->Modified();
 }
 
 
@@ -224,6 +232,7 @@ void vtkMRMLLORLinearObjectCollectionNode
 ::Clear()
 {
   this->objects.clear();
+  this->Modified();
 }
 
 
@@ -244,12 +253,12 @@ void vtkMRMLLORLinearObjectCollectionNode
   for ( int i = 0; i < this->Size(); i++ )
   {
     // Do not move this method to the LinearObject class, since LinearObjects should not know about LinearObjectBuffers
-    std::vector<double> sig( refBuffer->Size(), 0.0 );
+    std::vector<double> newSignature( refBuffer->Size(), 0.0 );
     for ( int j = 0; j < refBuffer->Size(); j++ )
     {
-      sig.at(j) = this->GetLinearObject(i)->DistanceToVector( refBuffer->GetLinearObject(j)->BasePoint );
+      newSignature.at(j) = this->GetLinearObject(i)->DistanceToVector( refBuffer->GetLinearObject(j)->GetBasePoint() );
     }
-	this->GetLinearObject(i)->Signature = sig;
+	this->GetLinearObject(i)->SetSignature( newSignature );
   }
 
 }
@@ -272,11 +281,11 @@ vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkMRMLLORLinearObjectCo
   {
 
     vtkSmartPointer< vtkMRMLLORLinearObjectNode > closestObject = candidates->GetLinearObject(0);
-    double closestDistance = vtkMRMLLORVectorMath::Distance( this->GetLinearObject(i)->Signature, closestObject->Signature );
+    double closestDistance = vtkMRMLLORVectorMath::Distance( this->GetLinearObject(i)->GetSignature(), closestObject->GetSignature() );
 
     for ( int j = 0; j < candidates->Size(); j++ )
 	{
-      double currDistance = vtkMRMLLORVectorMath::Distance( this->GetLinearObject(i)->Signature, candidates->GetLinearObject(j)->Signature );
+      double currDistance = vtkMRMLLORVectorMath::Distance( this->GetLinearObject(i)->GetSignature(), candidates->GetLinearObject(j)->GetSignature() );
 	  if ( currDistance < closestDistance )
 	  {
 	    closestObject = candidates->GetLinearObject(j);
@@ -294,7 +303,9 @@ vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkMRMLLORLinearObjectCo
   }
 
   // Note that this modifies both this buffer and creates a new candidate buffer
-  this->objects = matchedObjects; 
+  this->objects = matchedObjects;
+  this->Modified();
+
   return matchedCandidates;
 }
 
@@ -303,6 +314,11 @@ std::vector<double> vtkMRMLLORLinearObjectCollectionNode
 ::CalculateCentroid()
 {
   const double CONDITION_THRESHOLD = 1e-3;
+
+  if ( this->Size() == 0 )
+  {
+    throw std::logic_error("Failed - centroid calculation is ill-conditioned!");
+  }
 
   // Assume each will take 3 rows. If it doesn't leaving them blank won't affect the result
   vnl_matrix<double>* A = new vnl_matrix<double>( vtkMRMLLORLinearObjectNode::DIMENSION * this->Size(), vtkMRMLLORLinearObjectNode::DIMENSION, 0.0 );
@@ -313,19 +329,19 @@ std::vector<double> vtkMRMLLORLinearObjectCollectionNode
   {
     int row = vtkMRMLLORLinearObjectNode::DIMENSION * i; 
     // A = I for point, B = coordinates
-    if ( strcmp( this->GetLinearObject(i)->Type.c_str(), "Point" ) == 0 )
+    if ( strcmp( this->GetLinearObject(i)->GetType().c_str(), "Point" ) == 0 )
 	{
       vtkSmartPointer< vtkMRMLLORPointNode > PointObject = vtkMRMLLORPointNode::SafeDownCast( this->GetLinearObject(i) );
       A->put( row + 0, 0, 1.0 ); 
       A->put( row + 1, 1, 1.0 );
 	  A->put( row + 2, 2, 1.0 );
-	  B->put( row + 0, 0, PointObject->BasePoint.at(0) );
-	  B->put( row + 1, 0, PointObject->BasePoint.at(1) );
-	  B->put( row + 2, 0, PointObject->BasePoint.at(2) );
+	  B->put( row + 0, 0, PointObject->GetBasePoint().at(0) );
+	  B->put( row + 1, 0, PointObject->GetBasePoint().at(1) );
+	  B->put( row + 2, 0, PointObject->GetBasePoint().at(2) );
 	}
 
 	// A = Normal 1, Normal 2, B = Dot( Normal 1, BasePoint ), Dot( Normal 2, BasePoint )
-	if ( strcmp( this->GetLinearObject(i)->Type.c_str(), "Line" ) == 0 )
+	if ( strcmp( this->GetLinearObject(i)->GetType().c_str(), "Line" ) == 0 )
 	{
       vtkSmartPointer< vtkMRMLLORLineNode > LineObject = vtkMRMLLORLineNode::SafeDownCast( this->GetLinearObject(i) );
       A->put( row + 0, 0, LineObject->GetOrthogonalNormal1().at(0) );
@@ -334,18 +350,18 @@ std::vector<double> vtkMRMLLORLinearObjectCollectionNode
       A->put( row + 1, 0, LineObject->GetOrthogonalNormal2().at(0) );
 	  A->put( row + 1, 1, LineObject->GetOrthogonalNormal2().at(1) );
 	  A->put( row + 1, 2, LineObject->GetOrthogonalNormal2().at(2) );
-      B->put( row + 0, 0, vtkMRMLLORVectorMath::Dot( LineObject->GetOrthogonalNormal1(), LineObject->BasePoint ) );
-      B->put( row + 1, 0, vtkMRMLLORVectorMath::Dot( LineObject->GetOrthogonalNormal2(), LineObject->BasePoint ) );
+      B->put( row + 0, 0, vtkMRMLLORVectorMath::Dot( LineObject->GetOrthogonalNormal1(), LineObject->GetBasePoint() ) );
+      B->put( row + 1, 0, vtkMRMLLORVectorMath::Dot( LineObject->GetOrthogonalNormal2(), LineObject->GetBasePoint() ) );
 	}
 
 	// A = Normal, B = Dot( Normal, BasePoint )
-	if ( strcmp( this->GetLinearObject(i)->Type.c_str(), "Plane" ) == 0 )
+	if ( strcmp( this->GetLinearObject(i)->GetType().c_str(), "Plane" ) == 0 )
 	{
       vtkSmartPointer< vtkMRMLLORPlaneNode > PlaneObject = vtkMRMLLORPlaneNode::SafeDownCast( this->GetLinearObject(i) );
       A->put( row + 0, 0, PlaneObject->GetNormal().at(0) );
 	  A->put( row + 0, 1, PlaneObject->GetNormal().at(1) );
 	  A->put( row + 0, 2, PlaneObject->GetNormal().at(2) );
-      B->put( row + 0, 0, vtkMRMLLORVectorMath::Dot( PlaneObject->GetNormal(), PlaneObject->BasePoint ) );
+      B->put( row + 0, 0, vtkMRMLLORVectorMath::Dot( PlaneObject->GetNormal(), PlaneObject->GetBasePoint() ) );
 	}
 
   }
@@ -423,4 +439,5 @@ void vtkMRMLLORLinearObjectCollectionNode
 
   }
 
+  this->Modified();
 }

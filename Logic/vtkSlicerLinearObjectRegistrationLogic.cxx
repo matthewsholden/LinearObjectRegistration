@@ -34,14 +34,9 @@ vtkStandardNewMacro( vtkSlicerLinearObjectRegistrationLogic );
 // 
 vtkSlicerLinearObjectRegistrationLogic
 ::vtkSlicerLinearObjectRegistrationLogic()
-{
-  this->FromLinearObjects = NULL;
-  this->ToLinearObjects = NULL;
-  
-  this->OutputTransform = NULL;
+{ 
   this->ObservedTransformNode = NULL;
   this->ActivePositionBuffer = NULL;
-  this->ActiveCollectionNode = NULL;
 
   this->OutputMessage = "";
 }
@@ -97,6 +92,10 @@ vtkSlicerLinearObjectRegistrationLogic
     return;
   }
 
+  vtkMRMLLinearObjectRegistrationNode* lorNode = vtkMRMLLinearObjectRegistrationNode::New();
+  this->GetMRMLScene()->RegisterNodeClass( lorNode );
+  lorNode->Delete();
+
   vtkMRMLLORLinearObjectCollectionNode* lorCollectionNode = vtkMRMLLORLinearObjectCollectionNode::New();
   this->GetMRMLScene()->RegisterNodeClass( lorCollectionNode );
   lorCollectionNode->Delete();
@@ -139,15 +138,10 @@ std::string vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::SetOutputTransform( vtkMRMLNode* node )
+::SetOutputMessage( std::string newOutputMessage )
 {
-  vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast( node );
-  if ( transformNode == NULL )
-  {
-    return;
-  }
-
-  this->OutputTransform = transformNode;
+  this->OutputMessage = newOutputMessage;
+  this->Modified();
 }
 
 
@@ -170,37 +164,35 @@ void vtkSlicerLinearObjectRegistrationLogic
 }
 
 
+// Let the selection node singleton keep track of this - we will just offer convenience functions
 void vtkSlicerLinearObjectRegistrationLogic
 ::SetActiveCollectionNode( vtkMRMLLORLinearObjectCollectionNode* newActiveCollectionNode )
 {
- this->ActiveCollectionNode = newActiveCollectionNode;
+  vtkMRMLApplicationLogic* appLogic = this->GetMRMLApplicationLogic();
+  vtkMRMLSelectionNode* selectionNode = appLogic->GetSelectionNode();
+
+  if ( selectionNode != NULL )
+  {
+    selectionNode->SetAttribute( "ActiveLinearObjectCollectionID", newActiveCollectionNode->GetID() );
+  }
 }
 
 
 vtkMRMLLORLinearObjectCollectionNode* vtkSlicerLinearObjectRegistrationLogic
 ::GetActiveCollectionNode()
 {
-  return this->ActiveCollectionNode;
-}
+  vtkMRMLApplicationLogic* appLogic = this->GetMRMLApplicationLogic();
+  vtkMRMLSelectionNode* selectionNode = appLogic->GetSelectionNode();
 
-
-void vtkSlicerLinearObjectRegistrationLogic
-::ProcessMRMLNodesEvents( vtkObject* caller, unsigned long event, void* callData )
-{
-  vtkMRMLLinearTransformNode* callerNode = vtkMRMLLinearTransformNode::SafeDownCast( caller );
-
-  if ( this->ActivePositionBuffer == NULL )
+  if ( selectionNode == NULL )
   {
-    return;
+    return NULL;
   }
 
-  if ( strcmp( callerNode->GetID(), this->ObservedTransformNode->GetID() ) == 0 )
-  {
-    vtkMatrix4x4* matrix = callerNode->GetMatrixTransformToParent();
-    vtkMRMLLORPositionNode* currentPositionNode = vtkMRMLLORPositionNode::New( callerNode->GetMatrixTransformToParent() );
-    this->ActivePositionBuffer->AddPosition( currentPositionNode );
-  }
+  const char* activeCollectionNodeID = selectionNode->GetAttribute( "ActiveLinearObjectCollectionID" );
+  return vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( activeCollectionNodeID ) );
 }
+
 
 
 // This makes the module ready to record - see the ProcessMRMLNodesEvents for this class to see whether or not any recording actually happens
@@ -250,8 +242,8 @@ void vtkSlicerLinearObjectRegistrationLogic
     return;
   }
 
-  this->InsertNewLinearObject( currentLinearObject );
   currentLinearObject->SetPositionBuffer( this->ActivePositionBuffer->DeepCopy() ); // TODO: May be don't need to deep copy (just don't delete)
+  this->InsertNewLinearObject( currentLinearObject );
   this->ActivePositionBuffer->Delete();
   this->ActivePositionBuffer = NULL;
 }
@@ -260,12 +252,12 @@ void vtkSlicerLinearObjectRegistrationLogic
 void vtkSlicerLinearObjectRegistrationLogic
 ::InsertNewLinearObject( vtkMRMLLORLinearObjectNode* linearObject )
 {
-  if ( this->ActiveCollectionNode == NULL )
+  if ( this->GetActiveCollectionNode() == NULL )
   {
     return;
   }
    
-  this->ActiveCollectionNode->AddLinearObject( vtkSmartPointer< vtkMRMLLORLinearObjectNode >::Take( linearObject ) );
+  this->GetActiveCollectionNode()->AddLinearObject( vtkSmartPointer< vtkMRMLLORLinearObjectNode >::Take( linearObject ) );
   // TODO: Need to insert the current linear object into the correct slot in the collection
 }
 
@@ -359,7 +351,7 @@ vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkSlicerLinearObjectReg
   {
     vtkMRMLLORLinearObjectNode* currentLinearObject = collection->GetLinearObject( i );
 
-    if ( currentLinearObject->Type.compare( "Reference" ) == 0 )
+    if ( currentLinearObject->GetType().compare( "Reference" ) == 0 )
     {
       referenceCollection->AddLinearObject( currentLinearObject );
     }
@@ -378,7 +370,7 @@ vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkSlicerLinearObjectReg
   {
     vtkMRMLLORLinearObjectNode* currentLinearObject = collection->GetLinearObject( i );
 
-    if ( currentLinearObject->Type.compare( "Reference" ) != 0 )
+    if ( currentLinearObject->GetType().compare( "Reference" ) != 0 )
     {
       nonReferenceCollection->AddLinearObject( currentLinearObject );
     }
@@ -390,37 +382,37 @@ vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkSlicerLinearObjectReg
 
 // TODO: May be this function signature is too long...
 void vtkSlicerLinearObjectRegistrationLogic
-::GetFromAndToCollections( vtkMRMLLORLinearObjectCollectionNode* fromReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* fromPointCollection, vtkMRMLLORLinearObjectCollectionNode* fromLineCollection, vtkMRMLLORLinearObjectCollectionNode* fromPlaneCollection,
-                          vtkMRMLLORLinearObjectCollectionNode* toReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* toPointCollection, vtkMRMLLORLinearObjectCollectionNode* toLineCollection, vtkMRMLLORLinearObjectCollectionNode* toPlaneCollection )
+::GetFromAndToCollections( vtkMRMLLORLinearObjectCollectionNode* fromCollection, vtkMRMLLORLinearObjectCollectionNode* fromReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* fromPointCollection, vtkMRMLLORLinearObjectCollectionNode* fromLineCollection, vtkMRMLLORLinearObjectCollectionNode* fromPlaneCollection,
+                          vtkMRMLLORLinearObjectCollectionNode* toCollection, vtkMRMLLORLinearObjectCollectionNode* toReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* toPointCollection, vtkMRMLLORLinearObjectCollectionNode* toLineCollection, vtkMRMLLORLinearObjectCollectionNode* toPlaneCollection )
 {
   // Just add to the linear object collections based on the type attribute
   // It doesn't matter which collection we take from - if there's no match then there's no point in going through
-  for ( int i = 0; i < this->FromLinearObjects->Size(); i++ )
+  for ( int i = 0; i < fromCollection->Size(); i++ )
   {
-    vtkMRMLLORLinearObjectNode* currentFromLinearObject = this->FromLinearObjects->GetLinearObject( i );
-    vtkMRMLLORLinearObjectNode* currentToLinearObject = this->ToLinearObjects->GetLinearObject( i );
+    vtkMRMLLORLinearObjectNode* currentFromLinearObject = fromCollection->GetLinearObject( i );
+    vtkMRMLLORLinearObjectNode* currentToLinearObject = toCollection->GetLinearObject( i );
 
     if ( currentFromLinearObject == NULL || currentToLinearObject == NULL )
     {
       continue;
     }
 
-    if ( currentFromLinearObject->Type.compare( "Reference" ) == 0 && currentToLinearObject->Type.compare( "Reference" ) == 0 )
+    if ( currentFromLinearObject->GetType().compare( "Reference" ) == 0 && currentToLinearObject->GetType().compare( "Reference" ) == 0 )
     {
       fromReferenceCollection->AddLinearObject( currentFromLinearObject );
       toReferenceCollection->AddLinearObject( currentToLinearObject );
     }
-    if ( currentFromLinearObject->Type.compare( "Point" ) == 0 && currentToLinearObject->Type.compare( "Point" ) == 0 )
+    if ( currentFromLinearObject->GetType().compare( "Point" ) == 0 && currentToLinearObject->GetType().compare( "Point" ) == 0 )
     {
       fromPointCollection->AddLinearObject( currentFromLinearObject );
       toPointCollection->AddLinearObject( currentToLinearObject );
     }
-    if ( currentFromLinearObject->Type.compare( "Line" ) == 0 && currentToLinearObject->Type.compare( "Line" ) == 0 )
+    if ( currentFromLinearObject->GetType().compare( "Line" ) == 0 && currentToLinearObject->GetType().compare( "Line" ) == 0 )
     {
       fromLineCollection->AddLinearObject( currentFromLinearObject );
       toLineCollection->AddLinearObject( currentToLinearObject );
     }
-    if ( currentFromLinearObject->Type.compare( "Plane" ) == 0 && currentToLinearObject->Type.compare( "Plane" ) == 0 )
+    if ( currentFromLinearObject->GetType().compare( "Plane" ) == 0 && currentToLinearObject->GetType().compare( "Plane" ) == 0 )
     {
       fromPlaneCollection->AddLinearObject( currentFromLinearObject );
       toPlaneCollection->AddLinearObject( currentToLinearObject );
@@ -432,11 +424,35 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::Register( vtkMRMLLORLinearObjectCollectionNode* fromLinearObjects, vtkMRMLLORLinearObjectCollectionNode* toLinearObjects, vtkMRMLLinearTransformNode* outputTransform )
+::CalculateTransform( vtkMRMLNode* node )
 {
+  vtkMRMLLinearObjectRegistrationNode* linearObjectRegistrationNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( node );
+  if ( linearObjectRegistrationNode == NULL )
+  {
+    this->SetOutputMessage( "Failed to find module node." );
+    return;
+  }
 
-  this->FromLinearObjects = fromLinearObjects;
-  this->ToLinearObjects = toLinearObjects;
+  vtkMRMLLORLinearObjectCollectionNode* fromCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( linearObjectRegistrationNode->GetFromCollectionID() ) );
+  vtkMRMLLORLinearObjectCollectionNode* toCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( linearObjectRegistrationNode->GetToCollectionID() ) );
+  vtkMRMLLinearTransformNode* outputTransform = vtkMRMLLinearTransformNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( linearObjectRegistrationNode->GetOutputTransformID() ) );
+
+  if ( fromCollection == NULL || toCollection == NULL )
+  {
+    this->SetOutputMessage( "One or more linear object collections not defined." );
+    return;
+  }
+
+  if ( linearObjectRegistrationNode->GetAutomaticMatch().compare( "True" ) == 0 )
+  {
+    this->MatchCollections( fromCollection, toCollection );
+  }
+
+  if ( outputTransform == NULL )
+  {
+    this->SetOutputMessage( "Output transform is not defined." );
+    return;
+  }
   
   // Grab the linear object collections
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > fromReferenceCollection = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
@@ -449,13 +465,14 @@ void vtkSlicerLinearObjectRegistrationLogic
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > toLineCollection = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > toPlaneCollection = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
   
-  this->GetFromAndToCollections( fromReferenceCollection, fromPointCollection, fromLineCollection, fromPlaneCollection, 
-    toReferenceCollection, toPointCollection, toLineCollection, toPlaneCollection );
+  this->GetFromAndToCollections( fromCollection, fromReferenceCollection, fromPointCollection, fromLineCollection, fromPlaneCollection, 
+    toCollection, toReferenceCollection, toPointCollection, toLineCollection, toPlaneCollection );
   // Note: The number of each type of collection should be the same
 
   if ( fromReferenceCollection->Size() == 0 || toReferenceCollection->Size() == 0 || fromReferenceCollection->Size() != toReferenceCollection->Size() )
   {
-    this->OutputMessage = "Failed: Could not find appropriate references.";
+    this->SetOutputMessage( "Failed: Could not find appropriate references." );
+    return;
   }
 
   // The matching should already be done (in real-time)
@@ -479,7 +496,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   }
   catch( std::logic_error e )
   {
-    this->OutputMessage = e.what();
+    this->SetOutputMessage( e.what() );
 	return;
   }
 
@@ -581,7 +598,7 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 	TempToCollection = TempFromCollection->GetMatches( TempToCollection, MATCHING_THRESHOLD );
 
-    std::vector<double> scaledDirection = vtkMRMLLORVectorMath::Subtract( TempToCollection->GetLinearObject(0)->BasePoint, CurrentToObject->ProjectVector( BlankVector ) );
+    std::vector<double> scaledDirection = vtkMRMLLORVectorMath::Subtract( TempToCollection->GetLinearObject(0)->GetBasePoint(), CurrentToObject->ProjectVector( BlankVector ) );
     ToPositions->AddPosition( vtkSmartPointer< vtkMRMLLORPositionNode >::Take( vtkMRMLLORPositionNode::New( scaledDirection ) ) );
   }
   for ( int i = 0; i < toPlaneCollection->Size(); i++ )
@@ -610,7 +627,7 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 	TempToCollection = TempFromCollection->GetMatches( TempToCollection, MATCHING_THRESHOLD );
 
-    std::vector<double> scaledNormal = vtkMRMLLORVectorMath::Subtract( TempToCollection->GetLinearObject(0)->BasePoint, CurrentToObject->ProjectVector( BlankVector ) );
+    std::vector<double> scaledNormal = vtkMRMLLORVectorMath::Subtract( TempToCollection->GetLinearObject(0)->GetBasePoint(), CurrentToObject->ProjectVector( BlankVector ) );
     ToPositions->AddPosition( vtkSmartPointer< vtkMRMLLORPositionNode >::Take( vtkMRMLLORPositionNode::New( scaledNormal ) ) );
   }
 
@@ -631,7 +648,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   vnl_matrix<double>* FromToToTranslation = this->TranslationalRegistration( fromCentroid, toCentroid, FromToToRotation ); 
 
   // And set the output matrix
-  this->UpdateOutputTransform( FromToToRotation, FromToToTranslation );
+  this->UpdateOutputTransform( outputTransform, FromToToRotation, FromToToTranslation );
 
   this->OutputMessage = "Success!";
 
@@ -639,9 +656,9 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::UpdateOutputTransform( vnl_matrix<double>* newTransformMatrix )
+::UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vnl_matrix<double>* newTransformMatrix )
 {
-  vtkMatrix4x4* outputMatrix = this->OutputTransform->GetMatrixTransformToParent();
+  vtkMatrix4x4* outputMatrix = outputTransform->GetMatrixTransformToParent();
 
   outputMatrix->SetElement( 0, 0, newTransformMatrix->get( 0, 0 ) );
   outputMatrix->SetElement( 0, 1, newTransformMatrix->get( 0, 1 ) );
@@ -666,9 +683,9 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::UpdateOutputTransform( vnl_matrix<double>* newRotationMatrix, vnl_matrix<double>* newTranslationVector )
+::UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vnl_matrix<double>* newRotationMatrix, vnl_matrix<double>* newTranslationVector )
 {
-  vtkMatrix4x4* outputMatrix = this->OutputTransform->GetMatrixTransformToParent();
+  vtkMatrix4x4* outputMatrix = outputTransform->GetMatrixTransformToParent();
 
   outputMatrix->SetElement( 0, 0, newRotationMatrix->get( 0, 0 ) );
   outputMatrix->SetElement( 0, 1, newRotationMatrix->get( 0, 1 ) );
@@ -714,7 +731,7 @@ vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
 	  // Iterate over all times
 	  for ( int i = 0; i < fromPoints->Size(); i++ )
 	  {
-	    DataMatrix->put( d1, d2, DataMatrix->get( d1, d2 ) + fromPoints->GetPosition(i)->Position.at(d1) * toPoints->GetPosition(i)->Position.at(d2) );
+	    DataMatrix->put( d1, d2, DataMatrix->get( d1, d2 ) + fromPoints->GetPosition(i)->GetPositionVector().at(d1) * toPoints->GetPosition(i)->GetPositionVector().at(d2) );
 	  }
 	}
   }
@@ -841,3 +858,53 @@ vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
 
 }
 */
+
+
+// Node update methods ----------------------------------------------------------
+
+void vtkSlicerLinearObjectRegistrationLogic
+::ProcessMRMLNodesEvents( vtkObject* caller, unsigned long event, void* callData )
+{
+  // In case the module node is updated
+  vtkMRMLLinearObjectRegistrationNode* lorNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( caller );
+  // The caller must be a vtkMRMLLinearObjectRegistrationNode
+  if ( lorNode != NULL )
+  {
+    this->CalculateTransform( lorNode ); // Will create modified event to update widget
+  }
+
+  // In case the observed transform node is updated
+  vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast( caller );
+  // Must be a transform node
+  if ( transformNode == NULL || this->ActivePositionBuffer == NULL )
+  {
+    return;
+  }
+  if ( strcmp( transformNode->GetID(), this->ObservedTransformNode->GetID() ) == 0 )
+  {
+    vtkMatrix4x4* matrix = transformNode->GetMatrixTransformToParent();
+    vtkMRMLLORPositionNode* currentPositionNode = vtkMRMLLORPositionNode::New( matrix );
+    this->ActivePositionBuffer->AddPosition( currentPositionNode );
+  }
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
+::ProcessMRMLSceneEvents( vtkObject* caller, unsigned long event, void* callData )
+{
+  vtkMRMLScene* callerNode = vtkMRMLScene::SafeDownCast( caller );
+
+  // If the added node was a fiducial registration wizard node then observe it
+  vtkMRMLNode* addedNode = reinterpret_cast< vtkMRMLNode* >( callData );
+  vtkMRMLLinearObjectRegistrationNode* linearObjectRegistrationNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( addedNode );
+
+  if ( event == vtkMRMLScene::NodeAddedEvent && linearObjectRegistrationNode != NULL )
+  {
+    // This will get called exactly once, and we will add the observer only once (since node is never replaced)
+    linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
+    linearObjectRegistrationNode->UpdateScene( this->GetMRMLScene() );
+    linearObjectRegistrationNode->ObserveAllReferenceNodes(); // This will update
+    this->CalculateTransform( linearObjectRegistrationNode ); // Will create modified event to update widget
+  }
+
+}

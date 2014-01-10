@@ -40,9 +40,6 @@ protected:
   vtkMRMLLORPositionBufferNode();
   virtual ~vtkMRMLLORPositionBufferNode();
 
-private:
-  std::vector< vtkSmartPointer< vtkMRMLLORPositionNode > > Positions;
-
 public:
 
   // Standard collection functionality
@@ -58,6 +55,9 @@ public:
 
   std::string ToXMLString();
   void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
+
+protected:
+  std::vector< vtkSmartPointer< vtkMRMLLORPositionNode > > Positions;
 
 };
 

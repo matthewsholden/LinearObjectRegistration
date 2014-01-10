@@ -5,10 +5,10 @@ vtkStandardNewMacro( vtkMRMLLORPositionNode );
 
 
 vtkMRMLLORPositionNode* vtkMRMLLORPositionNode
-::New( std::vector< double > newPosition )
+::New( std::vector< double > newPositionVector )
 {
   vtkMRMLLORPositionNode* newPositionNode = vtkMRMLLORPositionNode::New();
-  newPositionNode->Position = newPosition;
+  newPositionNode->PositionVector = newPositionVector;
   return newPositionNode;
 }
 
@@ -20,7 +20,7 @@ vtkMRMLLORPositionNode* vtkMRMLLORPositionNode
   newPosition.at(0) = newMatrix->GetElement( 0, 3 );
   newPosition.at(1) = newMatrix->GetElement( 1, 3 );
   newPosition.at(2) = newMatrix->GetElement( 2, 3 );
-  newPositionNode->Position = newPosition;
+  newPositionNode->PositionVector = newPosition;
   return newPositionNode;
 }
 
@@ -30,10 +30,10 @@ vtkMRMLLORPositionNode* vtkMRMLLORPositionNode
 {
   vtkMRMLLORPositionNode* positionNodeCopy = vtkMRMLLORPositionNode::New();
   std::vector< double > positionCopy( SIZE, 0.0 );
-  positionCopy.at(0) = this->Position.at( 0 );
-  positionCopy.at(1) = this->Position.at( 1 );
-  positionCopy.at(2) = this->Position.at( 2 );
-  positionNodeCopy->Position = positionCopy;
+  positionCopy.at(0) = this->GetPositionVector().at( 0 );
+  positionCopy.at(1) = this->GetPositionVector().at( 1 );
+  positionCopy.at(2) = this->GetPositionVector().at( 2 );
+  positionNodeCopy->SetPositionVector( positionCopy );
   return positionNodeCopy;
 }
 
@@ -47,14 +47,14 @@ vtkMRMLLORPositionNode
 vtkMRMLLORPositionNode
 ::~vtkMRMLLORPositionNode()
 {
-  this->Position.clear();
+  this->PositionVector.clear();
 }
 
 
 void vtkMRMLLORPositionNode
 ::Translate( std::vector<double> translation )
 {
-  this->Position = vtkMRMLLORVectorMath::Add( this->Position, translation );
+  this->SetPositionVector( vtkMRMLLORVectorMath::Add( this->GetPositionVector(), translation ) );
 }
 
 
@@ -62,14 +62,31 @@ void vtkMRMLLORPositionNode
 ::Rotate( vnl_matrix<double>* rotation )
 {
   vnl_matrix<double>* currPoint = new vnl_matrix<double>( vtkMRMLLORPositionNode::SIZE, 1, 0.0 );
-  currPoint->put( 0, 0, this->Position.at(0) );
-  currPoint->put( 1, 0, this->Position.at(1) );
-  currPoint->put( 2, 0, this->Position.at(2) );
+  currPoint->put( 0, 0, this->GetPositionVector().at(0) );
+  currPoint->put( 1, 0, this->GetPositionVector().at(1) );
+  currPoint->put( 2, 0, this->GetPositionVector().at(2) );
 
   vnl_matrix<double>* rotPoint = new vnl_matrix<double>( ( *rotation ) * ( *currPoint ) );
-  this->Position.at(0) = rotPoint->get( 0, 0 );
-  this->Position.at(1) = rotPoint->get( 1, 0 );
-  this->Position.at(2) = rotPoint->get( 2, 0 );
+  std::vector<double> newPositionVector( SIZE, 0.0 );
+  newPositionVector.at(0) = rotPoint->get( 0, 0 );
+  newPositionVector.at(1) = rotPoint->get( 1, 0 );
+  newPositionVector.at(2) = rotPoint->get( 2, 0 );
+  this->SetPositionVector( newPositionVector );
+}
+
+
+std::vector<double> vtkMRMLLORPositionNode
+::GetPositionVector()
+{
+  return this->PositionVector;
+}
+
+
+void vtkMRMLLORPositionNode
+::SetPositionVector( std::vector<double> newPosition )
+{
+  this->PositionVector = newPosition;
+  this->Modified();
 }
 
 
@@ -79,9 +96,9 @@ std::string vtkMRMLLORPositionNode
   std::stringstream xmlstring;
   std::stringstream matrixstring;
   // TODO: Should the rotation part be the zero matrix or the identity matrix?
-  matrixstring << "0 0 0 " << this->Position.at(0) << " ";
-  matrixstring << "0 0 0 " << this->Position.at(1) << " ";
-  matrixstring << "0 0 0 " << this->Position.at(2) << " ";
+  matrixstring << "0 0 0 " << this->GetPositionVector().at(0) << " ";
+  matrixstring << "0 0 0 " << this->GetPositionVector().at(1) << " ";
+  matrixstring << "0 0 0 " << this->GetPositionVector().at(2) << " ";
   matrixstring << "0 0 0 1";
 
   xmlstring << "  <log";
@@ -105,7 +122,7 @@ void vtkMRMLLORPositionNode
     return;  // If it's not a "log" or is the wrong tool jump to the next.
   }
 
-  this->Position = std::vector<double>( SIZE, 0.0 );
+  std::vector<double> newPositionVector( SIZE, 0.0 );
 
   std::stringstream matrixstring( std::string( element->GetAttribute( "transform" ) ) );
   double value;
@@ -116,18 +133,19 @@ void vtkMRMLLORPositionNode
     // Note that 3, 7, 11 are the places where the translational components appear
 	if ( i == 3 )
 	{
-	  this->Position.at(0) = value;
+	  newPositionVector.at(0) = value;
 	}
 	if ( i == 7 )
 	{
-	  this->Position.at(1) = value;
+	  newPositionVector.at(1) = value;
 	}
 	if ( i == 11 )
 	{
-	  this->Position.at(2) = value;
+	  newPositionVector.at(2) = value;
 	}
   }
 
+  this->SetPositionVector( newPositionVector );
 }
 
 

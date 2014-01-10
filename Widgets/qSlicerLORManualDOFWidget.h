@@ -65,7 +65,7 @@ protected slots:
 
 signals:
 
-  void collectionNodeModified();
+  void transformNodeChanged();
 
 protected:
   QScopedPointer<qSlicerLORManualDOFWidgetPrivate> d_ptr;

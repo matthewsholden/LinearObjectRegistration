@@ -36,15 +36,15 @@
 #include "vtkMRMLLinearTransformNode.h"
 #include "vtkMRMLModelNode.h"
 #include "vtkMRMLScene.h"
+#include "vtkMRMLSelectionNode.h"
 
 // LinearObjectRegistration includes
-#include "vtkMRMLLORLinearObjectNode.h"
+#include "vtkMRMLLinearObjectRegistrationNode.h"
 #include "vtkMRMLLORLinearObjectCollectionNode.h"
 #include "vtkMRMLLORPointNode.h"
 #include "vtkMRMLLORLineNode.h"
 #include "vtkMRMLLORPlaneNode.h"
 #include "vtkMRMLLORReferenceNode.h"
-#include "vtkMRMLLORPositionNode.h"
 #include "vtkMRMLLORPositionBufferNode.h"
 #include "vtkSlicerLinearObjectRegistrationModuleLogicExport.h"
 
@@ -67,6 +67,7 @@ public:
   virtual void OnMRMLSceneEndClose();
  
   void ProcessMRMLNodesEvents( vtkObject* caller, unsigned long event, void* callData );
+  void ProcessMRMLSceneEvents( vtkObject* caller, unsigned long event, void* callData );
   
 protected:
   
@@ -91,9 +92,9 @@ private:
 
 public:
 
-  void Register( vtkMRMLLORLinearObjectCollectionNode* fromLinearObjects, vtkMRMLLORLinearObjectCollectionNode* toLinearObjects, vtkMRMLLinearTransformNode* outputTransform );
-  void UpdateOutputTransform( vnl_matrix<double>* newTransformMatrix );
-  void UpdateOutputTransform( vnl_matrix<double>* newRotationMatrix, vnl_matrix<double>* newRotationVector );
+  void CalculateTransform( vtkMRMLNode* node );
+  void UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vnl_matrix<double>* newTransformMatrix );
+  void UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vnl_matrix<double>* newRotationMatrix, vnl_matrix<double>* newRotationVector );
 
   vnl_matrix<double>* SphericalRegistration( vtkSmartPointer< vtkMRMLLORPositionBufferNode > fromPoints, vtkSmartPointer< vtkMRMLLORPositionBufferNode > toPoints );
   vnl_matrix<double>* TranslationalRegistration( std::vector<double> toCentroid, std::vector<double> fromCentroid, vnl_matrix<double>* rotation );
@@ -101,8 +102,7 @@ public:
   vnl_matrix<double>* LinearObjectICP( vnl_matrix<double>* initialRotation );
 
   std::string GetOutputMessage();
-
-  void SetOutputTransform( vtkMRMLNode* node );
+  void SetOutputMessage( std::string newOutputMessage );
 
   vtkMRMLLORLinearObjectNode* PositionBufferToLinearObject( vtkMRMLLORPositionBufferNode* positionBuffer, int dof = -1 );
 
@@ -121,20 +121,13 @@ public:
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > GetNonReferences( vtkMRMLLORLinearObjectCollectionNode* collection );
 
   // Only to be called from the register method
-  void GetFromAndToCollections( vtkMRMLLORLinearObjectCollectionNode* fromReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* fromPointCollection, vtkMRMLLORLinearObjectCollectionNode* fromLineCollection, vtkMRMLLORLinearObjectCollectionNode* fromPlaneCollection,
-                          vtkMRMLLORLinearObjectCollectionNode* toReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* toPointCollection, vtkMRMLLORLinearObjectCollectionNode* toLineCollection, vtkMRMLLORLinearObjectCollectionNode* toPlaneCollection );
-
+  void GetFromAndToCollections( vtkMRMLLORLinearObjectCollectionNode* fromCollection, vtkMRMLLORLinearObjectCollectionNode* fromReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* fromPointCollection, vtkMRMLLORLinearObjectCollectionNode* fromLineCollection, vtkMRMLLORLinearObjectCollectionNode* fromPlaneCollection,
+                          vtkMRMLLORLinearObjectCollectionNode* toCollection, vtkMRMLLORLinearObjectCollectionNode* toReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* toPointCollection, vtkMRMLLORLinearObjectCollectionNode* toLineCollection, vtkMRMLLORLinearObjectCollectionNode* toPlaneCollection );
 
 private:
 
-  // Only to be used in the collections getting methods
-  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > FromLinearObjects;
-  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > ToLinearObjects;
-
-  vtkMRMLLinearTransformNode* OutputTransform;
   vtkMRMLLinearTransformNode* ObservedTransformNode;
   vtkMRMLLORPositionBufferNode* ActivePositionBuffer;
-  vtkMRMLLORLinearObjectCollectionNode* ActiveCollectionNode;
   std::string CollectType;
 
   std::string OutputMessage;

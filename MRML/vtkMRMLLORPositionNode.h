@@ -45,18 +45,23 @@ protected:
   virtual ~vtkMRMLLORPositionNode();
 
 public:
-  std::vector<double> Position;
+
   static const int SIZE = 3;
   static const int MATRIX_ELEMENTS = 16;
-
-public:
 
   void Translate ( std::vector<double> translation );
   void Rotate( vnl_matrix<double>* rotation );
 
+  std::vector<double> GetPositionVector();
+  void SetPositionVector( std::vector<double> newPositionVector );
+
   std::string ToXMLString();
   void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
   bool FromXMLElement( vtkSmartPointer< vtkXMLDataElement > currElement, vtkSmartPointer< vtkXMLDataElement > prevElement ); // Exclude if threshold not exceeded
+
+protected:
+
+  std::vector<double> PositionVector;
 
 };
 

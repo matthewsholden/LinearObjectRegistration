@@ -49,12 +49,11 @@ public:
 
   vtkMRMLNode* GetCurrentNode();
   void SetCurrentNode( vtkMRMLNode* currentNode );
+  void SetNodeBaseName( std::string newNodeBaseName );
 
 protected slots:
 
   void onCollectionNodeChanged(); // User selects a different node using the combo box
-
-  void onCollectionNodeModified(); // Some attribute of the currently selected node has been modified
 
   void SetCurrentActive();
 
@@ -66,7 +65,7 @@ protected slots:
 
 signals:
 
-  void collectionNodeModified();
+  void collectionNodeChanged();
 
   void matchRequested( int index );
 

@@ -135,17 +135,22 @@ void qSlicerLinearObjectCollectionWidget
   Q_D(qSlicerLinearObjectCollectionWidget);
 
   vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( currentNode );
+
+  // Prevent the active fiducial list from being changed when this is called programatically
+  disconnect( d->LinearObjectCollectionNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onCollectionNodeChanged() ) );
   d->LinearObjectCollectionNodeComboBox->setCurrentNode( currentCollectionNode );
+  connect( d->LinearObjectCollectionNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onCollectionNodeChanged() ) );
+
+  this->updateWidget(); // This will update the active button and table widget
 }
 
 
 void qSlicerLinearObjectCollectionWidget
-::onCollectionNodeModified()
+::SetNodeBaseName( std::string newNodeBaseName )
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
 
-  emit collectionNodeModified();
-  this->updateWidget();
+  d->LinearObjectCollectionNodeComboBox->setBaseName( QString::fromStdString( newNodeBaseName ) );
 }
 
 
@@ -153,6 +158,8 @@ void qSlicerLinearObjectCollectionWidget
 ::onCollectionNodeChanged()
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
+
+  emit collectionNodeChanged();
 
   vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
 
@@ -341,7 +348,7 @@ void qSlicerLinearObjectCollectionWidget
   // Set the button indicating if this list is active
   d->ActiveButton->blockSignals( true );
 
-  if ( strcmp( this->LORLogic->GetActiveCollectionNode()->GetID(), currentCollectionNode->GetID() ) == 0 )
+  if ( this->LORLogic->GetActiveCollectionNode() != NULL && strcmp( this->LORLogic->GetActiveCollectionNode()->GetID(), currentCollectionNode->GetID() ) == 0 )
   {
     d->ActiveButton->setChecked( true );
   }
@@ -370,8 +377,8 @@ void qSlicerLinearObjectCollectionWidget
       continue;
     }
 
-    QTableWidgetItem* nameItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->Name ) );
-    QTableWidgetItem* typeItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->Type ) );
+    QTableWidgetItem* nameItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetName() ) );
+    QTableWidgetItem* typeItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetType() ) );
 
     std::stringstream bufferString;
     if ( currentCollectionNode->GetLinearObject( i )->GetPositionBuffer() == NULL )

@@ -177,6 +177,7 @@ void qSlicerLORManualDOFWidget
 {
   Q_D(qSlicerLORManualDOFWidget);
 
+  emit transformNodeChanged();
 
   this->LORLogic->FinalizeActivePositionBuffer();
   this->LORLogic->ObserveTransformNode( d->TransformNodeComboBox->currentNode() );

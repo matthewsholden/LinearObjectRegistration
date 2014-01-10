@@ -5,8 +5,9 @@
 vtkMRMLLORLinearObjectNode
 ::vtkMRMLLORLinearObjectNode()
 {
-  this->Name = "";
+  this->Name = "Unnamed";
   this->Type = "LinearObject";
+  this->PositionBuffer = NULL;
 }
 
 
@@ -29,6 +30,7 @@ void vtkMRMLLORLinearObjectNode
 ::SetPositionBuffer( vtkMRMLLORPositionBufferNode* newPositionBuffer )
 {
   this->PositionBuffer = newPositionBuffer;
+  this->Modified();
 }
 
 
@@ -54,7 +56,7 @@ void vtkMRMLLORLinearObjectNode
     // Calculate the distance of each point to the linear object
     for ( int i = 0; i < this->GetPositionBuffer()->Size(); i++ )
     {
-      distances.at(i) = this->DistanceToVector( this->GetPositionBuffer()->GetPosition( i )->Position ); // The position attribute is a vector
+      distances.at(i) = this->DistanceToVector( this->GetPositionBuffer()->GetPosition( i )->GetPositionVector() ); // The position attribute is a vector
       meanDistance = meanDistance + distances.at(i);
       stdev = stdev + distances.at(i) * distances.at(i);
     }
@@ -85,4 +87,64 @@ void vtkMRMLLORLinearObjectNode
     this->SetPositionBuffer( newPositionBuffer );
   }
 
+}
+
+
+std::string vtkMRMLLORLinearObjectNode
+::GetName()
+{
+  return this->Name;
+}
+
+
+void vtkMRMLLORLinearObjectNode
+::SetName( std::string newName )
+{
+  this->Name = newName;
+  this->Modified();
+}
+
+
+std::string vtkMRMLLORLinearObjectNode
+::GetType()
+{
+  return this->Type;
+}
+
+
+void vtkMRMLLORLinearObjectNode
+::SetType( std::string newType )
+{
+  this->Type = newType;
+  this->Modified();
+}
+
+
+std::vector<double> vtkMRMLLORLinearObjectNode
+::GetSignature()
+{
+  return this->Signature;
+}
+
+
+void vtkMRMLLORLinearObjectNode
+::SetSignature( std::vector<double> newSignature )
+{
+  this->Signature = newSignature;
+  this->Modified();
+}
+
+
+std::vector<double> vtkMRMLLORLinearObjectNode
+::GetBasePoint()
+{
+  return this->BasePoint;
+}
+
+
+void vtkMRMLLORLinearObjectNode
+::SetBasePoint( std::vector<double> newBasePoint )
+{
+  this->BasePoint = newBasePoint;
+  this->Modified();
 }

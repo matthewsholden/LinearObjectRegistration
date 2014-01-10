@@ -38,17 +38,7 @@ protected:
 
 public:
 
-  std::string Name;
-  std::string Type;
-  std::vector<double> Signature;
-  std::vector<double> BasePoint;
-
-  vtkMRMLLORPositionBufferNode* PositionBuffer;
-
   static const int DIMENSION = 3;
-
-public:
-
 
   double DistanceToVector( std::vector<double> vector );
 
@@ -57,12 +47,31 @@ public:
 
   void Filter( int filterWidth );
 
+  // Setters need to trigger modified events
+  std::string GetName();
+  void SetName( std::string newName );
+  std::string GetType();
+  void SetType( std::string newType );
+  std::vector<double> GetSignature();
+  void SetSignature( std::vector<double> newSignature );
+  std::vector<double> GetBasePoint();
+  void SetBasePoint( std::vector<double> newBasePoint );
+
   // Abstract functions that must be implemented in subclasses
   virtual std::vector<double> ProjectVector( std::vector<double> vector ) = 0;
   virtual void Translate( std::vector<double> vector ) = 0;
 
   virtual std::string ToXMLString() = 0;
   virtual void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element ) = 0;
+
+protected:
+
+  std::string Name;
+  std::string Type;
+  std::vector<double> Signature;
+  std::vector<double> BasePoint;
+
+  vtkMRMLLORPositionBufferNode* PositionBuffer;
 
 };
 
