@@ -45,6 +45,7 @@ public:
 
   static qSlicerLORManualDOFWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
 
+  // Slicer will delete logic
   vtkSlicerLinearObjectRegistrationLogic* LORLogic;
 
   vtkMRMLNode* GetCurrentNode();

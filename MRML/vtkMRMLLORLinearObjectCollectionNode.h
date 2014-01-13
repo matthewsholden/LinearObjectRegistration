@@ -59,18 +59,15 @@ protected:
   vtkMRMLLORLinearObjectCollectionNode ( const vtkMRMLLORLinearObjectCollectionNode& );
   void operator=( const vtkMRMLLORLinearObjectCollectionNode& );
 
-private:
-	std::vector< vtkSmartPointer< vtkMRMLLORLinearObjectNode > > objects;
-
 public:
 
   // Basic collection functionality
   int Size();
-  vtkSmartPointer< vtkMRMLLORLinearObjectNode > GetLinearObject( int index );
-  vtkSmartPointer< vtkMRMLLORLinearObjectNode > GetLinearObject( std::string name );
-  void AddLinearObject( vtkSmartPointer< vtkMRMLLORLinearObjectNode > newObject );
-  void Concatenate( vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > catBuffer );
-  void SetLinearObject( int index, vtkSmartPointer< vtkMRMLLORLinearObjectNode > newObject );
+  vtkMRMLLORLinearObjectNode* GetLinearObject( int index );
+  vtkMRMLLORLinearObjectNode* GetLinearObject( std::string name );
+  void AddLinearObject( vtkMRMLLORLinearObjectNode* newObject );
+  void Concatenate( vtkMRMLLORLinearObjectCollectionNode* catBuffer );
+  void SetLinearObject( int index, vtkMRMLLORLinearObjectNode* newObject );
   void RemoveLinearObject( int index );
   void ShuffleOutNull();
   void Swap( int index0, int index1 );
@@ -78,14 +75,18 @@ public:
 
   void Translate( std::vector<double> vector );
 
-  void CalculateSignature( vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > refBuffer );
+  void CalculateSignature( vtkMRMLLORLinearObjectCollectionNode* refBuffer );
 
-  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > GetMatches( vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > candidates, double matchingThreshold );
+  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > GetMatches( vtkMRMLLORLinearObjectCollectionNode* candidates, double matchingThreshold );
 
   std::vector<double> CalculateCentroid();
 
   std::string ToXMLString();
-  void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
+  void FromXMLElement( vtkXMLDataElement* element );
+
+
+private:
+	std::vector< vtkSmartPointer< vtkMRMLLORLinearObjectNode > > LinearObjects;
 
 };
 

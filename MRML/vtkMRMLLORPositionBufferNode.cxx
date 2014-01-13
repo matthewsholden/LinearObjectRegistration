@@ -4,10 +4,11 @@
 vtkStandardNewMacro( vtkMRMLLORPositionBufferNode );
 
 
-vtkMRMLLORPositionBufferNode* vtkMRMLLORPositionBufferNode
+// Return smart pointer since we created the object here but do not hold onto it
+vtkSmartPointer< vtkMRMLLORPositionBufferNode > vtkMRMLLORPositionBufferNode
 ::DeepCopy()
 {
-  vtkMRMLLORPositionBufferNode* positionBufferNodeCopy = vtkMRMLLORPositionBufferNode::New();
+  vtkSmartPointer< vtkMRMLLORPositionBufferNode > positionBufferNodeCopy = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
 
   for ( int i = 0; i < this->Size(); i++ )
   {
@@ -38,7 +39,7 @@ int vtkMRMLLORPositionBufferNode
 }
 
 
-vtkSmartPointer< vtkMRMLLORPositionNode > vtkMRMLLORPositionBufferNode
+vtkMRMLLORPositionNode* vtkMRMLLORPositionBufferNode
 ::GetPosition( int index )
 {
   return this->Positions.at(index);
@@ -46,7 +47,7 @@ vtkSmartPointer< vtkMRMLLORPositionNode > vtkMRMLLORPositionBufferNode
 
 
 void vtkMRMLLORPositionBufferNode
-::AddPosition( vtkSmartPointer< vtkMRMLLORPositionNode > newPosition )
+::AddPosition( vtkMRMLLORPositionNode* newPosition )
 {
   this->Positions.push_back( newPosition );
   this->Modified();
@@ -88,7 +89,7 @@ std::string vtkMRMLLORPositionBufferNode
 
 
 void vtkMRMLLORPositionBufferNode
-::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
+::FromXMLElement( vtkXMLDataElement* element )
 {
   if ( strcmp( element->GetName(), "Buffer" ) != 0 && strcmp( element->GetName(), "PositionBuffer" ) != 0 )
   {

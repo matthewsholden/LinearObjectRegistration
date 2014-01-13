@@ -36,7 +36,7 @@ public:
   static vtkMRMLLORPositionNode* New( std::vector<double> newPosition );
   static vtkMRMLLORPositionNode* New( vtkMatrix4x4* newMatrix );
 
-  vtkMRMLLORPositionNode* DeepCopy();
+  vtkSmartPointer< vtkMRMLLORPositionNode > DeepCopy();
 
 protected:
 
@@ -56,8 +56,8 @@ public:
   void SetPositionVector( std::vector<double> newPositionVector );
 
   std::string ToXMLString();
-  void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
-  // bool FromXMLElement( vtkSmartPointer< vtkXMLDataElement > currElement, vtkSmartPointer< vtkXMLDataElement > prevElement ); // Exclude if threshold not exceeded
+  void FromXMLElement( vtkXMLDataElement* element );
+  // bool FromXMLElement( vtkXMLDataElement* currElement, vtkXMLDataElement* prevElement ); // Exclude if threshold not exceeded
 
 protected:
 

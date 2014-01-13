@@ -63,7 +63,7 @@ std::string vtkMRMLLORReferenceNode
 
 
 void vtkMRMLLORReferenceNode
-::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
+::FromXMLElement( vtkXMLDataElement* element )
 {
 
   if ( strcmp( element->GetName(), "Reference" ) != 0 )
@@ -86,7 +86,7 @@ void vtkMRMLLORReferenceNode
 	}
 	if ( strcmp( noteElement->GetName(), "Buffer" ) == 0 )
 	{
-      vtkMRMLLORPositionBufferNode* bufferNode = vtkMRMLLORPositionBufferNode::New();
+      vtkSmartPointer< vtkMRMLLORPositionBufferNode > bufferNode = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
 	  bufferNode->FromXMLElement( noteElement );
       this->SetPositionBuffer( bufferNode );
 	}

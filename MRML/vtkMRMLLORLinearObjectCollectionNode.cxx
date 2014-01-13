@@ -27,7 +27,7 @@ vtkMRMLLORLinearObjectCollectionNode
 vtkMRMLLORLinearObjectCollectionNode
 ::~vtkMRMLLORLinearObjectCollectionNode()
 {
-  this->objects.clear();
+  this->Clear();
 }
 
 vtkMRMLNode* vtkMRMLLORLinearObjectCollectionNode
@@ -69,7 +69,7 @@ void vtkMRMLLORLinearObjectCollectionNode::ReadXMLAttributes( const char** atts 
     attName  = *(atts++);
     attValue = *(atts++);
     
-    // TODO: Implement
+    // Nothing to implement - this is covered by the linear object collection storage node
   }
 
   this->Modified();
@@ -114,11 +114,11 @@ void vtkMRMLLORLinearObjectCollectionNode::PrintSelf( ostream& os, vtkIndent ind
 int vtkMRMLLORLinearObjectCollectionNode
 ::Size()
 {
-  return this->objects.size();
+  return this->LinearObjects.size();
 }
 
 
-vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORLinearObjectCollectionNode
+vtkMRMLLORLinearObjectNode* vtkMRMLLORLinearObjectCollectionNode
 ::GetLinearObject( int index )
 {
   if ( index < 0 || index >= this->Size() )
@@ -126,11 +126,11 @@ vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORLinearObjectCollectionNo
     return NULL;
   }
 
-  return this->objects.at(index);
+  return this->LinearObjects.at(index);
 }
 
 
-vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORLinearObjectCollectionNode
+vtkMRMLLORLinearObjectNode* vtkMRMLLORLinearObjectCollectionNode
 ::GetLinearObject( std::string name )
 {
   for ( int i = 0; i < this->Size(); i++ )
@@ -146,15 +146,15 @@ vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORLinearObjectCollectionNo
 
 
 void vtkMRMLLORLinearObjectCollectionNode
-::AddLinearObject( vtkSmartPointer< vtkMRMLLORLinearObjectNode > newObject )
+::AddLinearObject( vtkMRMLLORLinearObjectNode* newObject )
 {
-  this->objects.push_back( newObject );
+  this->LinearObjects.push_back( newObject );
   this->Modified();
 }
 
 
 void vtkMRMLLORLinearObjectCollectionNode
-::Concatenate( vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > catBuffer )
+::Concatenate( vtkMRMLLORLinearObjectCollectionNode* catBuffer )
 {
   for ( int i = 0; i < catBuffer->Size(); i++ )
   {
@@ -164,7 +164,7 @@ void vtkMRMLLORLinearObjectCollectionNode
 
 
 void vtkMRMLLORLinearObjectCollectionNode
-::SetLinearObject( int index, vtkSmartPointer< vtkMRMLLORLinearObjectNode > newObject )
+::SetLinearObject( int index, vtkMRMLLORLinearObjectNode* newObject )
 {
   if ( index < 0 )
   {
@@ -175,9 +175,10 @@ void vtkMRMLLORLinearObjectCollectionNode
   {
     this->AddLinearObject( NULL );
   }
-  this->objects.at( index ) = newObject;
+  this->LinearObjects.at( index ) = newObject;
   this->Modified();
 }
+
 
 void vtkMRMLLORLinearObjectCollectionNode
 ::RemoveLinearObject( int index )
@@ -204,7 +205,7 @@ void vtkMRMLLORLinearObjectCollectionNode
     }
   }
 
-  this->objects = newObjects;
+  this->LinearObjects = newObjects;
   this->Modified();
 }
 
@@ -218,8 +219,8 @@ void vtkMRMLLORLinearObjectCollectionNode
     return;
   }
 
-  vtkSmartPointer< vtkMRMLLORLinearObjectNode > linearObject0 = this->GetLinearObject( index0 );
-  vtkSmartPointer< vtkMRMLLORLinearObjectNode > linearObject1 = this->GetLinearObject( index1 );
+  vtkMRMLLORLinearObjectNode* linearObject0 = this->GetLinearObject( index0 );
+  vtkMRMLLORLinearObjectNode* linearObject1 = this->GetLinearObject( index1 );
 
   this->SetLinearObject( index0, linearObject1 );
   this->SetLinearObject( index1, linearObject0 );
@@ -231,7 +232,7 @@ void vtkMRMLLORLinearObjectCollectionNode
 void vtkMRMLLORLinearObjectCollectionNode
 ::Clear()
 {
-  this->objects.clear();
+  this->LinearObjects.clear();
   this->Modified();
 }
 
@@ -247,7 +248,7 @@ void vtkMRMLLORLinearObjectCollectionNode
 
 
 void vtkMRMLLORLinearObjectCollectionNode
-::CalculateSignature( vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > refBuffer )
+::CalculateSignature( vtkMRMLLORLinearObjectCollectionNode* refBuffer )
 {
   // Calculate the signature of everything in this, assume the inputted object is a buffer of references
   for ( int i = 0; i < this->Size(); i++ )
@@ -264,8 +265,9 @@ void vtkMRMLLORLinearObjectCollectionNode
 }
 
 
+// TODO: This function may be should be moved to the logic
 vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkMRMLLORLinearObjectCollectionNode
-::GetMatches( vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > candidates, double matchingThreshold )
+::GetMatches( vtkMRMLLORLinearObjectCollectionNode* candidates, double matchingThreshold )
 {
   // For each object in this, find the object in candidates that has the closest signature
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > matchedCandidates = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
@@ -273,14 +275,14 @@ vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkMRMLLORLinearObjectCo
 
   if ( this->Size() == 0 || candidates->Size() == 0 )
   {
-    this->objects = matchedObjects;
+    this->LinearObjects = matchedObjects;
     return matchedCandidates;
   }
 
   for ( int i = 0; i < this->Size(); i++ )
   {
 
-    vtkSmartPointer< vtkMRMLLORLinearObjectNode > closestObject = candidates->GetLinearObject(0);
+    vtkMRMLLORLinearObjectNode* closestObject = candidates->GetLinearObject(0);
     double closestDistance = vtkMRMLLORVectorMath::Distance( this->GetLinearObject(i)->GetSignature(), closestObject->GetSignature() );
 
     for ( int j = 0; j < candidates->Size(); j++ )
@@ -303,7 +305,7 @@ vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkMRMLLORLinearObjectCo
   }
 
   // Note that this modifies both this buffer and creates a new candidate buffer
-  this->objects = matchedObjects;
+  this->LinearObjects = matchedObjects;
   this->Modified();
 
   return matchedCandidates;
@@ -400,17 +402,17 @@ std::string vtkMRMLLORLinearObjectCollectionNode
 
 
 void vtkMRMLLORLinearObjectCollectionNode
-::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
+::FromXMLElement( vtkXMLDataElement* element )
 {
   vtkSmartPointer< vtkMRMLLORLinearObjectNode > blankObject = NULL;
-  this->objects = std::vector< vtkSmartPointer< vtkMRMLLORLinearObjectNode > >( 0, blankObject );
+  this->LinearObjects = std::vector< vtkSmartPointer< vtkMRMLLORLinearObjectNode > >( 0, blankObject );
 
   int numElements = element->GetNumberOfNestedElements();
 
   for ( int i = 0; i < numElements; i++ )
   {
 
-    vtkSmartPointer< vtkXMLDataElement > noteElement = element->GetNestedElement( i );
+    vtkXMLDataElement* noteElement = element->GetNestedElement( i );
     
 	if ( strcmp( noteElement->GetName(), "Reference" ) == 0 )
 	{

@@ -45,6 +45,7 @@ public:
 
   static qSlicerLinearObjectCollectionWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
 
+  // Slicer will handle logic
   vtkSlicerLinearObjectRegistrationLogic* LORLogic;
 
   vtkMRMLNode* GetCurrentNode();

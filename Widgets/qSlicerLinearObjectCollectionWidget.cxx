@@ -194,7 +194,8 @@ void qSlicerLinearObjectCollectionWidget
   this->LORLogic->SetActiveCollectionNode( currentCollectionNode );
 
   // Modify all collection nodes to force the other LOR collection widgets to change the state of their active button
-  vtkCollection* collectionNodeCollection = this->mrmlScene()->GetNodesByClass( "vtkMRMLLORLinearObjectCollectionNode" );
+  vtkSmartPointer< vtkCollection > collectionNodeCollection;
+  collectionNodeCollection.TakeReference( this->mrmlScene()->GetNodesByClass( "vtkMRMLLORLinearObjectCollectionNode" ) );
   for ( int i = 0; i < collectionNodeCollection->GetNumberOfItems(); i++ )
   {
     collectionNodeCollection->GetItemAsObject( i )->Modified();
@@ -396,6 +397,7 @@ void qSlicerLinearObjectCollectionWidget
     d->CollectionTableWidget->setItem( i, LINEAROBJECT_TYPE_COLUMN, typeItem );
     d->CollectionTableWidget->setItem( i, LINEAROBJECT_BUFFER_COLUMN, bufferItem );
   }
+  d->CollectionTableWidget->resizeRowsToContents();
 
   d->CollectionTableWidget->blockSignals( false );
 }

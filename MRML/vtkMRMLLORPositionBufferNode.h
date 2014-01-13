@@ -32,7 +32,7 @@ public:
 
   static vtkMRMLLORPositionBufferNode* New();
 
-  vtkMRMLLORPositionBufferNode* DeepCopy();
+  vtkSmartPointer< vtkMRMLLORPositionBufferNode > DeepCopy();
 
 protected:
 
@@ -44,8 +44,8 @@ public:
 
   // Standard collection functionality
   int Size();
-  vtkSmartPointer< vtkMRMLLORPositionNode > GetPosition( int index );
-  void AddPosition( vtkSmartPointer< vtkMRMLLORPositionNode > newPosition );
+  vtkMRMLLORPositionNode* GetPosition( int index );
+  void AddPosition( vtkMRMLLORPositionNode* newPosition );
   void Clear();
 
   void Translate( std::vector<double> translation );
@@ -54,7 +54,7 @@ public:
   vnl_matrix<double>* CovarianceMatrix( std::vector<double> centroid );
 
   std::string ToXMLString();
-  void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element );
+  void FromXMLElement( vtkXMLDataElement* element );
 
 protected:
   std::vector< vtkSmartPointer< vtkMRMLLORPositionNode > > Positions;

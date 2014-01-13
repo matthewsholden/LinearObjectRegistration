@@ -62,7 +62,7 @@ public:
   virtual void Translate( std::vector<double> vector ) = 0;
 
   virtual std::string ToXMLString() = 0;
-  virtual void FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element ) = 0;
+  virtual void FromXMLElement( vtkXMLDataElement* element ) = 0;
 
 protected:
 
@@ -71,7 +71,7 @@ protected:
   std::vector<double> Signature;
   std::vector<double> BasePoint;
 
-  vtkMRMLLORPositionBufferNode* PositionBuffer;
+  vtkSmartPointer< vtkMRMLLORPositionBufferNode > PositionBuffer;
 
 };
 

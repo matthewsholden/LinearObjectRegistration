@@ -25,10 +25,10 @@ vtkMRMLLORPositionNode* vtkMRMLLORPositionNode
 }
 
 
-vtkMRMLLORPositionNode* vtkMRMLLORPositionNode
+vtkSmartPointer< vtkMRMLLORPositionNode > vtkMRMLLORPositionNode
 ::DeepCopy()
 {
-  vtkMRMLLORPositionNode* positionNodeCopy = vtkMRMLLORPositionNode::New();
+  vtkSmartPointer< vtkMRMLLORPositionNode > positionNodeCopy = vtkSmartPointer< vtkMRMLLORPositionNode >::New();
   std::vector< double > positionCopy( SIZE, 0.0 );
   positionCopy.at(0) = this->GetPositionVector().at( 0 );
   positionCopy.at(1) = this->GetPositionVector().at( 1 );
@@ -104,7 +104,7 @@ std::string vtkMRMLLORPositionNode
 
 
 void vtkMRMLLORPositionNode
-::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > element )
+::FromXMLElement( vtkXMLDataElement* element )
 {
 
   if ( strcmp( element->GetName(), "Position" ) != 0 )
@@ -118,7 +118,7 @@ void vtkMRMLLORPositionNode
 
 /*
 bool vtkMRMLLORPositionNode
-::FromXMLElement( vtkSmartPointer< vtkXMLDataElement > currElement, vtkSmartPointer< vtkXMLDataElement > prevElement )
+::FromXMLElement( vtkXMLDataElement* currElement, vtkXMLDataElement* prevElement )
 {
   const double ROTATION_THRESHOLD = 0.005;
   const double TRANSLATION_THRESHOLD = 0.5;

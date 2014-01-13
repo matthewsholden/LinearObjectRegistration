@@ -66,7 +66,7 @@ void vtkMRMLLORLinearObjectNode
     stdev = sqrt( stdev - meanDistance * meanDistance );
     
     // Keep only the points that are within certain number of standard deviations
-    vtkMRMLLORPositionBufferNode* newPositionBuffer = vtkMRMLLORPositionBufferNode::New();
+    vtkSmartPointer< vtkMRMLLORPositionBufferNode > newPositionBuffer = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
     for ( int i = 0; i < this->GetPositionBuffer()->Size(); i++ )
     {
       if ( distances.at(i) < filterWidth * stdev || distances.at(i) < THRESHOLD )

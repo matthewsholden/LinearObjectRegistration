@@ -80,7 +80,7 @@ bool qSlicerLinearObjectRegistrationIO::load(const IOProperties& properties)
   importCollectionNode->SetScene( this->mrmlScene() );
   this->mrmlScene()->AddNode( importCollectionNode );
   
-  vtkXMLDataParser* parser = vtkXMLDataParser::New();
+  vtkSmartPointer< vtkXMLDataParser > parser = vtkSmartPointer< vtkXMLDataParser >::New();
   parser->SetFileName( fileName.toStdString().c_str() );
   parser->Parse();
 

@@ -106,7 +106,7 @@ int vtkMRMLLORLinearObjectCollectionStorageNode
   // Clear the current buffer prior to importing
   collectionNode->Clear();
 
-  vtkXMLDataParser* parser = vtkXMLDataParser::New();
+  vtkSmartPointer< vtkXMLDataParser > parser = vtkSmartPointer< vtkXMLDataParser >::New();
   parser->SetFileName( fullName.c_str() );
   parser->Parse();
 
@@ -114,8 +114,6 @@ int vtkMRMLLORLinearObjectCollectionStorageNode
 
   // The buffer name should already be specified
   // The scene should already be populated with the desired transforms
-
-  parser->Delete();
 
   return 1;
 }
@@ -137,7 +135,7 @@ int vtkMRMLLORLinearObjectCollectionStorageNode
   
   if ( ! output.is_open() )
   {
-    vtkErrorMacro( "Record file could not be opened!" );
+    vtkErrorMacro( "Collection file could not be opened!" );
     return 0;
   }
 

@@ -117,6 +117,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   if ( this->ToMatchState >= 0 )
   {
+    // Node in scene - no smart pointer
     vtkMRMLLORLinearObjectCollectionNode* currentCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->ToCollectionWidget->GetCurrentNode() );
     currentCollection->Swap( this->ToMatchState, this->FromMatchState );
 
@@ -136,6 +137,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   if ( this->FromMatchState >= 0 )
   {
+    // Node in scene - no smart pointer
     vtkMRMLLORLinearObjectCollectionNode* currentCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->FromCollectionWidget->GetCurrentNode() );
     currentCollection->Swap( this->FromMatchState, this->ToMatchState );
 
@@ -212,6 +214,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
 {
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );
 
+  // Node in scene - no smart pointer
   vtkMRMLLinearObjectRegistrationNode* linearObjectRegistrationNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( d->ModuleNodeComboBox->currentNode() );
 
   if ( linearObjectRegistrationNode == NULL )
@@ -292,6 +295,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
 {
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );
 
+  // Node in scene - no smart pointer
   vtkMRMLLinearObjectRegistrationNode* linearObjectRegistrationNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( d->ModuleNodeComboBox->currentNode() );
 
   if ( linearObjectRegistrationNode == NULL )
@@ -332,7 +336,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->FromCollectionWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetFromCollectionID() ) );
   d->ToCollectionWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetToCollectionID() ) );
   
-  if ( linearObjectRegistrationNode->GetCollectionMode().compare( "ManualDof" ) == 0 )
+  if ( linearObjectRegistrationNode->GetCollectionMode().compare( "ManualDOF" ) == 0 )
   {
     d->ManualDOFRadioButton->setChecked( Qt::Checked );
     d->ManualSegmentationRadioButton->setChecked( Qt::Unchecked );

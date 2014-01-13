@@ -96,7 +96,7 @@ public:
   void UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vnl_matrix<double>* newTransformMatrix );
   void UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vnl_matrix<double>* newRotationMatrix, vnl_matrix<double>* newRotationVector );
 
-  vnl_matrix<double>* SphericalRegistration( vtkSmartPointer< vtkMRMLLORPositionBufferNode > fromPoints, vtkSmartPointer< vtkMRMLLORPositionBufferNode > toPoints );
+  vnl_matrix<double>* SphericalRegistration( vtkMRMLLORPositionBufferNode* fromPoints, vtkMRMLLORPositionBufferNode* toPoints );
   vnl_matrix<double>* TranslationalRegistration( std::vector<double> toCentroid, std::vector<double> fromCentroid, vnl_matrix<double>* rotation );
 
   vnl_matrix<double>* LinearObjectICP( vnl_matrix<double>* initialRotation );
@@ -104,7 +104,7 @@ public:
   std::string GetOutputMessage();
   void SetOutputMessage( std::string newOutputMessage );
 
-  vtkMRMLLORLinearObjectNode* PositionBufferToLinearObject( vtkMRMLLORPositionBufferNode* positionBuffer, int dof = -1 );
+  vtkSmartPointer< vtkMRMLLORLinearObjectNode > PositionBufferToLinearObject( vtkMRMLLORPositionBufferNode* positionBuffer, int dof = -1 );
 
   void ObserveTransformNode( vtkMRMLNode* node );
 
@@ -127,7 +127,7 @@ public:
 private:
 
   vtkMRMLLinearTransformNode* ObservedTransformNode;
-  vtkMRMLLORPositionBufferNode* ActivePositionBuffer;
+  vtkSmartPointer< vtkMRMLLORPositionBufferNode > ActivePositionBuffer;
   std::string CollectType;
 
   std::string OutputMessage;
