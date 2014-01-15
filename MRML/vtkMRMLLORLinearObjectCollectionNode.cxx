@@ -226,8 +226,9 @@ void vtkMRMLLORLinearObjectCollectionNode
     return;
   }
 
-  vtkMRMLLORLinearObjectNode* linearObject0 = this->GetLinearObject( index0 );
-  vtkMRMLLORLinearObjectNode* linearObject1 = this->GetLinearObject( index1 );
+  // These should be vtkSmartPointers so the underlying objects are not deleted
+  vtkSmartPointer< vtkMRMLLORLinearObjectNode > linearObject0 = this->GetLinearObject( index0 );
+  vtkSmartPointer< vtkMRMLLORLinearObjectNode > linearObject1 = this->GetLinearObject( index1 );
 
   this->SetLinearObject( index0, linearObject1 );
   this->SetLinearObject( index1, linearObject0 );
