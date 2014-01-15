@@ -58,6 +58,8 @@ public:
   void SetBasePoint( std::vector<double> newBasePoint );
 
   // Abstract functions that must be implemented in subclasses
+  virtual vtkSmartPointer< vtkMRMLLORLinearObjectNode > DeepCopy() = 0;
+
   virtual std::vector<double> ProjectVector( std::vector<double> vector ) = 0;
   virtual void Translate( std::vector<double> vector ) = 0;
 

@@ -218,13 +218,15 @@ void qSlicerLinearObjectCollectionWidget
   QAction* upAction = new QAction( "Move current linear object up", collectionMenu );
   QAction* downAction = new QAction( "Move current linear object down", collectionMenu );
   QAction* shuffleAction = new QAction( "Remove blank linear objects", collectionMenu );
+  QAction* convertAction = new QAction( "Convert to reference", collectionMenu );
   QAction* matchAction = new QAction( "Match...", collectionMenu );
 
   collectionMenu->addAction( activateAction );
   collectionMenu->addAction( deleteAction );
   collectionMenu->addAction( upAction );
   collectionMenu->addAction( downAction );
-  collectionMenu->addAction( shuffleAction );
+  collectionMenu->addAction( shuffleAction );  
+  collectionMenu->addAction( convertAction );
   collectionMenu->addAction( matchAction );
 
   QAction* selectedAction = collectionMenu->exec( globalPosition );
@@ -267,6 +269,18 @@ void qSlicerLinearObjectCollectionWidget
   if ( selectedAction == shuffleAction )
   {
     currentCollection->ShuffleOutNull();
+  }
+
+  if ( selectedAction == convertAction )
+  {
+    vtkMRMLLORLinearObjectNode* currentNode = currentCollection->GetLinearObject( currentIndex );
+    if ( currentNode != NULL && currentNode->GetType().compare( "Point" ) == 0 )
+    {
+      vtkSmartPointer< vtkMRMLLORReferenceNode > referenceNode = vtkSmartPointer< vtkMRMLLORReferenceNode >::New();
+      referenceNode->SetBasePoint( currentNode->GetBasePoint() );
+      referenceNode->SetPositionBuffer( currentNode->GetPositionBuffer() );
+      currentCollection->SetLinearObject( currentIndex, referenceNode );
+    }
   }
 
   if ( selectedAction == matchAction )

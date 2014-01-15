@@ -304,10 +304,11 @@ void qSlicerLinearObjectRegistrationModuleWidget
     d->ManualDOFRadioButton->setEnabled( false );
     d->ManualSegmentationRadioButton->setEnabled( false );
     d->AutomaticRadioButton->setEnabled( false );
+    d->AutomaticMatchCheckBox->setEnabled( false );
     d->ManualDOFWidget->setEnabled( false );
     d->FromCollectionWidget->setEnabled( false );
     d->ToCollectionWidget->setEnabled( false );
-    d->StatusLabel->setText( "No Fiducial Registration Wizard module node selected." );
+    d->StatusLabel->setText( "No Linear Object Registration module node selected." );
     return;
   }
 
@@ -315,6 +316,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->ManualDOFRadioButton->setEnabled( true );
   d->ManualSegmentationRadioButton->setEnabled( true );
   d->AutomaticRadioButton->setEnabled( true );
+  d->AutomaticMatchCheckBox->setEnabled( true );
   d->ManualDOFWidget->setEnabled( true );
   d->FromCollectionWidget->setEnabled( true );
   d->ToCollectionWidget->setEnabled( true );

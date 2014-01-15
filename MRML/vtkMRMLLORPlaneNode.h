@@ -29,6 +29,8 @@ public:
   static vtkMRMLLORPlaneNode* New();
   static vtkMRMLLORPlaneNode* New( std::vector<double> newBasePoint, std::vector<double> newEndPoint1, std::vector<double> newEndPoint2 );
 
+  vtkSmartPointer< vtkMRMLLORLinearObjectNode > DeepCopy();
+
 protected:
 
   // Constructor/destructor

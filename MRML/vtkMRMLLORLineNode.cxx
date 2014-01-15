@@ -28,6 +28,27 @@ vtkMRMLLORLineNode
 }
 
 
+vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORLineNode
+::DeepCopy()
+{
+  vtkSmartPointer< vtkMRMLLORLineNode > objectNodeCopy = vtkSmartPointer< vtkMRMLLORLineNode >::New();
+
+  objectNodeCopy->BasePoint = this->BasePoint;
+  objectNodeCopy->EndPoint = this->EndPoint;
+  objectNodeCopy->Signature = this->Signature;
+
+  objectNodeCopy->SetName( this->GetName() );
+  objectNodeCopy->SetType( this->GetType() );
+
+  if ( this->GetPositionBuffer() != NULL )
+  {
+    objectNodeCopy->SetPositionBuffer( this->GetPositionBuffer()->DeepCopy() );
+  }
+
+  return objectNodeCopy;
+}
+
+
 std::vector<double> vtkMRMLLORLineNode
 ::GetDirection()
 {

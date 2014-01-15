@@ -26,6 +26,26 @@ vtkMRMLLORPointNode
 }
 
 
+vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORPointNode
+::DeepCopy()
+{
+  vtkSmartPointer< vtkMRMLLORPointNode > objectNodeCopy = vtkSmartPointer< vtkMRMLLORPointNode >::New();
+
+  objectNodeCopy->BasePoint = this->BasePoint;
+  objectNodeCopy->Signature = this->Signature;
+
+  objectNodeCopy->SetName( this->GetName() );
+  objectNodeCopy->SetType( this->GetType() );
+   
+  if ( this->GetPositionBuffer() != NULL )
+  {
+    objectNodeCopy->SetPositionBuffer( this->GetPositionBuffer()->DeepCopy() );
+  }
+
+  return objectNodeCopy;
+}
+
+
 std::vector<double> vtkMRMLLORPointNode
 ::ProjectVector( std::vector<double> vector )
 {

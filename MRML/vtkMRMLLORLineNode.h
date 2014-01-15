@@ -30,6 +30,8 @@ public:
   static vtkMRMLLORLineNode* New();
   static vtkMRMLLORLineNode* New( std::vector<double> newBasePoint, std::vector<double> newEndPoint );
 
+  vtkSmartPointer< vtkMRMLLORLinearObjectNode > DeepCopy();
+
 protected:
 
   // Constructor/destructor

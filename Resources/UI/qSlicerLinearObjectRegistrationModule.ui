@@ -79,9 +79,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="CollectionGroupBox">
+       <widget class="ctkCollapsibleGroupBox" name="CollectionGroupBox">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -89,7 +89,10 @@
         <property name="title">
          <string>Collect Linear Objects</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
+        <property name="collapsed">
+         <bool>true</bool>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
           <layout class="QHBoxLayout" name="CollectionModeLayout">
            <property name="topMargin">
@@ -242,7 +245,7 @@
       <string>Advanced</string>
      </property>
      <property name="collapsed">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="contentsFrameShape">
       <enum>QFrame::NoFrame</enum>
@@ -407,6 +410,12 @@
    <class>ctkCollapsibleButton</class>
    <extends>QWidget</extends>
    <header>ctkCollapsibleButton.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkCollapsibleGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>ctkCollapsibleGroupBox.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

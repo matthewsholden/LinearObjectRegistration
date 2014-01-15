@@ -91,7 +91,14 @@ void vtkMRMLLORLinearObjectCollectionNode::Copy( vtkMRMLNode *anode )
 
   for ( int i = 0; i < node->Size(); i++ )
   {
-    this->AddLinearObject( node->GetLinearObject( i ) );
+    if ( node->GetLinearObject( i ) != NULL )
+    {
+      this->AddLinearObject( node->GetLinearObject( i )->DeepCopy() );
+    }
+    else
+    {
+      this->AddLinearObject( NULL );
+    }
   }
 
   this->Modified();
@@ -404,6 +411,11 @@ std::string vtkMRMLLORLinearObjectCollectionNode
 void vtkMRMLLORLinearObjectCollectionNode
 ::FromXMLElement( vtkXMLDataElement* element )
 {
+  if ( strcmp( element->GetName(), "LinearObjectCollection" ) != 0 )
+  {
+    return;
+  }
+
   vtkSmartPointer< vtkMRMLLORLinearObjectNode > blankObject = NULL;
   this->LinearObjects = std::vector< vtkSmartPointer< vtkMRMLLORLinearObjectNode > >( 0, blankObject );
 
