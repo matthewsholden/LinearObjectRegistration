@@ -63,6 +63,20 @@ void vtkMRMLLORPointNode
 }
 
 
+vtkPolyData* vtkMRMLLORPointNode
+::CreateModelPolyData()
+{
+  vtkPointSource* pointSource = vtkPointSource::New();
+
+  pointSource->SetNumberOfPoints( 1 );
+  pointSource->SetRadius( 0 );
+  pointSource->SetCenter( this->BasePoint.at(0), this->BasePoint.at(1), this->BasePoint.at(2) );
+  pointSource->Update();
+
+  return pointSource->GetOutput();
+}
+
+
 std::string vtkMRMLLORPointNode
 ::ToXMLString()
 {

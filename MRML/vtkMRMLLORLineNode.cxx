@@ -76,6 +76,19 @@ void vtkMRMLLORLineNode
 }
 
 
+vtkPolyData* vtkMRMLLORLineNode
+::CreateModelPolyData()
+{
+  vtkLineSource* lineSource = vtkLineSource::New();
+
+  lineSource->SetPoint1( this->BasePoint.at(0), this->BasePoint.at(1), this->BasePoint.at(2) );
+  lineSource->SetPoint2( this->EndPoint.at(0), this->EndPoint.at(1), this->EndPoint.at(2) );
+  lineSource->Update();
+
+  return lineSource->GetOutput();
+}
+
+
 std::vector<double> vtkMRMLLORLineNode
 ::GetOrthogonalNormal1()
 {

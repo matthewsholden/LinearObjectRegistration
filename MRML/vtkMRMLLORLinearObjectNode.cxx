@@ -148,3 +148,19 @@ void vtkMRMLLORLinearObjectNode
   this->BasePoint = newBasePoint;
   this->Modified();
 }
+
+
+std::string vtkMRMLLORLinearObjectNode
+::GetModelID()
+{
+  return this->ModelID;
+}
+
+
+void vtkMRMLLORLinearObjectNode
+::SetModelID( std::string newModelID )
+{
+  this->ModelID = newModelID;
+  this->Modified();
+}
+

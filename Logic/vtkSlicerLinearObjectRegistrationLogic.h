@@ -37,6 +37,8 @@
 #include "vtkMRMLModelNode.h"
 #include "vtkMRMLScene.h"
 #include "vtkMRMLSelectionNode.h"
+#include "vtkMRMLDisplayNode.h"
+#include "vtkMRMLModelDisplayNode.h"
 
 // LinearObjectRegistration includes
 #include "vtkMRMLLinearObjectRegistrationNode.h"
@@ -119,6 +121,8 @@ public:
   void MatchCollections( vtkMRMLLORLinearObjectCollectionNode* collection0, vtkMRMLLORLinearObjectCollectionNode* collection1, bool removeUnmatched = false );
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > GetReferences( vtkMRMLLORLinearObjectCollectionNode* collection );
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > GetNonReferences( vtkMRMLLORLinearObjectCollectionNode* collection );
+
+  void ToggleLinearObjectModelVisibility( vtkMRMLLORLinearObjectNode* linearObject );
 
   // Only to be called from the register method
   void GetFromAndToCollections( vtkMRMLLORLinearObjectCollectionNode* fromCollection, vtkMRMLLORLinearObjectCollectionNode* fromReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* fromPointCollection, vtkMRMLLORLinearObjectCollectionNode* fromLineCollection, vtkMRMLLORLinearObjectCollectionNode* fromPlaneCollection,

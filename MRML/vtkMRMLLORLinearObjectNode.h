@@ -14,6 +14,7 @@
 #include "vtkObjectBase.h"
 #include "vtkObjectFactory.h"
 #include "vtkXMLDataElement.h"
+#include "vtkPolyData.h"
 
 // LinearObjectRegistration includes
 #include "vtkMRMLLORVectorMath.h"
@@ -39,6 +40,7 @@ protected:
 public:
 
   static const int DIMENSION = 3;
+  static const int MODEL_SCALE = 100;
 
   double DistanceToVector( std::vector<double> vector );
 
@@ -56,9 +58,13 @@ public:
   void SetSignature( std::vector<double> newSignature );
   std::vector<double> GetBasePoint();
   void SetBasePoint( std::vector<double> newBasePoint );
+  std::string GetModelID();
+  void SetModelID( std::string newModelID );
 
   // Abstract functions that must be implemented in subclasses
   virtual vtkSmartPointer< vtkMRMLLORLinearObjectNode > DeepCopy() = 0;
+
+  virtual vtkPolyData* CreateModelPolyData() = 0;
 
   virtual std::vector<double> ProjectVector( std::vector<double> vector ) = 0;
   virtual void Translate( std::vector<double> vector ) = 0;
@@ -70,6 +76,7 @@ protected:
 
   std::string Name;
   std::string Type;
+  std::string ModelID;
   std::vector<double> Signature;
   std::vector<double> BasePoint;
 

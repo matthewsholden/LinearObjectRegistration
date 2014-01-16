@@ -14,6 +14,7 @@
 #include "vtkObjectBase.h"
 #include "vtkObjectFactory.h"
 #include "vtkXMLDataElement.h"
+#include "vtkPointSource.h"
 
 // LinearObjectRegistration includes
 #include "vtkMRMLLORLinearObjectNode.h"
@@ -44,6 +45,8 @@ public:
   // Implement inherited abstract methods
   std::vector<double> ProjectVector( std::vector<double> vector );
   void Translate( std::vector<double> vector );
+
+  vtkPolyData* CreateModelPolyData();
 
   // Implement inherited abstract methods
   std::string ToXMLString();

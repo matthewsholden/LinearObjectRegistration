@@ -81,6 +81,20 @@ void vtkMRMLLORPlaneNode
 }
 
 
+vtkPolyData* vtkMRMLLORPlaneNode
+::CreateModelPolyData()
+{
+  vtkPlaneSource* planeSource = vtkPlaneSource::New();
+
+  planeSource->SetOrigin( this->BasePoint.at(0), this->BasePoint.at(1), this->BasePoint.at(2) );
+  planeSource->SetPoint1( this->EndPoint1.at(0), this->EndPoint1.at(1), this->EndPoint1.at(2) );
+  planeSource->SetPoint2( this->EndPoint2.at(0), this->EndPoint2.at(1), this->EndPoint2.at(2) );
+  planeSource->Update();
+
+  return planeSource->GetOutput();
+}
+
+
 std::string vtkMRMLLORPlaneNode
 ::ToXMLString()
 {

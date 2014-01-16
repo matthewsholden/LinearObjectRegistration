@@ -219,6 +219,7 @@ void qSlicerLinearObjectCollectionWidget
   QAction* downAction = new QAction( "Move current linear object down", collectionMenu );
   QAction* shuffleAction = new QAction( "Remove blank linear objects", collectionMenu );
   QAction* convertAction = new QAction( "Convert to reference", collectionMenu );
+  QAction* modelAction = new QAction( "Show/hide model", collectionMenu ); 
   QAction* matchAction = new QAction( "Match...", collectionMenu );
 
   collectionMenu->addAction( activateAction );
@@ -227,6 +228,7 @@ void qSlicerLinearObjectCollectionWidget
   collectionMenu->addAction( downAction );
   collectionMenu->addAction( shuffleAction );  
   collectionMenu->addAction( convertAction );
+  collectionMenu->addAction( modelAction );
   collectionMenu->addAction( matchAction );
 
   QAction* selectedAction = collectionMenu->exec( globalPosition );
@@ -281,6 +283,11 @@ void qSlicerLinearObjectCollectionWidget
       referenceNode->SetPositionBuffer( currentNode->GetPositionBuffer() );
       currentCollection->SetLinearObject( currentIndex, referenceNode );
     }
+  }
+
+  if ( selectedAction == modelAction )
+  {
+    this->LORLogic->ToggleLinearObjectModelVisibility( currentCollection->GetLinearObject( currentIndex ) );
   }
 
   if ( selectedAction == matchAction )

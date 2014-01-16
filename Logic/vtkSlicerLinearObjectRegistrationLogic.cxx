@@ -469,6 +469,45 @@ vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkSlicerLinearObjectReg
 }
 
 
+// Show/hide the model associated with a linear object
+void vtkSlicerLinearObjectRegistrationLogic
+::ToggleLinearObjectModelVisibility( vtkMRMLLORLinearObjectNode* linearObject )
+{
+  // First, if the model exists then show it
+  std::string modelID = linearObject->GetModelID().c_str();
+  vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( modelID.c_str() ) );
+
+  if ( modelNode != NULL && modelNode->GetDisplayNode() != NULL )
+  {
+    modelNode->GetDisplayNode()->SetVisibility( ! modelNode->GetDisplayNode()->GetVisibility() );
+    return;
+  }
+
+  // Otherwise, create a new model
+  vtkPolyData* linearObjectPolyData = linearObject->CreateModelPolyData();
+
+  vtkMRMLModelNode* linearObjectModel = vtkMRMLModelNode::SafeDownCast( this->GetMRMLScene()->CreateNodeByClass( "vtkMRMLModelNode" ) );
+  linearObjectModel->SetAndObservePolyData( linearObjectPolyData );
+  std::string modelName = linearObject->GetName() + "Model";
+  linearObjectModel->SetName( modelName.c_str() );
+  linearObjectModel->SetScene( this->GetMRMLScene() );
+
+  vtkMRMLModelDisplayNode* linearObjectModelDisplay = vtkMRMLModelDisplayNode::SafeDownCast( this->GetMRMLScene()->CreateNodeByClass( "vtkMRMLModelDisplayNode" ) );
+  linearObjectModelDisplay->SetScene( this->GetMRMLScene() );
+  linearObjectModelDisplay->SetInputPolyData( linearObjectModel->GetPolyData() );
+  linearObjectModelDisplay->SetVisibility( true );
+  linearObjectModelDisplay->BackfaceCullingOff();
+
+  this->GetMRMLScene()->AddNode( linearObjectModelDisplay );
+  this->GetMRMLScene()->AddNode( linearObjectModel );
+
+  linearObjectModel->SetAndObserveDisplayNodeID( linearObjectModelDisplay->GetID() );
+
+  // And let the linear object store the model's ID
+  linearObject->SetModelID( linearObjectModel->GetID() );
+}
+
+
 // TODO: May be this function signature is too long...
 void vtkSlicerLinearObjectRegistrationLogic
 ::GetFromAndToCollections( vtkMRMLLORLinearObjectCollectionNode* fromCollection, vtkMRMLLORLinearObjectCollectionNode* fromReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* fromPointCollection, vtkMRMLLORLinearObjectCollectionNode* fromLineCollection, vtkMRMLLORLinearObjectCollectionNode* fromPlaneCollection,
