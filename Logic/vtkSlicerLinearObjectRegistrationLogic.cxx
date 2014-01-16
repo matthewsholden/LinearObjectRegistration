@@ -307,18 +307,18 @@ vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkSlicerLinearObjectRegistrationL
   }
   if ( dof == POINT_DOF )
   {
-    vtkMRMLLORPointNode* referenceObject = vtkMRMLLORPointNode::New( centroid );
-    return vtkSmartPointer< vtkMRMLLORPointNode >::Take( referenceObject );
+    vtkMRMLLORPointNode* pointObject = vtkMRMLLORPointNode::New( centroid );
+    return vtkSmartPointer< vtkMRMLLORPointNode >::Take( pointObject );
   }
   if ( dof == LINE_DOF )
   {
-    vtkMRMLLORLineNode* referenceObject = vtkMRMLLORLineNode::New( centroid, vtkMRMLLORVectorMath::Add( centroid, Eigenvector3 ) );
-    return vtkSmartPointer< vtkMRMLLORLineNode >::Take( referenceObject );
+    vtkMRMLLORLineNode* lineObject = vtkMRMLLORLineNode::New( centroid, vtkMRMLLORVectorMath::Add( centroid, Eigenvector3 ) );
+    return vtkSmartPointer< vtkMRMLLORLineNode >::Take( lineObject );
   }
   if ( dof == PLANE_DOF )
   {
-    vtkMRMLLORPlaneNode* referenceObject = vtkMRMLLORPlaneNode::New( centroid, vtkMRMLLORVectorMath::Add( centroid, Eigenvector2 ), vtkMRMLLORVectorMath::Add( centroid, Eigenvector3 ) );
-    return vtkSmartPointer< vtkMRMLLORPlaneNode >::Take( referenceObject );
+    vtkMRMLLORPlaneNode* planeObject = vtkMRMLLORPlaneNode::New( centroid, vtkMRMLLORVectorMath::Add( centroid, Eigenvector2 ), vtkMRMLLORVectorMath::Add( centroid, Eigenvector3 ) );
+    return vtkSmartPointer< vtkMRMLLORPlaneNode >::Take( planeObject );
   }
 
   return NULL; // TODO: Do something more productive if the dof is unknown (ie determine the dof automatically)...
