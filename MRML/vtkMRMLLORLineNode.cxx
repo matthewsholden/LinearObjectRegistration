@@ -81,10 +81,46 @@ vtkPolyData* vtkMRMLLORLineNode
 {
   vtkLineSource* lineSource = vtkLineSource::New();
 
-  lineSource->SetPoint1( this->BasePoint.at(0), this->BasePoint.at(1), this->BasePoint.at(2) );
-  lineSource->SetPoint2( this->EndPoint.at(0), this->EndPoint.at(1), this->EndPoint.at(2) );
-  lineSource->Update();
+  if ( this->GetPositionBuffer() == NULL )
+  {
+    lineSource->SetPoint1( this->BasePoint.at(0), this->BasePoint.at(1), this->BasePoint.at(2) );
+    lineSource->SetPoint2( this->EndPoint.at(0), this->EndPoint.at(1), this->EndPoint.at(2) );
+    lineSource->Update();
+    return lineSource->GetOutput();
+  }
 
+   // Project point onto line
+  // Dot product to find parameterization
+  // Use biggest and smallest parameters
+  double maxParameter = 0;
+  double minParameter = 0;
+
+  for ( int i = 0; i < this->GetPositionBuffer()->Size(); i++ )
+  {
+    // Project onto line
+    std::vector<double> outVec = vtkMRMLLORVectorMath::Subtract( this->GetPositionBuffer()->GetPosition( i )->GetPositionVector(), this->BasePoint );
+
+    double parameter = vtkMRMLLORVectorMath::Dot( this->GetDirection(), outVec );
+
+    if ( parameter > maxParameter )
+    {
+      maxParameter = parameter;
+    }
+    if ( parameter < minParameter )
+    {
+      minParameter = parameter;
+    }
+  }
+
+  std::vector<double> maxVector = vtkMRMLLORVectorMath::Multiply( maxParameter, this->GetDirection() );
+  std::vector<double> minVector = vtkMRMLLORVectorMath::Multiply( minParameter, this->GetDirection() );
+
+  std::vector<double> point1 = vtkMRMLLORVectorMath::Add( this->BasePoint, minVector );
+  std::vector<double> point2 = vtkMRMLLORVectorMath::Add( this->BasePoint, maxVector );
+
+  lineSource->SetPoint1( point1.at(0), point1.at(1), point1.at(2) );
+  lineSource->SetPoint2( point2.at(0), point2.at(1), point2.at(2) );
+  lineSource->Update();
   return lineSource->GetOutput();
 }
 

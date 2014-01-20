@@ -86,11 +86,64 @@ vtkPolyData* vtkMRMLLORPlaneNode
 {
   vtkPlaneSource* planeSource = vtkPlaneSource::New();
 
-  planeSource->SetOrigin( this->BasePoint.at(0), this->BasePoint.at(1), this->BasePoint.at(2) );
-  planeSource->SetPoint1( this->EndPoint1.at(0), this->EndPoint1.at(1), this->EndPoint1.at(2) );
-  planeSource->SetPoint2( this->EndPoint2.at(0), this->EndPoint2.at(1), this->EndPoint2.at(2) );
-  planeSource->Update();
+  if ( this->GetPositionBuffer() == NULL )
+  {
+    planeSource->SetOrigin( this->BasePoint.at(0), this->BasePoint.at(1), this->BasePoint.at(2) );
+    planeSource->SetPoint1( this->EndPoint1.at(0), this->EndPoint1.at(1), this->EndPoint1.at(2) );
+    planeSource->SetPoint2( this->EndPoint2.at(0), this->EndPoint2.at(1), this->EndPoint2.at(2) );
+    planeSource->Update();
+    return planeSource->GetOutput();
+  }
 
+  // Project point onto line
+  // Dot product to find parameterization
+  // Use biggest and smallest parameters
+  double maxParameter1 = 0;
+  double minParameter1 = 0;
+  double maxParameter2 = 0;
+  double minParameter2 = 0;
+  std::vector<double> directionVector1 = vtkMRMLLORVectorMath::Normalize( vtkMRMLLORVectorMath::Subtract( this->EndPoint1, this->BasePoint ) );
+  std::vector<double> directionVector2 = vtkMRMLLORVectorMath::Normalize( vtkMRMLLORVectorMath::Subtract( this->EndPoint2, this->BasePoint ) );
+
+  for ( int i = 0; i < this->GetPositionBuffer()->Size(); i++ )
+  {
+    // Project onto line
+    std::vector<double> outVec = vtkMRMLLORVectorMath::Subtract( this->GetPositionBuffer()->GetPosition( i )->GetPositionVector(), this->BasePoint );
+
+    double parameter1 = vtkMRMLLORVectorMath::Dot( directionVector1, outVec );
+    double parameter2 = vtkMRMLLORVectorMath::Dot( directionVector2, outVec );
+
+    if ( parameter1 > maxParameter1 )
+    {
+      maxParameter1 = parameter1;
+    }
+    if ( parameter1 < minParameter1 )
+    {
+      minParameter1 = parameter1;
+    }
+    if ( parameter2 > maxParameter2 )
+    {
+      maxParameter2 = parameter2;
+    }
+    if ( parameter2 < minParameter2 )
+    {
+      minParameter2 = parameter2;
+    }
+  }
+
+  std::vector<double> maxVector1 = vtkMRMLLORVectorMath::Multiply( maxParameter1, directionVector1 );
+  std::vector<double> minVector1 = vtkMRMLLORVectorMath::Multiply( minParameter1, directionVector1 );
+  std::vector<double> maxVector2 = vtkMRMLLORVectorMath::Multiply( maxParameter2, directionVector2 );
+  std::vector<double> minVector2 = vtkMRMLLORVectorMath::Multiply( minParameter2, directionVector2 );
+
+  std::vector<double> origin = vtkMRMLLORVectorMath::Add( this->BasePoint, vtkMRMLLORVectorMath::Add( minVector1, minVector2 ) );
+  std::vector<double> point1 = vtkMRMLLORVectorMath::Add( origin, vtkMRMLLORVectorMath::Subtract( maxVector1, minVector1 ) );
+  std::vector<double> point2 = vtkMRMLLORVectorMath::Add( origin, vtkMRMLLORVectorMath::Subtract( maxVector2, minVector2 ) );
+
+  planeSource->SetOrigin( origin.at(0), origin.at(1), origin.at(2) );
+  planeSource->SetPoint1( point1.at(0), point1.at(1), point1.at(2) );
+  planeSource->SetPoint2( point2.at(0), point2.at(1), point2.at(2) );
+  planeSource->Update();
   return planeSource->GetOutput();
 }
 
