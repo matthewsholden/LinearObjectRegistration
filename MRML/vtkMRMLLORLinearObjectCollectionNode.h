@@ -79,6 +79,8 @@ public:
 
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > GetMatches( vtkMRMLLORLinearObjectCollectionNode* candidates, double matchingThreshold );
 
+  bool AllHavePositionBuffers();
+
   std::vector<double> CalculateCentroid();
 
   std::string ToXMLString();

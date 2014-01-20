@@ -1,6 +1,25 @@
 
 #include "vtkMRMLLORVectorMath.h"
 
+std::vector<double> vtkMRMLLORVectorMath 
+::Abs( std::vector<double> vector )
+{
+
+  std::vector<double> result( 3, 0.0 );
+  result.at(0) = abs( vector.at(0) );
+  result.at(1) = abs( vector.at(1) );
+  result.at(2) = abs( vector.at(2) );
+
+  return result;
+}
+
+
+std::vector<double> vtkMRMLLORVectorMath 
+::Normalize( std::vector<double> vector )
+{
+  return Multiply( 1 / Norm( vector ), vector );
+}
+
 
 double vtkMRMLLORVectorMath 
 ::Distance( std::vector<double> v1, std::vector<double> v2 )

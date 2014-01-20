@@ -809,12 +809,14 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
   // Finally, calculate the registration
-  vnl_matrix<double>* FromToToRotation;
+  vtkSmartPointer< vtkMatrix4x4 > FromToToTransform = NULL;
+  vtkSmartPointer< vtkMatrix4x4 > FromToToRotation = NULL;
+  std::vector<double> FromToToTranslation;
 
   try
   {
     // TODO: Add check for collinearity - it is not done in the spherical registration method
-    FromToToRotation = this->SphericalRegistration( FromPositions, ToPositions );
+    FromToToRotation = this->SphericalRegistration( FromPositions, ToPositions, NULL );
   }
   catch( std::logic_error e )
   {
@@ -823,78 +825,56 @@ void vtkSlicerLinearObjectRegistrationLogic
 	return;
   }
 
-  vnl_matrix<double>* FromToToTranslation = this->TranslationalRegistration( fromCentroid, toCentroid, FromToToRotation ); 
-
   // And set the output matrix
-  this->UpdateOutputTransform( outputTransform, FromToToRotation, FromToToTranslation );
+  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > fromICPTACollection = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
+  fromICPTACollection->Concatenate( fromPlaneCollection );
+  fromICPTACollection->Concatenate( fromLineCollection );
+  fromICPTACollection->Concatenate( fromPointCollection );
 
-  linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
-  this->OutputMessage = "Success!";
+  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > toICPTACollection = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
+  toICPTACollection->Concatenate( toPlaneCollection );
+  toICPTACollection->Concatenate( toLineCollection );
+  toICPTACollection->Concatenate( toPointCollection );
+
+  FromToToTransform = this->LinearObjectICPTA( fromICPTACollection, toICPTACollection, FromToToRotation );
+  this->MatrixRotationPart( FromToToTransform, FromToToRotation );
+  FromToToTranslation = this->MatrixTranslationPart( FromToToTransform );
+  FromToToTranslation = this->TranslationalRegistration( fromCentroid, vtkMRMLLORVectorMath::Add( toCentroid, FromToToTranslation ), FromToToRotation ); 
+  this->RotationTranslationToMatrix( FromToToRotation, FromToToTranslation, FromToToTransform );
+
+  this->UpdateOutputTransform( outputTransform, FromToToTransform );
+
+  // No need to update output message here - it is already taken care of in the ICPTA method
 }
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vnl_matrix<double>* newTransformMatrix )
+::UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vtkMatrix4x4* newTransformMatrix )
 {
   vtkMatrix4x4* outputMatrix = outputTransform->GetMatrixTransformToParent();
-
-  outputMatrix->SetElement( 0, 0, newTransformMatrix->get( 0, 0 ) );
-  outputMatrix->SetElement( 0, 1, newTransformMatrix->get( 0, 1 ) );
-  outputMatrix->SetElement( 0, 2, newTransformMatrix->get( 0, 2 ) );
-  outputMatrix->SetElement( 0, 3, newTransformMatrix->get( 0, 3 ) );
-
-  outputMatrix->SetElement( 1, 0, newTransformMatrix->get( 1, 0 ) );
-  outputMatrix->SetElement( 1, 1, newTransformMatrix->get( 1, 1 ) );
-  outputMatrix->SetElement( 1, 2, newTransformMatrix->get( 1, 2 ) );
-  outputMatrix->SetElement( 1, 3, newTransformMatrix->get( 1, 3 ) );
-
-  outputMatrix->SetElement( 2, 0, newTransformMatrix->get( 2, 0 ) );
-  outputMatrix->SetElement( 2, 1, newTransformMatrix->get( 2, 1 ) );
-  outputMatrix->SetElement( 2, 2, newTransformMatrix->get( 2, 2 ) );
-  outputMatrix->SetElement( 2, 3, newTransformMatrix->get( 2, 3 ) );
-
-  outputMatrix->SetElement( 3, 0, 0 );
-  outputMatrix->SetElement( 3, 1, 0 );
-  outputMatrix->SetElement( 3, 2, 0 );
-  outputMatrix->SetElement( 3, 3, 1 );
+  outputMatrix->DeepCopy( newTransformMatrix );
 }
 
 
-void vtkSlicerLinearObjectRegistrationLogic
-::UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vnl_matrix<double>* newRotationMatrix, vnl_matrix<double>* newTranslationVector )
-{
-  vtkMatrix4x4* outputMatrix = outputTransform->GetMatrixTransformToParent();
-
-  outputMatrix->SetElement( 0, 0, newRotationMatrix->get( 0, 0 ) );
-  outputMatrix->SetElement( 0, 1, newRotationMatrix->get( 0, 1 ) );
-  outputMatrix->SetElement( 0, 2, newRotationMatrix->get( 0, 2 ) );
-  outputMatrix->SetElement( 0, 3, newTranslationVector->get( 0, 0 ) );
-
-  outputMatrix->SetElement( 1, 0, newRotationMatrix->get( 1, 0 ) );
-  outputMatrix->SetElement( 1, 1, newRotationMatrix->get( 1, 1 ) );
-  outputMatrix->SetElement( 1, 2, newRotationMatrix->get( 1, 2 ) );
-  outputMatrix->SetElement( 1, 3, newTranslationVector->get( 1, 0 ) );
-
-  outputMatrix->SetElement( 2, 0, newRotationMatrix->get( 2, 0 ) );
-  outputMatrix->SetElement( 2, 1, newRotationMatrix->get( 2, 1 ) );
-  outputMatrix->SetElement( 2, 2, newRotationMatrix->get( 2, 2 ) );
-  outputMatrix->SetElement( 2, 3, newTranslationVector->get( 2, 0 ) );
-
-  outputMatrix->SetElement( 3, 0, 0 );
-  outputMatrix->SetElement( 3, 1, 0 );
-  outputMatrix->SetElement( 3, 2, 0 );
-  outputMatrix->SetElement( 3, 3, 1 );
-}
-
-
-vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
-::SphericalRegistration( vtkMRMLLORPositionBufferNode* fromPoints, vtkMRMLLORPositionBufferNode* toPoints )
+// This is a pure rotation
+vtkSmartPointer< vtkMatrix4x4 > vtkSlicerLinearObjectRegistrationLogic
+::SphericalRegistration( vtkMRMLLORPositionBufferNode* fromPoints, vtkMRMLLORPositionBufferNode* toPoints, vtkMatrix4x4* currentFromToToTransform )
 {
   // Assume that it is already mean zero
   const double CONDITION_THRESHOLD = 1e-3;
 
+  // Calculate the translation to be applied to the from positions
+  vtkSmartPointer< vtkMatrix4x4 > translation = vtkSmartPointer< vtkMatrix4x4 >::New();
+  if ( currentFromToToTransform != NULL )
+  {
+    vtkSmartPointer< vtkMatrix4x4 > rotationInverse = vtkSmartPointer< vtkMatrix4x4 >::New();
+    this->MatrixRotationPart( currentFromToToTransform, rotationInverse );
+    rotationInverse->Invert();
+    vtkMatrix4x4::Multiply4x4( rotationInverse, currentFromToToTransform, translation );
+  }
+
   // Let us construct the data matrix
-  vnl_matrix<double>* DataMatrix = new vnl_matrix<double>( vtkMRMLLORPositionNode::SIZE, vtkMRMLLORPositionNode::SIZE, 0.0 );
+  vnl_matrix<double>* DataMatrix = new vnl_matrix<double>( vtkMRMLLORPositionNode::SIZE + 1, vtkMRMLLORPositionNode::SIZE + 1, 0.0 );
 
   if ( fromPoints->Size() != toPoints->Size() )
   {
@@ -909,136 +889,299 @@ vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
 	  // Iterate over all times
 	  for ( int i = 0; i < fromPoints->Size(); i++ )
 	  {
-	    DataMatrix->put( d1, d2, DataMatrix->get( d1, d2 ) + fromPoints->GetPosition(i)->GetPositionVector().at(d1) * toPoints->GetPosition(i)->GetPositionVector().at(d2) );
+        double fromCoordinate = fromPoints->GetPosition(i)->GetPositionVector().at( d1 );
+        double toCoordinate = toPoints->GetPosition(i)->GetPositionVector().at( d2 );
+
+        if ( currentFromToToTransform != NULL )
+        {
+          fromCoordinate += translation->GetElement( d1, 3 );
+        }
+
+	    DataMatrix->put( d1, d2, DataMatrix->get( d1, d2 ) + fromCoordinate * toCoordinate );
 	  }
 	}
   }
 
   // Now we can calculate its svd
   vnl_svd<double>* SVDMatrix = new vnl_svd<double>( *DataMatrix, 0.0 );
+  vnl_matrix<double>* rotationMatrix = new vnl_matrix<double>( SVDMatrix->V() * SVDMatrix->U().transpose() );
 
-  /*
-  if ( SVDMatrix->well_condition() < CONDITION_THRESHOLD ) // This is the inverse of the condition number
-  {
-    throw std::logic_error( "Failed - spherical registration is ill-conditioned!" );
-  }
-  */
+  vtkSmartPointer< vtkMatrix4x4 > rotation = vtkSmartPointer< vtkMatrix4x4 >::New();
+  this->VNLMatrixToVTKMatrix( rotationMatrix, rotation );
 
-  return new vnl_matrix<double>( SVDMatrix->V() * SVDMatrix->U().transpose() );
+  return rotation;
 }
 
 
-vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
-::TranslationalRegistration( std::vector<double> fromCentroid, std::vector<double> toCentroid, vnl_matrix<double>* rotation )
+std::vector<double> vtkSlicerLinearObjectRegistrationLogic
+::TranslationalRegistration( std::vector<double> fromCentroid, std::vector<double> toCentroid, vtkMatrix4x4* rotation )
 {
-  // Make matrices out of the centroids
-  vnl_matrix<double>* toMatrix = new vnl_matrix<double>( vtkMRMLLORPositionNode::SIZE, 1, 0.0 );
-  vnl_matrix<double>* fromMatrix = new vnl_matrix<double>( vtkMRMLLORPositionNode::SIZE, 1, 0.0 );
+  vtkSmartPointer< vtkMRMLLORPositionNode > tempPosition = vtkSmartPointer< vtkMRMLLORPositionNode >::New();
+  tempPosition->SetPositionVector( fromCentroid );
+  tempPosition->Transform( rotation );
 
+  std::vector<double> translation = vtkMRMLLORVectorMath::Subtract( toCentroid, tempPosition->GetPositionVector() );
+  return translation;
+}
+
+
+std::vector<double> vtkSlicerLinearObjectRegistrationLogic
+::TranslationalAdjustment( vtkMRMLLORPositionBufferNode* fromPositions, vtkMRMLLORPositionBufferNode* toPositions, vtkMatrix4x4* currentFromToToTransform )
+{
+  // Note: The linear objects should already be matched
+  if ( fromPositions->Size() != toPositions->Size() )
+  {
+    return std::vector<double>( 0, 0.0 );
+  }
+
+  std::vector<double> sumTranslations( vtkMRMLLORPositionNode::SIZE, 0.0 );
+  std::vector<double> sumMagnitudes( vtkMRMLLORPositionNode::SIZE, 0.0 );
+
+  for ( int i = 0; i < fromPositions->Size(); i++ )
+  {
+    vtkSmartPointer< vtkMRMLLORPositionNode > transformedPosition = fromPositions->GetPosition( i )->DeepCopy();
+    transformedPosition->Transform( currentFromToToTransform );
+
+    std::vector<double> fromVector = transformedPosition->GetPositionVector();
+    std::vector<double> toVector = toPositions->GetPosition( i )->GetPositionVector();
+
+    std::vector<double> difference = vtkMRMLLORVectorMath::Subtract( fromVector, toVector );
+    
+    sumTranslations = vtkMRMLLORVectorMath::Add( sumTranslations, difference );
+    sumMagnitudes = vtkMRMLLORVectorMath::Add( sumMagnitudes, vtkMRMLLORVectorMath::Abs( vtkMRMLLORVectorMath::Normalize( difference ) ) );
+  }
+
+  std::vector<double> newTranslation( vtkMRMLLORPositionNode::SIZE, 0.0 );
   for ( int i = 0; i < vtkMRMLLORPositionNode::SIZE; i++ )
   {
-    toMatrix->put( i, 0, toCentroid.at(i) );
-	fromMatrix->put( i, 0, fromCentroid.at(i) );
+    newTranslation.at( i ) = sumTranslations.at( i ) / sumMagnitudes.at( i );
   }
 
-  return new vnl_matrix<double>( (*toMatrix) - (*rotation) * (*fromMatrix) );
+  // Now put the translation back into the from coordinate system
+  vtkSmartPointer< vtkMatrix4x4 > currentFromToToRotationInverse = vtkSmartPointer< vtkMatrix4x4 >::New();
+  this->MatrixRotationPart( currentFromToToTransform, currentFromToToRotationInverse );
+  currentFromToToRotationInverse->Invert();
+
+  vtkSmartPointer< vtkMRMLLORPositionNode > tempPosition = vtkSmartPointer< vtkMRMLLORPositionNode >::New();
+  tempPosition->SetPositionVector( newTranslation );
+  tempPosition->Transform( currentFromToToRotationInverse );
+  newTranslation = tempPosition->GetPositionVector();
+
+  return newTranslation;
 }
 
 
-/*
-vnl_matrix<double>* vtkSlicerLinearObjectRegistrationLogic
-::LinearObjectICP( vnl_matrix<double>* initialRotation )
+void vtkSlicerLinearObjectRegistrationLogic
+::FindClosestPositions( vtkMRMLLORLinearObjectCollectionNode* fromLinearObjects, vtkMRMLLORLinearObjectCollectionNode* toLinearObjects, vtkMatrix4x4* currentFromToToTransform,
+                    vtkMRMLLORPositionBufferNode* fromPositions, vtkMRMLLORPositionBufferNode* toPositions )
+{
+  // Note: The linear objects should already be matched
+  if ( fromLinearObjects->Size() != toLinearObjects->Size() )
+  {
+    return;
+  }
+
+  // Note: The != serves as an XOR for booleans
+  vtkMRMLLORLinearObjectCollectionNode* bufferfulLinearObjects = NULL;
+  vtkMRMLLORLinearObjectCollectionNode* bufferlessLinearObjects = NULL;
+  vtkMRMLLORPositionBufferNode* bufferfulPositions = NULL;
+  vtkMRMLLORPositionBufferNode* bufferlessPositions = NULL;
+  vtkSmartPointer< vtkMatrix4x4 > bufferfulToBufferlessTransform = vtkSmartPointer< vtkMatrix4x4 >::New();
+  bufferfulToBufferlessTransform->DeepCopy( currentFromToToTransform );
+  if ( fromLinearObjects->AllHavePositionBuffers() && ! toLinearObjects->AllHavePositionBuffers() )
+  {
+    bufferfulLinearObjects = fromLinearObjects;
+    bufferlessLinearObjects = toLinearObjects;
+    bufferfulPositions = fromPositions;
+    bufferlessPositions = toPositions;
+  }
+  if ( ! fromLinearObjects->AllHavePositionBuffers() && toLinearObjects->AllHavePositionBuffers() )
+  {
+    bufferfulLinearObjects = toLinearObjects;
+    bufferlessLinearObjects = fromLinearObjects;
+    bufferfulPositions = toPositions;
+    bufferlessPositions = fromPositions;
+    bufferfulToBufferlessTransform->Invert();
+  }
+  if ( fromLinearObjects->AllHavePositionBuffers() == toLinearObjects->AllHavePositionBuffers() )
+  {
+    return;
+  }
+
+
+  // Here is the work
+  for ( int i = 0; i < bufferlessLinearObjects->Size(); i++ )
+  {
+
+    vtkMRMLLORPositionBufferNode* currentPositionBuffer = bufferfulLinearObjects->GetLinearObject( i )->GetPositionBuffer();
+    vtkMRMLLORLinearObjectNode* currentLinearObject = bufferlessLinearObjects->GetLinearObject( i );
+
+    for( int j = 0; j < currentPositionBuffer->Size(); j++ )
+    {
+      // Transform the point
+      vtkMRMLLORPositionNode* currentPosition = currentPositionBuffer->GetPosition( j );
+      vtkSmartPointer< vtkMRMLLORPositionNode > transformedPosition = currentPosition->DeepCopy();
+      transformedPosition->Transform( bufferfulToBufferlessTransform );
+
+      std::vector<double> projectedVector = currentLinearObject->ProjectVector( transformedPosition->GetPositionVector() );
+
+      vtkSmartPointer< vtkMRMLLORPositionNode > closestPosition = vtkSmartPointer< vtkMRMLLORPositionNode >::New();
+      closestPosition->SetPositionVector( projectedVector );
+
+      // Add the points to the position buffers for registration
+      bufferfulPositions->AddPosition( currentPosition );
+      bufferlessPositions->AddPosition( closestPosition );
+    }
+  }
+
+}
+
+
+vtkSmartPointer< vtkMatrix4x4 > vtkSlicerLinearObjectRegistrationLogic
+::CombineRotationAndTranslation( vtkMatrix4x4* rotation, std::vector<double> translation )
+{
+  vtkSmartPointer< vtkMRMLLORPositionNode > tempPosition = vtkSmartPointer< vtkMRMLLORPositionNode >::New();
+  tempPosition->SetPositionVector( translation );
+  tempPosition->Transform( rotation );
+  std::vector<double> rotatedTranslation = tempPosition->GetPositionVector();
+
+  vtkSmartPointer< vtkMatrix4x4 > totalTransform = vtkSmartPointer< vtkMatrix4x4 >::New();
+
+  totalTransform->SetElement( 0, 0, rotation->GetElement( 0, 0 ) );
+  totalTransform->SetElement( 0, 1, rotation->GetElement( 0, 1 ) );
+  totalTransform->SetElement( 0, 2, rotation->GetElement( 0, 2 ) );
+  totalTransform->SetElement( 0, 3, -rotatedTranslation.at( 0 ) );
+
+  totalTransform->SetElement( 1, 0, rotation->GetElement( 1, 0 ) );
+  totalTransform->SetElement( 1, 1, rotation->GetElement( 1, 1 ) );
+  totalTransform->SetElement( 1, 2, rotation->GetElement( 1, 2 ) );
+  totalTransform->SetElement( 1, 3, -rotatedTranslation.at( 1 ) );
+
+  totalTransform->SetElement( 2, 0, rotation->GetElement( 2, 0 ) );
+  totalTransform->SetElement( 2, 1, rotation->GetElement( 2, 1 ) );
+  totalTransform->SetElement( 2, 2, rotation->GetElement( 2, 2 ) );
+  totalTransform->SetElement( 2, 3, -rotatedTranslation.at( 2 ) );
+
+  totalTransform->SetElement( 3, 0, 0.0 );
+  totalTransform->SetElement( 3, 1, 0.0 );
+  totalTransform->SetElement( 3, 2, 0.0 );
+  totalTransform->SetElement( 3, 3, 1.0 );
+
+  return totalTransform;
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
+::VNLMatrixToVTKMatrix( vnl_matrix<double>* vnlMatrix, vtkMatrix4x4* vtkMatrix )
+{
+  if ( vnlMatrix->rows() != 4 || vnlMatrix->cols() != 4 )
+  {
+    return;
+  }
+
+  for ( int i = 0; i < 4; i++ )
+  {
+    for ( int j = 0; j < 4; j++ )
+    {
+      vtkMatrix->SetElement( i, j, vnlMatrix->get( i, j ) );
+    }
+  }
+
+}
+
+void vtkSlicerLinearObjectRegistrationLogic
+::MatrixRotationPart( vtkMatrix4x4* matrix, vtkMatrix4x4* rotation )
+{
+  rotation->Identity();
+
+  for ( int i = 0; i < 3; i++ )
+  {
+    for ( int j = 0; j < 3; j++ )
+    {
+      rotation->SetElement( i, j, matrix->GetElement( i, j ) );
+    }
+  }
+
+}
+
+
+std::vector<double> vtkSlicerLinearObjectRegistrationLogic
+::MatrixTranslationPart( vtkMatrix4x4* matrix )
+{
+  std::vector<double> translation( vtkMRMLLORPositionNode::SIZE, 0.0 );
+
+  translation.at( 0 ) = matrix->GetElement( 0, 3 );
+  translation.at( 1 ) = matrix->GetElement( 1, 3 );
+  translation.at( 2 ) = matrix->GetElement( 2, 3 );
+
+  return translation;
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
+::RotationTranslationToMatrix( vtkMatrix4x4* rotation, std::vector<double> translation, vtkMatrix4x4* matrix )
+{
+  matrix->DeepCopy( rotation );
+  matrix->SetElement( 0, 3, translation.at( 0 ) );
+  matrix->SetElement( 1, 3, translation.at( 1 ) );
+  matrix->SetElement( 2, 3, translation.at( 2 ) );
+}
+
+
+
+
+vtkSmartPointer< vtkMatrix4x4 > vtkSlicerLinearObjectRegistrationLogic
+::LinearObjectICPTA( vtkMRMLLORLinearObjectCollectionNode* fromLinearObjects, vtkMRMLLORLinearObjectCollectionNode* toLinearObjects, vtkMatrix4x4* initialRotation )
 {
 
-  const int CONVERGENCE_THRESHOLD = 1e-6;
-  double currError = -1;
-  double prevError = -1;
-  vnl_matrix<double>* currRotation = initialRotation;
+  const double CONVERGENCE_THRESHOLD = 1e-3;
+  double currError = std::numeric_limits<double>::max() / 2;
+  double prevError = std::numeric_limits<double>::max();
 
-  while ( prevError < 0 || abs( currError - prevError ) < CONVERGENCE_THRESHOLD )
+  vtkSmartPointer< vtkMatrix4x4 > estimatedRotation = initialRotation;
+  std::vector<double> estimatedTranslation( 3, 0.0 );
+  vtkSmartPointer< vtkMatrix4x4 > estimatedMatrix;
+
+  while ( abs( currError - prevError ) > CONVERGENCE_THRESHOLD )
   {
-    vtkSmartPointer< vtkMRMLLORPositionBufferNode > GeometryPoints = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
-    vtkSmartPointer< vtkMRMLLORPositionBufferNode > RecordPoints = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
+    vtkSmartPointer< vtkMRMLLORPositionBufferNode > fromPositions = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
+    vtkSmartPointer< vtkMRMLLORPositionBufferNode > toPositions = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
 
 	prevError = currError;
 
-	// Find the closest point on each linear object to each point so we can do spherical registration
-    for ( int i = 0; i < this->PointPoints.size(); i++ )
-	{
-      for ( int j = 0; j < this->PointPoints.at(i)->Size(); j++ )
-	  {
+    // Translational adjustment
+    estimatedMatrix = this->CombineRotationAndTranslation( estimatedRotation, estimatedTranslation );
+    this->FindClosestPositions( fromLinearObjects, toLinearObjects, estimatedMatrix, fromPositions, toPositions );
+    estimatedTranslation = vtkMRMLLORVectorMath::Add( estimatedTranslation, this->TranslationalAdjustment( fromPositions, toPositions, estimatedMatrix ) );
 
-        RecordPoints->AddObservation( this->PointPoints.at(i)->GetObservation(j) );
+    // Spherical recalculation
+    estimatedMatrix = this->CombineRotationAndTranslation( estimatedRotation, estimatedTranslation );
+    this->FindClosestPositions( fromLinearObjects, toLinearObjects, estimatedMatrix, fromPositions, toPositions );
+    estimatedRotation = this->SphericalRegistration( fromPositions, toPositions, estimatedMatrix );
 
-		// Rotate the observed point
-        std::vector<double> currObservation = this->PointPoints.at(i)->GetObservation(j)->Observation;
-        vtkSmartPointer< vtkMRMLLORPositionNode > rotPoint = vtkSmartPointer< vtkMRMLLORPositionNode >::Take( vtkMRMLLORPositionNode::New( currObservation ) );
-        rotPoint->Rotate( currRotation );
-
-        std::vector<double> projection = this->GeometryPointBuffer->GetLinearObject(i)->ProjectVector( rotPoint->Observation );
-        GeometryPoints->AddObservation( vtkSmartPointer< vtkMRMLLORPositionNode >::Take( vtkMRMLLORPositionNode::New( projection ) ) );
-
-	  }
-	}
-
-    for ( int i = 0; i < this->LinePoints.size(); i++ )
-	{
-      for ( int j = 0; j < this->LinePoints.at(i)->Size(); j++ )
-	  {
-
-        RecordPoints->AddObservation( this->LinePoints.at(i)->GetObservation(j) );
-
-		// Rotate the observed point
-        std::vector<double> currObservation = this->LinePoints.at(i)->GetObservation(j)->Observation;
-        vtkSmartPointer< vtkMRMLLORPositionNode > rotPoint = vtkSmartPointer< vtkMRMLLORPositionNode >::Take( vtkMRMLLORPositionNode::New( currObservation ) );
-        rotPoint->Rotate( currRotation );
-
-        std::vector<double> projection = this->GeometryLineBuffer->GetLinearObject(i)->ProjectVector( rotPoint->Observation );
-        GeometryPoints->AddObservation( vtkSmartPointer< vtkMRMLLORPositionNode >::Take( vtkMRMLLORPositionNode::New( projection ) ) );
-
-	  }
-	}
-
-    for ( int i = 0; i < this->PlanePoints.size(); i++ )
-	{
-      for ( int j = 0; j < this->PlanePoints.at(i)->Size(); j++ )
-	  {
-
-        RecordPoints->AddObservation( this->PlanePoints.at(i)->GetObservation(j) );
-
-		// Rotate the observed point
-        std::vector<double> currObservation = this->PlanePoints.at(i)->GetObservation(j)->Observation;
-        vtkSmartPointer< vtkMRMLLORPositionNode > rotPoint = vtkSmartPointer< vtkMRMLLORPositionNode >::Take( vtkMRMLLORPositionNode::New( currObservation ) );
-        rotPoint->Rotate( currRotation );
-
-        std::vector<double> projection = this->GeometryPlaneBuffer->GetLinearObject(i)->ProjectVector( rotPoint->Observation );
-        GeometryPoints->AddObservation( vtkSmartPointer< vtkMRMLLORPositionNode >::Take( vtkMRMLLORPositionNode::New( projection ) ) );
-
-	  }
-	}
-
-	// Now perform the spherical registration and calculate the rms error
-    currRotation = GeometryPoints->SphericalRegistration( RecordPoints );
+    // Calculate rms-error
+    estimatedMatrix = this->CombineRotationAndTranslation( estimatedRotation, estimatedTranslation );
+    this->FindClosestPositions( fromLinearObjects, toLinearObjects, estimatedMatrix, fromPositions, toPositions );
 
     currError = 0;
-	for ( int i = 0; i < GeometryPoints->Size(); i++ )
-	{
-	  // Rotate the observed point
-      std::vector<double> currObservation = RecordPoints->GetObservation(i)->Observation;
-      vtkSmartPointer< vtkMRMLLORPositionNode > rotPoint = vtkSmartPointer< vtkMRMLLORPositionNode >::Take( vtkMRMLLORPositionNode::New( currObservation ) );
-      rotPoint->Rotate( currRotation );
-
-	  currError = currError + Distance( GeometryPoints->GetObservation(i)->Observation, rotPoint->Observation );
-	}
-	currError = sqrt( currError / GeometryPoints->Size() );
+    for ( int i = 0; i < fromPositions->Size(); i++ )
+    {
+      vtkSmartPointer< vtkMRMLLORPositionNode > transformedFromPosition = fromPositions->GetPosition( i )->DeepCopy();
+      transformedFromPosition->Transform( estimatedMatrix );
+      vtkMRMLLORPositionNode* toPosition = toPositions->GetPosition( i );
+      currError += vtkMRMLLORVectorMath::Norm( vtkMRMLLORVectorMath::Subtract( transformedFromPosition->GetPositionVector(), toPosition->GetPositionVector() ) );
+    }
+    currError = sqrt( currError / fromPositions->Size() );
 
   }
 
-  this->ErrorRMS = currError;
-  return currRotation;
+  std::stringstream successMessage;
+  successMessage << "Success! RMS Error: " << currError;
+  this->SetOutputMessage( successMessage.str() );
 
+  return estimatedMatrix;
 }
-*/
+
 
 
 // Node update methods ----------------------------------------------------------

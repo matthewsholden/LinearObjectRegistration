@@ -95,13 +95,23 @@ private:
 public:
 
   void CalculateTransform( vtkMRMLNode* node );
-  void UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vnl_matrix<double>* newTransformMatrix );
-  void UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vnl_matrix<double>* newRotationMatrix, vnl_matrix<double>* newRotationVector );
+  void UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vtkMatrix4x4* newTransformMatrix );
 
-  vnl_matrix<double>* SphericalRegistration( vtkMRMLLORPositionBufferNode* fromPoints, vtkMRMLLORPositionBufferNode* toPoints );
-  vnl_matrix<double>* TranslationalRegistration( std::vector<double> toCentroid, std::vector<double> fromCentroid, vnl_matrix<double>* rotation );
+  vtkSmartPointer< vtkMatrix4x4 > SphericalRegistration( vtkMRMLLORPositionBufferNode* fromPoints, vtkMRMLLORPositionBufferNode* toPoints, vtkMatrix4x4* currentFromToToTransform );
+  std::vector<double> TranslationalRegistration( std::vector<double> toCentroid, std::vector<double> fromCentroid, vtkMatrix4x4* rotation );
+  std::vector<double> TranslationalAdjustment( vtkMRMLLORPositionBufferNode* fromPositions, vtkMRMLLORPositionBufferNode* toPositions, vtkMatrix4x4* currentFromToToTransform );
 
-  vnl_matrix<double>* LinearObjectICP( vnl_matrix<double>* initialRotation );
+  void VNLMatrixToVTKMatrix( vnl_matrix<double>* vnlMatrix, vtkMatrix4x4* vtkMatrix );
+  void MatrixRotationPart( vtkMatrix4x4* matrix, vtkMatrix4x4* rotation );
+  std::vector<double> MatrixTranslationPart( vtkMatrix4x4* matrix );
+  void RotationTranslationToMatrix( vtkMatrix4x4* rotation, std::vector<double> translation, vtkMatrix4x4* matrix );
+
+  vtkSmartPointer< vtkMatrix4x4 > LinearObjectICPTA( vtkMRMLLORLinearObjectCollectionNode* fromLinearObjects, vtkMRMLLORLinearObjectCollectionNode* toLinearObjects, vtkMatrix4x4* initialRotation );
+
+  vtkSmartPointer< vtkMatrix4x4 > CombineRotationAndTranslation( vtkMatrix4x4* rotation, std::vector<double> translation );
+
+  void FindClosestPositions( vtkMRMLLORLinearObjectCollectionNode* fromLinearObjects, vtkMRMLLORLinearObjectCollectionNode* toLinearObjects, vtkMatrix4x4* currentFromToToTransform,
+                    vtkMRMLLORPositionBufferNode* fromPositions, vtkMRMLLORPositionBufferNode* toPositions );
 
   std::string GetOutputMessage();
   void SetOutputMessage( std::string newOutputMessage );

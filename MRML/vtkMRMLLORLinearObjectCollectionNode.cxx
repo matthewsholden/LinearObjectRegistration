@@ -250,7 +250,19 @@ void vtkMRMLLORLinearObjectCollectionNode
 {
   for ( int i = 0; i < this->Size(); i++ )
   {
+    vtkMRMLLORLinearObjectNode* currentLinearObject = this->GetLinearObject( i );
+
+    if ( currentLinearObject == NULL )
+    {
+      continue;
+    }
+
     this->GetLinearObject(i)->Translate( vector );
+
+    if ( currentLinearObject->GetPositionBuffer() != NULL )
+    {
+      currentLinearObject->GetPositionBuffer()->Translate( vector );
+    }
   }
 }
 
@@ -317,6 +329,20 @@ vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkMRMLLORLinearObjectCo
   this->Modified();
 
   return matchedCandidates;
+}
+
+
+bool vtkMRMLLORLinearObjectCollectionNode
+::AllHavePositionBuffers()
+{
+  for ( int i = 0; i < this->Size(); i++ )
+  {
+    if ( this->GetLinearObject( i ) != NULL && this->GetLinearObject( i )->GetPositionBuffer() == NULL )
+    {
+      return false;
+    }
+  }
+  return true;
 }
 
 

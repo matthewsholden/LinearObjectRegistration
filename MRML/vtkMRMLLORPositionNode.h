@@ -52,6 +52,8 @@ public:
   void Translate ( std::vector<double> translation );
   void Rotate( vnl_matrix<double>* rotation );
 
+  void Transform( vtkMatrix4x4* matrix );
+
   std::vector<double> GetPositionVector();
   void SetPositionVector( std::vector<double> newPositionVector );
 

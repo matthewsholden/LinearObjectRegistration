@@ -75,6 +75,28 @@ void vtkMRMLLORPositionNode
 }
 
 
+void vtkMRMLLORPositionNode
+::Transform( vtkMatrix4x4* matrix )
+{
+  double untransformedPoint[ 4 ] = { 0.0, 0.0, 0.0, 1.0 };
+  double transformedPoint[ 4 ] = { 0.0, 0.0, 0.0, 1.0 };
+
+  untransformedPoint[ 0 ] = this->PositionVector.at( 0 );
+  untransformedPoint[ 1 ] = this->PositionVector.at( 1 );
+  untransformedPoint[ 2 ] = this->PositionVector.at( 2 );
+
+  matrix->MultiplyPoint( untransformedPoint, transformedPoint );
+
+  // Project onto linear object to find closest point
+  std::vector<double> transformedVector;
+  transformedVector.push_back( transformedPoint[ 0 ] );
+  transformedVector.push_back( transformedPoint[ 1 ] );
+  transformedVector.push_back( transformedPoint[ 2 ] );
+
+  this->SetPositionVector( transformedVector );
+}
+
+
 std::vector<double> vtkMRMLLORPositionNode
 ::GetPositionVector()
 {
