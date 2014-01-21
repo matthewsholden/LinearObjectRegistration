@@ -9,12 +9,6 @@ const double MATCHING_THRESHOLD = 10.0;
 const int MINIMUM_COLLECTION_FRAMES = 100;
 const int DIRECTION_SCALE = 100;
 
-const int REFERENCE_DOF = 4; // This obviously isn't true, but we need to distinguish from points
-const int POINT_DOF = 0;
-const int LINE_DOF = 1;
-const int PLANE_DOF = 2;
-const int UNKNOWN_DOF = -1;
-
 
 void PrintToFile( std::string str )
 {

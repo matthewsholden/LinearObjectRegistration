@@ -305,47 +305,62 @@ void qSlicerLinearObjectCollectionWidget
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
 
-  /*
-  vtkMRMLMarkupsFiducialNode* currentMarkupsFiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast( this->GetCurrentNode() );
-
-  if ( currentMarkupsFiducialNode == NULL )
+  vtkMRMLLORLinearObjectCollectionNode* currentCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  vtkMRMLLORLinearObjectNode* currentLinearObject = currentCollection->GetLinearObject( row );
+  if ( currentCollection == NULL && currentLinearObject != NULL )
   {
+    this->updateWidget();
     return;
   }
 
-  // Find the fiducial's current properties
-  double currentFiducialPosition[3] = { 0, 0, 0 };
-  currentMarkupsFiducialNode->GetNthFiducialPosition( row, currentFiducialPosition );
-  std::string currentFiducialLabel = currentMarkupsFiducialNode->GetNthFiducialLabel( row );
-
   // Find the entry that we changed
-  QTableWidgetItem* qItem = d->MarkupsFiducialTableWidget->item( row, column );
+  QTableWidgetItem* qItem = d->CollectionTableWidget->item( row, column );
   QString qText = qItem->text();
 
-  if ( column == FIDUCIAL_LABEL_COLUMN )
+  // Change the name
+  if ( column == LINEAROBJECT_NAME_COLUMN )
   {
-    currentMarkupsFiducialNode->SetNthFiducialLabel( row, qText.toStdString() );
+    currentLinearObject->SetName( qText.toStdString() );
   }
 
-  // Check if the value can be converted to double is already performed implicitly
-  double newFiducialPosition = qText.toDouble();
+  // Also allow changing the type here
+  if ( column == LINEAROBJECT_TYPE_COLUMN )
+  {
+    if ( currentLinearObject->GetPositionBuffer() == NULL )
+    {
+      this->updateWidget();
+      return;
+    }
 
-  // Change the position values
-  if ( column == FIDUCIAL_X_COLUMN )
-  {
-    currentFiducialPosition[ 0 ] = newFiducialPosition;
-  }
-  if ( column == FIDUCIAL_Y_COLUMN )
-  {
-    currentFiducialPosition[ 1 ] = newFiducialPosition;
-  }
-  if ( column == FIDUCIAL_Z_COLUMN )
-  {
-    currentFiducialPosition[ 2 ] = newFiducialPosition;
-  }
+    // Otherwise, we can do any sort of change we want
+    vtkSmartPointer< vtkMRMLLORLinearObjectNode > newLinearObject = NULL;
+    if ( qText.toStdString().compare( "Reference" ) == 0 )
+    {
+      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkSlicerLinearObjectRegistrationLogic::REFERENCE_DOF );
+    }
+    if ( qText.toStdString().compare( "Point" ) == 0 )
+    {
+      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkSlicerLinearObjectRegistrationLogic::POINT_DOF );
+    }
+    if ( qText.toStdString().compare( "Line" ) == 0 )
+    {
+      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkSlicerLinearObjectRegistrationLogic::LINE_DOF );
+    }
+    if ( qText.toStdString().compare( "Plane" ) == 0 )
+    {
+      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkSlicerLinearObjectRegistrationLogic::PLANE_DOF );
+    }
 
-  currentMarkupsFiducialNode->SetNthFiducialPositionFromArray( row, currentFiducialPosition );
-  */
+    if ( newLinearObject == NULL )
+    {
+      this->updateWidget();
+      return;
+    }
+
+    newLinearObject->SetName( currentLinearObject->GetName() );
+    newLinearObject->SetPositionBuffer( currentLinearObject->GetPositionBuffer() );
+    currentCollection->SetLinearObject( row, newLinearObject );
+  }
 
   this->updateWidget(); // This may not be necessary the widget is updated whenever a fiducial is changed
 }

@@ -94,6 +94,13 @@ private:
 
 public:
 
+  static const int REFERENCE_DOF = 4; // This obviously isn't true, but we need to distinguish from points
+  static const int POINT_DOF = 0;
+  static const int LINE_DOF = 1;
+  static const int PLANE_DOF = 2;
+  static const int UNKNOWN_DOF = -1;
+
+
   void CalculateTransform( vtkMRMLNode* node );
   void UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vtkMatrix4x4* newTransformMatrix );
 
