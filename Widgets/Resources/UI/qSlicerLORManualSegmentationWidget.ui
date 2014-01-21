@@ -39,7 +39,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="StartCollectButton">
+    <widget class="QPushButton" name="CollectButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -48,6 +48,9 @@
      </property>
      <property name="text">
       <string>Collect</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

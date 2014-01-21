@@ -12,21 +12,26 @@ set(${KIT}_SRCS
   qSlicerLinearObjectCollectionWidget.h
   qSlicerLORManualDOFWidget.cxx
   qSlicerLORManualDOFWidget.h
+  qSlicerLORManualSegmentationWidget.cxx
+  qSlicerLORManualSegmentationWidget.h
   )
 
 set(${KIT}_MOC_SRCS
   qSlicerLinearObjectCollectionWidget.h
   qSlicerLORManualDOFWidget.h
+  qSlicerLORManualSegmentationWidget.h
   )
 
 set(${KIT}_UI_SRCS
   ./Resources/UI/qSlicerLinearObjectCollectionWidget.ui
   ./Resources/UI/qSlicerLORManualDOFWidget.ui
+  ./Resources/UI/qSlicerLORManualSegmentationWidget.ui
   )
 
 set(${KIT}_RESOURCES
   ./Resources/UI/qSlicerLinearObjectCollectionWidget.ui
   ./Resources/UI/qSlicerLORManualDOFWidget.ui
+  ./Resources/UI/qSlicerLORManualSegmentationWidget.ui
   )
 
 set(${KIT}_TARGET_LIBRARIES
