@@ -24,9 +24,6 @@ public:
 
 public slots:
 
-  //void OnRegisterButtonClicked();
-  //void OnMatchButtonClicked();
-
   void OnFromMatchRequested( int matchIndex );
   void OnToMatchRequested( int matchIndex );
 
@@ -42,13 +39,11 @@ private:
   Q_DECLARE_PRIVATE(qSlicerLinearObjectRegistrationModuleWidget);
   Q_DISABLE_COPY(qSlicerLinearObjectRegistrationModuleWidget);
   
-  void UpdateGUI();
+  void ConnectWidgets();
+  void DisconnectWidgets();
 
   int FromMatchState;
   int ToMatchState;
-  
-  double TimerIntervalSec;
-  QTimer* Timer;
   
 };
 

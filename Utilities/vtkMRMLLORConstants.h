@@ -1,0 +1,32 @@
+
+#ifndef __vtkMRMLLORConstants_h
+#define __vtkMRMLLORConstants_h
+
+// Standard includes
+#include <string>
+#include <sstream>
+#include <vector>
+#include <cmath>
+
+#include "vtkSlicerLinearObjectRegistrationModuleUtilitiesExport.h"
+
+namespace vtkMRMLLORConstants
+{
+
+  // Note: Do not remove any VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT - it exports these functions so they are usable by the logic
+  // Also note: The "extern" qualifier is required so we can define the constants in the cxx
+  VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_UTILITIES_EXPORT extern const int REFERENCE_DOF;
+  VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_UTILITIES_EXPORT extern const int POINT_DOF;
+  VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_UTILITIES_EXPORT extern const int LINE_DOF;
+  VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_UTILITIES_EXPORT extern const int PLANE_DOF;
+  VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_UTILITIES_EXPORT extern const int UNKNOWN_DOF;
+
+  VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_UTILITIES_EXPORT extern const int MINIMUM_COLLECTION_POSITIONS;
+  VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_UTILITIES_EXPORT extern const int TRIM_POSITIONS;
+
+  VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_UTILITIES_EXPORT extern const double NOISE_THRESHOLD;
+  VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_UTILITIES_EXPORT extern const double MATCHING_THRESHOLD;
+  VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_UTILITIES_EXPORT extern const double DIRECTION_SCALE;
+}
+
+#endif

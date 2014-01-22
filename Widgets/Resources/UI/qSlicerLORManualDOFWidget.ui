@@ -24,21 +24,6 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="qMRMLNodeComboBox" name="TransformNodeComboBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="nodeTypes">
-      <stringlist>
-       <string>vtkMRMLLinearTransformNode</string>
-      </stringlist>
-     </property>
-    </widget>
-   </item>
-   <item>
     <layout class="QHBoxLayout" name="ManualDofLayout">
      <item>
       <widget class="QPushButton" name="ReferenceButton">
@@ -110,11 +95,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>qMRMLNodeComboBox</class>
-   <extends>QWidget</extends>
-   <header>qMRMLNodeComboBox.h</header>
-  </customwidget>
-  <customwidget>
    <class>qSlicerWidget</class>
    <extends>QWidget</extends>
    <header>qSlicerWidget.h</header>
@@ -122,22 +102,5 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>qSlicerLORManualDOFWidget</sender>
-   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>TransformNodeComboBox</receiver>
-   <slot>setMRMLScene(vtkMRMLScene*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>208</x>
-     <y>122</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>208</x>
-     <y>59</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

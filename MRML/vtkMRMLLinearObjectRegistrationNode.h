@@ -22,9 +22,15 @@
 
 #include "vtkMRMLNode.h"
 #include "vtkMRMLScene.h"
+#include "vtkMRMLLinearTransformNode.h"
+#include "vtkCommand.h"
+#include "vtkNew.h"
+#include "vtkIntArray.h"
 #include "vtkObject.h"
 #include "vtkObjectBase.h"
 #include "vtkObjectFactory.h"
+
+#include "vtkMRMLLORPositionBufferNode.h"
 
 // LinearObjectRegistration includes
 #include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
@@ -66,6 +72,11 @@ public:
     AlwaysModify
   };
 
+  enum PositionBufferEvent
+  {
+    PositionBufferReady = vtkCommand::UserEvent + 1
+  };
+
   // Use default setters and getters - vtk set macro will cause modified event
   void SetCollectTransformID( std::string newCollectTransformID, int modifyType = DefaultModify );
   void SetFromCollectionID( std::string newFromCollectionID, int modifyType = DefaultModify );
@@ -85,11 +96,21 @@ public:
 
   void ObserveAllReferenceNodes();
 
+  std::string GetCollectionState();
+  vtkMRMLLORPositionBufferNode* GetActivePositionBuffer();
+
+  void StartCollecting( std::string newCollectionState );
+  void StopCollecting();
+
   void ProcessMRMLEvents( vtkObject *caller, unsigned long event, void *callData );
 
 private:
+
   std::string CollectionMode;
   std::string AutomaticMatch;
+
+  std::string CollectionState;
+  vtkSmartPointer< vtkMRMLLORPositionBufferNode > ActivePositionBuffer;
 
 };  
 

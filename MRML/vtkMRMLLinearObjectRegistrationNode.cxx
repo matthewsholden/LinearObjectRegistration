@@ -62,8 +62,12 @@ vtkMRMLLinearObjectRegistrationNode
   this->AddNodeReferenceRole( FROM_COLLECTION_REFERENCE_ROLE );
   this->AddNodeReferenceRole( TO_COLLECTION_REFERENCE_ROLE );
   this->AddNodeReferenceRole( OUTPUT_TRANSFORM_REFERENCE_ROLE );
+
   this->CollectionMode = "ManualDOF";
   this->AutomaticMatch = "True";
+
+  this->CollectionState = "";
+  this->ActivePositionBuffer = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
 
   this->Modified();
 }
@@ -191,15 +195,13 @@ std::string vtkMRMLLinearObjectRegistrationNode
 void vtkMRMLLinearObjectRegistrationNode
 ::SetCollectTransformID( std::string newCollectTransformID, int modifyType )
 {
-  if ( newCollectTransformID.compare( "" ) == 0 )
+  if ( this->GetCollectTransformID().compare( newCollectTransformID ) != 0 )
   {
-    this->RemoveAllNodeReferenceIDs( COLLECT_TRANSFORM_REFERENCE_ROLE );
+    vtkNew<vtkIntArray> events;
+    events->InsertNextValue( vtkMRMLLinearTransformNode::TransformModifiedEvent );
+    this->SetAndObserveNodeReferenceID( COLLECT_TRANSFORM_REFERENCE_ROLE, newCollectTransformID.c_str(), events.GetPointer() );
   }
-  else if ( this->GetCollectTransformID() != newCollectTransformID )
-  {
-    this->SetNodeReferenceID( COLLECT_TRANSFORM_REFERENCE_ROLE, newCollectTransformID.c_str() );
-  }
-  if ( this->GetCollectTransformID() != newCollectTransformID && modifyType == DefaultModify || modifyType == AlwaysModify )
+  if ( this->GetCollectTransformID().compare( newCollectTransformID ) != 0 && modifyType == DefaultModify || modifyType == AlwaysModify )
   {
     this->Modified();
   }
@@ -216,11 +218,11 @@ std::string vtkMRMLLinearObjectRegistrationNode
 void vtkMRMLLinearObjectRegistrationNode
 ::SetFromCollectionID( std::string newFromCollectionID, int modifyType )
 {
-  if ( this->GetFromCollectionID() != newFromCollectionID )
+  if ( this->GetFromCollectionID().compare( newFromCollectionID ) != 0  )
   {
     this->SetAndObserveNodeReferenceID( FROM_COLLECTION_REFERENCE_ROLE, newFromCollectionID.c_str() );
   }
-  if ( this->GetFromCollectionID() != newFromCollectionID && modifyType == DefaultModify || modifyType == AlwaysModify )
+  if ( this->GetFromCollectionID().compare( newFromCollectionID ) != 0 && modifyType == DefaultModify || modifyType == AlwaysModify )
   {
     this->Modified();
   }
@@ -237,11 +239,11 @@ std::string vtkMRMLLinearObjectRegistrationNode
 void vtkMRMLLinearObjectRegistrationNode
 ::SetToCollectionID( std::string newToCollectionID, int modifyType )
 {
-  if ( this->GetToCollectionID() != newToCollectionID )
+  if ( this->GetToCollectionID().compare( newToCollectionID ) != 0 )
   {
     this->SetAndObserveNodeReferenceID( TO_COLLECTION_REFERENCE_ROLE, newToCollectionID.c_str() );
   }
-  if ( this->GetToCollectionID() != newToCollectionID && modifyType == DefaultModify || modifyType == AlwaysModify )
+  if ( this->GetToCollectionID().compare( newToCollectionID ) != 0 && modifyType == DefaultModify || modifyType == AlwaysModify )
   {
     this->Modified();
   }
@@ -262,11 +264,11 @@ void vtkMRMLLinearObjectRegistrationNode
   {
     this->RemoveAllNodeReferenceIDs( OUTPUT_TRANSFORM_REFERENCE_ROLE );
   }
-  else if ( this->GetOutputTransformID() != newOutputTransformID )
+  else if ( this->GetOutputTransformID().compare( newOutputTransformID ) != 0 )
   {
     this->SetNodeReferenceID( OUTPUT_TRANSFORM_REFERENCE_ROLE, newOutputTransformID.c_str() );
   }
-  if ( this->GetOutputTransformID() != newOutputTransformID && modifyType == DefaultModify || modifyType == AlwaysModify )
+  if ( this->GetOutputTransformID().compare( newOutputTransformID ) != 0 && modifyType == DefaultModify || modifyType == AlwaysModify )
   {
     this->Modified();
   }
@@ -283,11 +285,11 @@ std::string vtkMRMLLinearObjectRegistrationNode
 void vtkMRMLLinearObjectRegistrationNode
 ::SetCollectionMode( std::string newCollectionMode, int modifyType )
 {
-  if ( this->GetCollectionMode() != newCollectionMode )
+  if ( this->GetCollectionMode().compare( newCollectionMode ) != 0 )
   {
     this->CollectionMode = newCollectionMode;
   }
-  if ( this->GetCollectionMode() != newCollectionMode && modifyType == DefaultModify || modifyType == AlwaysModify ) 
+  if ( this->GetCollectionMode().compare( newCollectionMode ) != 0 && modifyType == DefaultModify || modifyType == AlwaysModify ) 
   {
     this->Modified();
   }
@@ -304,11 +306,11 @@ std::string vtkMRMLLinearObjectRegistrationNode
 void vtkMRMLLinearObjectRegistrationNode
 ::SetAutomaticMatch( std::string newAutomaticMatch, int modifyType )
 {
-  if ( this->GetAutomaticMatch() != newAutomaticMatch )
+  if ( this->GetAutomaticMatch().compare( newAutomaticMatch ) != 0 )
   {
     this->AutomaticMatch = newAutomaticMatch;
   }
-  if ( this->GetAutomaticMatch() != newAutomaticMatch && modifyType == DefaultModify || modifyType == AlwaysModify ) 
+  if ( this->GetAutomaticMatch().compare( newAutomaticMatch ) != 0 && modifyType == DefaultModify || modifyType == AlwaysModify ) 
   {
     this->Modified();
   }
@@ -334,8 +336,94 @@ std::string vtkMRMLLinearObjectRegistrationNode
 }
 
 
+// These methods are related to collecting data
+// ----------------------------------------------------------------------------------------------------------
+
+
+vtkMRMLLORPositionBufferNode* vtkMRMLLinearObjectRegistrationNode
+::GetActivePositionBuffer()
+{
+  return this->ActivePositionBuffer;
+}
+
+
+std::string vtkMRMLLinearObjectRegistrationNode
+::GetCollectionState()
+{
+  return this->CollectionState;
+}
+
+
+
+void vtkMRMLLinearObjectRegistrationNode
+::StartCollecting( std::string newCollectionState )
+{
+  this->GetActivePositionBuffer()->Clear();
+
+  // Don't collect if the collect transform is not specified
+  if ( this->GetNodeReferenceIDString( COLLECT_TRANSFORM_REFERENCE_ROLE ).compare( "" ) != 0 )
+  {
+    this->CollectionState = newCollectionState;
+  }
+}
+
+
+void vtkMRMLLinearObjectRegistrationNode
+::StopCollecting()
+{
+  // Emit an event indicating that the position buffer is ready to be converted to a linear object
+  if ( this->CollectionState.compare( "Automatic" ) != 0 || this->GetActivePositionBuffer()->Size() > vtkMRMLLORConstants::MINIMUM_COLLECTION_POSITIONS )
+  {
+    this->InvokeEvent( PositionBufferReady );
+  }
+
+  this->GetActivePositionBuffer()->Clear(); // TODO: Should the clearing be done in the logic which catches the event
+  this->CollectionState = "";
+}
+
+
 void vtkMRMLLinearObjectRegistrationNode
 ::ProcessMRMLEvents( vtkObject *caller, unsigned long event, void *callData )
 {
-  this->Modified(); // This will tell the logic to update
+  // In case the observed transform node is updated
+  vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast( caller );
+
+  // If it wasn't the observed transform
+  if ( transformNode == NULL || this->GetNodeReferenceIDString( COLLECT_TRANSFORM_REFERENCE_ROLE ).compare( transformNode->GetID() ) != 0 || event != vtkMRMLLinearTransformNode::TransformModifiedEvent )
+  {
+    this->Modified(); // Recalculate the transform
+    return;
+  }
+  if ( this->CollectionState.compare( "" ) == 0 )
+  {
+    return;
+  }
+
+  vtkMRMLLORPositionNode* tempPosition = vtkMRMLLORPositionNode::New( transformNode->GetMatrixTransformToParent() );
+  vtkSmartPointer< vtkMRMLLORPositionNode > newPosition = vtkSmartPointer< vtkMRMLLORPositionNode >::Take( tempPosition );
+
+  this->ActivePositionBuffer->AddPosition( newPosition );
+
+  if ( this->CollectionState.compare( "Automatic" ) != 0 )
+  {
+    return;
+  }
+
+  // Check if the position buffer is still linear
+  int positionBufferDOF = this->GetActivePositionBuffer()->GetDOF();
+
+  // If it is, then keep going
+  if ( positionBufferDOF <= vtkMRMLLORConstants::PLANE_DOF )
+  {
+    return;
+  }
+
+  // If it is not, then emit a ready event if we have the required number of collected frames
+  if ( this->GetActivePositionBuffer()->Size() > vtkMRMLLORConstants::MINIMUM_COLLECTION_POSITIONS )
+  {
+    this->InvokeEvent( PositionBufferReady );
+    this->Modified(); // TODO: For some reason, the collection node modified event is never caught when it is called from the processmrmlevents method
+  }
+  this->GetActivePositionBuffer()->Clear(); // TODO: Should the clearing be done in the logic which catches the event
+
 }

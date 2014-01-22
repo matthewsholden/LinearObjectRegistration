@@ -47,11 +47,13 @@ public:
   vtkMRMLLORPositionNode* GetPosition( int index );
   void AddPosition( vtkMRMLLORPositionNode* newPosition );
   void Clear();
+  void Trim( int trimSize );
 
   void Translate( std::vector<double> translation );
 
   std::vector<double> CalculateCentroid();
   vnl_matrix<double>* CovarianceMatrix( std::vector<double> centroid );
+  int GetDOF();
 
   std::string ToXMLString();
   void FromXMLElement( vtkXMLDataElement* element );

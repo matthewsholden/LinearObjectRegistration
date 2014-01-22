@@ -90,7 +90,7 @@
          <string>Collect Linear Objects</string>
         </property>
         <property name="collapsed">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
@@ -175,6 +175,21 @@
            </property>
            <property name="checked">
             <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="qMRMLNodeComboBox" name="TransformNodeComboBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="nodeTypes">
+            <stringlist>
+             <string>vtkMRMLLinearTransformNode</string>
+            </stringlist>
            </property>
           </widget>
          </item>
@@ -450,6 +465,22 @@
     <hint type="destinationlabel">
      <x>195</x>
      <y>50</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>qSlicerLinearObjectRegistrationModule</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>TransformNodeComboBox</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>195</x>
+     <y>413</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>195</x>
+     <y>277</y>
     </hint>
    </hints>
   </connection>

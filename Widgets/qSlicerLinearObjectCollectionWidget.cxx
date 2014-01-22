@@ -336,19 +336,19 @@ void qSlicerLinearObjectCollectionWidget
     vtkSmartPointer< vtkMRMLLORLinearObjectNode > newLinearObject = NULL;
     if ( qText.toStdString().compare( "Reference" ) == 0 )
     {
-      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkSlicerLinearObjectRegistrationLogic::REFERENCE_DOF );
+      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkMRMLLORConstants::REFERENCE_DOF );
     }
     if ( qText.toStdString().compare( "Point" ) == 0 )
     {
-      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkSlicerLinearObjectRegistrationLogic::POINT_DOF );
+      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkMRMLLORConstants::POINT_DOF );
     }
     if ( qText.toStdString().compare( "Line" ) == 0 )
     {
-      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkSlicerLinearObjectRegistrationLogic::LINE_DOF );
+      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkMRMLLORConstants::LINE_DOF );
     }
     if ( qText.toStdString().compare( "Plane" ) == 0 )
     {
-      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkSlicerLinearObjectRegistrationLogic::PLANE_DOF );
+      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkMRMLLORConstants::PLANE_DOF );
     }
 
     if ( newLinearObject == NULL )

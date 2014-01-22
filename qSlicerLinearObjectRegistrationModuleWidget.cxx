@@ -13,6 +13,8 @@
 
 #include "vtkSlicerLinearObjectRegistrationLogic.h"
 #include "qSlicerLORManualDOFWidget.h"
+#include "qSlicerLORManualSegmentationWidget.h"
+#include "qSlicerLORAutomaticWidget.h"
 
 #include "vtkMRMLModelNode.h"
 #include "vtkMRMLNode.h"
@@ -35,6 +37,8 @@ public:
   qSlicerLinearObjectCollectionWidget* FromCollectionWidget;
   qSlicerLinearObjectCollectionWidget* ToCollectionWidget;
   qSlicerLORManualDOFWidget* ManualDOFWidget;
+  qSlicerLORManualSegmentationWidget* ManualSegmentationWidget;
+  qSlicerLORAutomaticWidget* AutomaticWidget;
 };
 
 
@@ -81,31 +85,6 @@ qSlicerLinearObjectRegistrationModuleWidget::~qSlicerLinearObjectRegistrationMod
 {
 }
 
-/*
-void qSlicerLinearObjectRegistrationModuleWidget
-::OnRegisterButtonClicked()
-{
-  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
-      
-  d->logic()->CalculateTransform( d->ModuleNodeComboBox->currentNode() );
-  
-  this->UpdateGUI();
-}
-
-
-void qSlicerLinearObjectRegistrationModuleWidget
-::OnMatchButtonClicked()
-{
-  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
-
-  vtkMRMLLORLinearObjectCollectionNode* fromCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->FromCollectionWidget->GetCurrentNode() );
-  vtkMRMLLORLinearObjectCollectionNode* toCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->ToCollectionWidget->GetCurrentNode() );
-
-  d->logic()->MatchCollections( fromCollection, toCollection );
-  
-  this->UpdateGUI();
-}
-*/
 
 
 void qSlicerLinearObjectRegistrationModuleWidget
@@ -165,8 +144,14 @@ qSlicerLinearObjectRegistrationModuleWidget
   d->ToCollectionWidget->SetNodeBaseName( "ToLinearObjects" );
   d->ToGroupBox->layout()->addWidget( d->ToCollectionWidget );
 
-  d->ManualDOFWidget = qSlicerLORManualDOFWidget::New( d->logic() );
+  d->ManualDOFWidget = qSlicerLORManualDOFWidget::New();
   d->CollectionGroupBox->layout()->addWidget( d->ManualDOFWidget );
+
+  d->ManualSegmentationWidget = qSlicerLORManualSegmentationWidget::New();
+  d->CollectionGroupBox->layout()->addWidget( d->ManualSegmentationWidget );
+
+  d->AutomaticWidget = qSlicerLORAutomaticWidget::New();
+  d->CollectionGroupBox->layout()->addWidget( d->AutomaticWidget );
 
   this->FromMatchState = -1;
   this->ToMatchState = -1;
@@ -177,17 +162,7 @@ qSlicerLinearObjectRegistrationModuleWidget
   this->qvtkConnect( d->logic(), vtkCommand::ModifiedEvent, this, SLOT( UpdateFromMRMLNode() ) );
 
   // Make connections to update the mrml from the widget
-  connect( d->OutputNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->ManualDOFRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->ManualSegmentationRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->AutomaticRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->AutomaticMatchCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-
-  connect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
-
-  connect( d->ManualDOFWidget, SIGNAL( transformNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
-  
+  this->ConnectWidgets();  
 
   // Various other connections
   connect( d->FromCollectionWidget, SIGNAL( matchRequested( int ) ), this, SLOT( OnFromMatchRequested( int ) ) );
@@ -195,17 +170,39 @@ qSlicerLinearObjectRegistrationModuleWidget
 }
 
 
-
 void qSlicerLinearObjectRegistrationModuleWidget
-::UpdateGUI()
+::ConnectWidgets()
 {
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );
 
-  std::stringstream statusString;
-  statusString << "Status: ";
-  statusString << d->logic()->GetOutputMessage();
-  d->StatusLabel->setText( QString::fromStdString( statusString.str() ) );
-  
+  connect( d->OutputNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->ManualDOFRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->ManualSegmentationRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->AutomaticRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->AutomaticMatchCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+
+  connect( d->TransformNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
+
+  connect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
+}
+
+
+void qSlicerLinearObjectRegistrationModuleWidget
+::DisconnectWidgets()
+{
+  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
+
+  disconnect( d->OutputNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->ManualDOFRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->ManualSegmentationRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->AutomaticRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->AutomaticMatchCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+
+  disconnect( d->TransformNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
+
+  disconnect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
 }
 
 
@@ -224,13 +221,13 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   this->qvtkBlockAll( true );
 
-  if ( d->ManualDOFWidget->GetCurrentNode() == NULL )
+  if ( d->TransformNodeComboBox->currentNode() == NULL )
   {
     linearObjectRegistrationNode->SetCollectTransformID( "", vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
   else
   {
-    linearObjectRegistrationNode->SetCollectTransformID( d->ManualDOFWidget->GetCurrentNode()->GetID(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
+    linearObjectRegistrationNode->SetCollectTransformID( d->TransformNodeComboBox->currentNode()->GetID(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
 
   if ( d->OutputNodeComboBox->currentNode() == NULL )
@@ -306,6 +303,8 @@ void qSlicerLinearObjectRegistrationModuleWidget
     d->AutomaticRadioButton->setEnabled( false );
     d->AutomaticMatchCheckBox->setEnabled( false );
     d->ManualDOFWidget->setEnabled( false );
+    d->ManualSegmentationWidget->setEnabled( false );
+    d->AutomaticWidget->setEnabled( false );
     d->FromCollectionWidget->setEnabled( false );
     d->ToCollectionWidget->setEnabled( false );
     d->StatusLabel->setText( "No Linear Object Registration module node selected." );
@@ -318,43 +317,53 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->AutomaticRadioButton->setEnabled( true );
   d->AutomaticMatchCheckBox->setEnabled( true );
   d->ManualDOFWidget->setEnabled( true );
+  d->ManualSegmentationWidget->setEnabled( true );
+  d->AutomaticWidget->setEnabled( true );
   d->FromCollectionWidget->setEnabled( true );
   d->ToCollectionWidget->setEnabled( true );
 
   // Disconnect to prevent signals form cuing slots
-  disconnect( d->OutputNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
-  disconnect( d->ManualDOFRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  disconnect( d->ManualSegmentationRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  disconnect( d->AutomaticRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  disconnect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
-  disconnect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
-  disconnect( d->ManualDOFWidget, SIGNAL( transformNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
+  this->DisconnectWidgets();
 
-  std::string fromFid = linearObjectRegistrationNode->GetFromCollectionID();
-  std::string toFid = linearObjectRegistrationNode->GetToCollectionID();
-
-  d->ManualDOFWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetCollectTransformID() ) );
+  d->TransformNodeComboBox->setCurrentNodeID( QString::fromStdString( linearObjectRegistrationNode->GetCollectTransformID() ) );
   d->OutputNodeComboBox->setCurrentNodeID( QString::fromStdString( linearObjectRegistrationNode->GetOutputTransformID() ) );
+
   d->FromCollectionWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetFromCollectionID() ) );
   d->ToCollectionWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetToCollectionID() ) );
+
+  d->ManualDOFWidget->SetLORNode( linearObjectRegistrationNode );
+  d->ManualSegmentationWidget->SetLORNode( linearObjectRegistrationNode );
+  d->AutomaticWidget->SetLORNode( linearObjectRegistrationNode );
   
   if ( linearObjectRegistrationNode->GetCollectionMode().compare( "ManualDOF" ) == 0 )
   {
     d->ManualDOFRadioButton->setChecked( Qt::Checked );
     d->ManualSegmentationRadioButton->setChecked( Qt::Unchecked );
     d->AutomaticRadioButton->setChecked( Qt::Unchecked );
+
+    d->ManualDOFWidget->show();
+    d->ManualSegmentationWidget->hide();
+    d->AutomaticWidget->hide();
   }
   if ( linearObjectRegistrationNode->GetCollectionMode().compare( "ManualSegmentation" ) == 0 )
   {
     d->ManualDOFRadioButton->setChecked( Qt::Unchecked );
     d->ManualSegmentationRadioButton->setChecked( Qt::Checked );
     d->AutomaticRadioButton->setChecked( Qt::Unchecked );
+
+    d->ManualDOFWidget->hide();
+    d->ManualSegmentationWidget->show();
+    d->AutomaticWidget->hide();
   }
   if ( linearObjectRegistrationNode->GetCollectionMode().compare( "Automatic" ) == 0 )
   {
     d->ManualDOFRadioButton->setChecked( Qt::Unchecked );
     d->ManualSegmentationRadioButton->setChecked( Qt::Unchecked );
     d->AutomaticRadioButton->setChecked( Qt::Checked );
+
+    d->ManualDOFWidget->hide();
+    d->ManualSegmentationWidget->hide();
+    d->AutomaticWidget->show();
   }
 
   if ( linearObjectRegistrationNode->GetAutomaticMatch().compare( "True" ) == 0 )
@@ -367,14 +376,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   }
 
   // Unblock all singals from firing
-  // TODO: Is there a more efficient way to do this by blokcing slots?
-  connect( d->OutputNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->ManualDOFRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->ManualSegmentationRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->AutomaticRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->ManualDOFWidget, SIGNAL( transformNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
+  this->ConnectWidgets();
 
   std::stringstream statusString;
   statusString << "Status: ";

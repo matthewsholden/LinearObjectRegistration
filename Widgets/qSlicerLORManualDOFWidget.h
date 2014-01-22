@@ -43,30 +43,18 @@ public:
   qSlicerLORManualDOFWidget(QWidget *parent=0);
   virtual ~qSlicerLORManualDOFWidget();
 
-  static qSlicerLORManualDOFWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
+  static qSlicerLORManualDOFWidget* New();
 
-  // Slicer will delete logic
-  vtkSlicerLinearObjectRegistrationLogic* LORLogic;
-
-  vtkMRMLNode* GetCurrentNode();
-  void SetCurrentNode( vtkMRMLNode* currentNode );
+  void SetLORNode( vtkMRMLNode* newNode );
 
 protected slots:
-
-  void onTransformNodeChanged(); // User selects a different node using the combo box
 
   void onReferenceButtonClicked();
   void onPointButtonClicked();
   void onLineButtonClicked();
   void onPlaneButtonClicked();
 
-  void setCollect( std::string collectType );
-
   void updateWidget();
-
-signals:
-
-  void transformNodeChanged();
 
 protected:
   QScopedPointer<qSlicerLORManualDOFWidgetPrivate> d_ptr;
@@ -78,7 +66,7 @@ private:
   Q_DECLARE_PRIVATE(qSlicerLORManualDOFWidget);
   Q_DISABLE_COPY(qSlicerLORManualDOFWidget);
 
-  std::string CollectType;
+  vtkMRMLLinearObjectRegistrationNode* LORNode;
 };
 
 #endif

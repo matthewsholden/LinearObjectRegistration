@@ -63,6 +63,24 @@ void vtkMRMLLORPositionBufferNode
 
 
 void vtkMRMLLORPositionBufferNode
+::Trim( int trimSize )
+{
+  std::vector< vtkSmartPointer< vtkMRMLLORPositionNode > > newPositions;
+
+  for ( int i = 0; i < this->Size(); i++ )
+  {
+    if ( i - trimSize >= 0 && i + trimSize < this->Size() )
+    {
+      newPositions.push_back( this->GetPosition( i ) );
+    }
+  }
+
+  this->Positions = newPositions;
+  this->Modified();
+}
+
+
+void vtkMRMLLORPositionBufferNode
 ::Translate( std::vector<double> translation )
 {
   for ( int i = 0; i < this->Size(); i++ )
@@ -168,4 +186,30 @@ std::vector<double> vtkMRMLLORPositionBufferNode
   }
 
   return centroid;
+}
+
+
+int vtkMRMLLORPositionBufferNode
+::GetDOF()
+{
+  std::vector<double> centroid = this->CalculateCentroid();
+  vnl_matrix<double>* cov = this->CovarianceMatrix( centroid );
+
+  //Calculate the eigenvectors of the covariance matrix
+  vnl_matrix<double> eigenvectors( vtkMRMLLORPositionNode::SIZE, vtkMRMLLORPositionNode::SIZE, 0.0 );
+  vnl_vector<double> eigenvalues( vtkMRMLLORPositionNode::SIZE, 0.0 );
+  vnl_symmetric_eigensystem_compute( *cov, eigenvectors, eigenvalues );
+  // Note: eigenvectors are ordered in increasing eigenvalue ( 0 = smallest, end = biggest )
+
+  // Get number of eigenvectors with eigenvalues larger than the threshold
+  int calculatedDOF = 0;
+  for ( int i = 0; i < vtkMRMLLORPositionNode::SIZE; i++ )
+  {
+    if ( abs( eigenvalues.get( i ) ) > vtkMRMLLORConstants::NOISE_THRESHOLD )
+    {
+      calculatedDOF++;
+    }
+  }
+
+  return calculatedDOF; 
 }

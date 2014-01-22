@@ -2,13 +2,6 @@
 // LinearObjectRegistration Logic includes
 #include "vtkSlicerLinearObjectRegistrationLogic.h"
 
-const double FILTER_WIDTH = 5.0;
-const double EXTRACTION_THRESHOLD = 0.5;
-const double MATCHING_THRESHOLD = 10.0;
-
-const int MINIMUM_COLLECTION_FRAMES = 100;
-const int DIRECTION_SCALE = 100;
-
 
 void PrintToFile( std::string str )
 {
@@ -29,9 +22,6 @@ vtkStandardNewMacro( vtkSlicerLinearObjectRegistrationLogic );
 vtkSlicerLinearObjectRegistrationLogic
 ::vtkSlicerLinearObjectRegistrationLogic()
 { 
-  this->ObservedTransformNode = NULL;
-  this->ActivePositionBuffer = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
-
   this->OutputMessage = "";
 }
 
@@ -143,25 +133,6 @@ void vtkSlicerLinearObjectRegistrationLogic
 }
 
 
-void vtkSlicerLinearObjectRegistrationLogic
-::ObserveTransformNode( vtkMRMLNode* node )
-{
-  vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast( node );
-  if ( transformNode == NULL )
-  {
-    return;
-  }
-  if ( this->ObservedTransformNode != NULL )
-  {
-    this->ObservedTransformNode->RemoveObservers( vtkMRMLLinearTransformNode::TransformModifiedEvent, (vtkCommand*) this->GetMRMLNodesCallbackCommand() );
-  }
-
-  transformNode->AddObserver( vtkMRMLLinearTransformNode::TransformModifiedEvent, (vtkCommand*) this->GetMRMLNodesCallbackCommand() );
-
-  this->ObservedTransformNode = transformNode;
-}
-
-
 // Let the selection node singleton keep track of this - we will just offer convenience functions
 void vtkSlicerLinearObjectRegistrationLogic
 ::SetActiveCollectionNode( vtkMRMLLORLinearObjectCollectionNode* newActiveCollectionNode )
@@ -189,72 +160,6 @@ vtkMRMLLORLinearObjectCollectionNode* vtkSlicerLinearObjectRegistrationLogic
 
   const char* activeCollectionNodeID = selectionNode->GetAttribute( "ActiveLinearObjectCollectionID" );
   return vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( activeCollectionNodeID ) );
-}
-
-
-
-// This makes the module ready to record - see the ProcessMRMLNodesEvents for this class to see whether or not any recording actually happens
-void vtkSlicerLinearObjectRegistrationLogic
-::InitializeActivePositionBuffer( std::string collectType )
-{
-  this->ActivePositionBuffer->Clear();
-  this->CollectType = collectType;
-}
-
-
-void vtkSlicerLinearObjectRegistrationLogic
-::FinalizeActivePositionBuffer()
-{
-  if ( this->ActivePositionBuffer == NULL )
-  {
-    return;
-  }
-
-  vtkSmartPointer< vtkMRMLLORLinearObjectNode > currentLinearObject;
-
-  if ( this->CollectType.compare( "Reference" ) == 0 )
-  {
-    currentLinearObject = this->PositionBufferToLinearObject( this->ActivePositionBuffer, REFERENCE_DOF );
-  }
-  else if ( this->CollectType.compare( "Point" ) == 0 )
-  {
-    currentLinearObject = this->PositionBufferToLinearObject( this->ActivePositionBuffer, POINT_DOF );
-  }
-  else if ( this->CollectType.compare( "Line" ) == 0 )
-  {
-    currentLinearObject = this->PositionBufferToLinearObject( this->ActivePositionBuffer, LINE_DOF );
-  }
-  else if ( this->CollectType.compare( "Plane" ) == 0 )
-  {
-    currentLinearObject = this->PositionBufferToLinearObject( this->ActivePositionBuffer, PLANE_DOF );
-  }
-  else
-  {
-    currentLinearObject = this->PositionBufferToLinearObject( this->ActivePositionBuffer, UNKNOWN_DOF );
-  }
-
-  if ( currentLinearObject == NULL )
-  {
-    this->ActivePositionBuffer->Clear();
-    return;
-  }
-
-  currentLinearObject->SetPositionBuffer( this->ActivePositionBuffer->DeepCopy() );
-  this->InsertNewLinearObject( currentLinearObject );
-  this->ActivePositionBuffer->Clear();
-}
-
-
-void vtkSlicerLinearObjectRegistrationLogic
-::InsertNewLinearObject( vtkMRMLLORLinearObjectNode* linearObject )
-{
-  if ( this->GetActiveCollectionNode() == NULL )
-  {
-    return;
-  }
-   
-  this->GetActiveCollectionNode()->AddLinearObject( linearObject );
-  // TODO: Need to insert the current linear object into the correct slot in the collection
 }
 
 
@@ -293,23 +198,33 @@ vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkSlicerLinearObjectRegistrationL
   Eigenvector3.at(1) = eigenvectors.get( 1, 2 );
   Eigenvector3.at(2) = eigenvectors.get( 2, 2 );
 
+  // Get number of eigenvectors with eigenvalues larger than the threshold
+  double calculatedDOF = 0;
+  for ( int i = 0; i < vtkMRMLLORPositionNode::SIZE; i++ )
+  {
+    if ( abs( eigenvalues.get( i ) ) > vtkMRMLLORConstants::NOISE_THRESHOLD )
+    {
+      calculatedDOF++;
+    }
+  }
+
   // The threshold noise is twice the extraction threshold
-  if ( dof == REFERENCE_DOF )
+  if ( dof == vtkMRMLLORConstants::REFERENCE_DOF )
   {
     vtkMRMLLORReferenceNode* referenceObject = vtkMRMLLORReferenceNode::New( centroid );
     return vtkSmartPointer< vtkMRMLLORReferenceNode >::Take( referenceObject );
   }
-  if ( dof == POINT_DOF )
+  if ( dof == vtkMRMLLORConstants::POINT_DOF || dof == vtkMRMLLORConstants::UNKNOWN_DOF && calculatedDOF == vtkMRMLLORConstants::POINT_DOF )
   {
     vtkMRMLLORPointNode* pointObject = vtkMRMLLORPointNode::New( centroid );
     return vtkSmartPointer< vtkMRMLLORPointNode >::Take( pointObject );
   }
-  if ( dof == LINE_DOF )
+  if ( dof == vtkMRMLLORConstants::LINE_DOF || dof == vtkMRMLLORConstants::UNKNOWN_DOF && calculatedDOF == vtkMRMLLORConstants::LINE_DOF )
   {
     vtkMRMLLORLineNode* lineObject = vtkMRMLLORLineNode::New( centroid, vtkMRMLLORVectorMath::Add( centroid, Eigenvector3 ) );
     return vtkSmartPointer< vtkMRMLLORLineNode >::Take( lineObject );
   }
-  if ( dof == PLANE_DOF )
+  if ( dof == vtkMRMLLORConstants::PLANE_DOF || dof == vtkMRMLLORConstants::UNKNOWN_DOF && calculatedDOF >= vtkMRMLLORConstants::PLANE_DOF )
   {
     vtkMRMLLORPlaneNode* planeObject = vtkMRMLLORPlaneNode::New( centroid, vtkMRMLLORVectorMath::Add( centroid, Eigenvector2 ), vtkMRMLLORVectorMath::Add( centroid, Eigenvector3 ) );
     return vtkSmartPointer< vtkMRMLLORPlaneNode >::Take( planeObject );
@@ -380,7 +295,7 @@ void vtkSlicerLinearObjectRegistrationLogic
       }
     }// for over collection 1
 
-    if ( bestDistance < MATCHING_THRESHOLD )
+    if ( bestDistance < vtkMRMLLORConstants::MATCHING_THRESHOLD )
     {
       matchedCollection0->AddLinearObject( currentObject0 );
       matchedCollection1->AddLinearObject( nonReferenceCollection1->GetLinearObject( bestIndex ) );
@@ -725,11 +640,11 @@ void vtkSlicerLinearObjectRegistrationLogic
     vtkMRMLLORLineNode* CurrentToObject = vtkMRMLLORLineNode::SafeDownCast( toLineCollection->GetLinearObject(i) );
 
     // Add direction vector to projection of origin
-    testVector = vtkMRMLLORVectorMath::Add( CurrentToObject->ProjectVector( BlankVector ), vtkMRMLLORVectorMath::Multiply( DIRECTION_SCALE, CurrentToObject->GetDirection() ) );
+    testVector = vtkMRMLLORVectorMath::Add( CurrentToObject->ProjectVector( BlankVector ), vtkMRMLLORVectorMath::Multiply( vtkMRMLLORConstants::DIRECTION_SCALE, CurrentToObject->GetDirection() ) );
     TempToCollection->AddLinearObject( vtkMRMLLORPointNode::New( testVector ) ) ;
 
     // Subtract direction vector to projection of origin
-    testVector = vtkMRMLLORVectorMath::Subtract( CurrentToObject->ProjectVector( BlankVector ), vtkMRMLLORVectorMath::Multiply( DIRECTION_SCALE, CurrentToObject->GetDirection() ) );
+    testVector = vtkMRMLLORVectorMath::Subtract( CurrentToObject->ProjectVector( BlankVector ), vtkMRMLLORVectorMath::Multiply( vtkMRMLLORConstants::DIRECTION_SCALE, CurrentToObject->GetDirection() ) );
     TempToCollection->AddLinearObject( vtkMRMLLORPointNode::New( testVector ) );
     
     TempToCollection->Concatenate( toReferenceCollection );
@@ -738,7 +653,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     vtkMRMLLORLineNode* CurrentFromObject = vtkMRMLLORLineNode::SafeDownCast( fromLineCollection->GetLinearObject(i) );
 
     // Add direction vector to projection of origin
-    testVector = vtkMRMLLORVectorMath::Add( CurrentFromObject->ProjectVector( BlankVector ), vtkMRMLLORVectorMath::Multiply( DIRECTION_SCALE, CurrentFromObject->GetDirection() ) );
+    testVector = vtkMRMLLORVectorMath::Add( CurrentFromObject->ProjectVector( BlankVector ), vtkMRMLLORVectorMath::Multiply( vtkMRMLLORConstants::DIRECTION_SCALE, CurrentFromObject->GetDirection() ) );
     TempFromCollection->AddLinearObject( vtkMRMLLORPointNode::New( testVector ) );
     
     TempFromCollection->Concatenate( fromReferenceCollection );
@@ -767,11 +682,11 @@ void vtkSlicerLinearObjectRegistrationLogic
     vtkMRMLLORPlaneNode* CurrentToObject = vtkMRMLLORPlaneNode::SafeDownCast( toPlaneCollection->GetLinearObject(i) );
 
     // Add direction vector to projection of origin
-    testVector = vtkMRMLLORVectorMath::Add( CurrentToObject->ProjectVector( BlankVector ), vtkMRMLLORVectorMath::Multiply( DIRECTION_SCALE, CurrentToObject->GetNormal() ) );
+    testVector = vtkMRMLLORVectorMath::Add( CurrentToObject->ProjectVector( BlankVector ), vtkMRMLLORVectorMath::Multiply( vtkMRMLLORConstants::DIRECTION_SCALE, CurrentToObject->GetNormal() ) );
     TempToCollection->AddLinearObject( vtkMRMLLORPointNode::New( testVector ) );
     
     // Subtract direction vector to projection of origin
-    testVector = vtkMRMLLORVectorMath::Subtract( CurrentToObject->ProjectVector( BlankVector ), vtkMRMLLORVectorMath::Multiply( DIRECTION_SCALE, CurrentToObject->GetNormal() ) );
+    testVector = vtkMRMLLORVectorMath::Subtract( CurrentToObject->ProjectVector( BlankVector ), vtkMRMLLORVectorMath::Multiply( vtkMRMLLORConstants::DIRECTION_SCALE, CurrentToObject->GetNormal() ) );
     TempToCollection->AddLinearObject( vtkMRMLLORPointNode::New( testVector ) );
 
     TempToCollection->Concatenate( toReferenceCollection );
@@ -780,7 +695,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     vtkMRMLLORPlaneNode* CurrentFromObject = vtkMRMLLORPlaneNode::SafeDownCast( fromPlaneCollection->GetLinearObject(i) );
     
     // Add direction vector to projection of origin
-    testVector = vtkMRMLLORVectorMath::Add( CurrentFromObject->ProjectVector( BlankVector ), vtkMRMLLORVectorMath::Multiply( DIRECTION_SCALE, CurrentFromObject->GetNormal() ) );
+    testVector = vtkMRMLLORVectorMath::Add( CurrentFromObject->ProjectVector( BlankVector ), vtkMRMLLORVectorMath::Multiply( vtkMRMLLORConstants::DIRECTION_SCALE, CurrentFromObject->GetNormal() ) );
     TempFromCollection->AddLinearObject( vtkMRMLLORPointNode::New( testVector ) );
     
     TempFromCollection->Concatenate( fromReferenceCollection );
@@ -1185,24 +1100,54 @@ void vtkSlicerLinearObjectRegistrationLogic
 {
   // In case the module node is updated
   vtkMRMLLinearObjectRegistrationNode* lorNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( caller );
+
   // The caller must be a vtkMRMLLinearObjectRegistrationNode
-  if ( lorNode != NULL )
+  if ( lorNode != NULL && event == vtkCommand::ModifiedEvent )
   {
     this->CalculateTransform( lorNode ); // Will create modified event to update widget
   }
 
-  // In case the observed transform node is updated
-  vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast( caller );
-  // Must be a transform node
-  if ( transformNode == NULL || this->ActivePositionBuffer == NULL )
+  // The position buffer must be ready for conversion to linear object
+  if ( lorNode != NULL && event == vtkMRMLLinearObjectRegistrationNode::PositionBufferReady )
   {
-    return;
+    vtkSmartPointer< vtkMRMLLORLinearObjectNode > currentLinearObject = NULL;
+    vtkSmartPointer< vtkMRMLLORPositionBufferNode > positionBufferCopy = lorNode->GetActivePositionBuffer()->DeepCopy();
+    lorNode->GetActivePositionBuffer()->Clear();
+
+    if ( lorNode->GetCollectionState().compare( "Reference" ) == 0 )
+    {
+      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, vtkMRMLLORConstants::REFERENCE_DOF );
+    }
+    if ( lorNode->GetCollectionState().compare( "Point" ) == 0 )
+    {
+      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, vtkMRMLLORConstants::POINT_DOF );
+    }
+    if ( lorNode->GetCollectionState().compare( "Line" ) == 0 )
+    {
+      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, vtkMRMLLORConstants::LINE_DOF );
+    }
+    if ( lorNode->GetCollectionState().compare( "Plane" ) == 0 )
+    {
+      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, vtkMRMLLORConstants::PLANE_DOF );
+    }
+    if ( lorNode->GetCollectionState().compare( "Collect" ) == 0 )
+    {
+      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, vtkMRMLLORConstants::UNKNOWN_DOF );
+    }
+    if ( lorNode->GetCollectionState().compare( "Automatic" ) == 0 )
+    {
+      positionBufferCopy->Trim( vtkMRMLLORConstants::TRIM_POSITIONS );
+      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, vtkMRMLLORConstants::UNKNOWN_DOF );
+    }
+
+    if ( currentLinearObject != NULL && this->GetActiveCollectionNode() != NULL )
+    {
+      currentLinearObject->SetPositionBuffer( positionBufferCopy );
+      this->GetActiveCollectionNode()->AddLinearObject( currentLinearObject );
+    }
+
   }
-  if ( strcmp( transformNode->GetID(), this->ObservedTransformNode->GetID() ) == 0 )
-  {
-    vtkMatrix4x4* matrix = transformNode->GetMatrixTransformToParent();
-    this->ActivePositionBuffer->AddPosition( vtkMRMLLORPositionNode::New( matrix ) );
-  }
+
 }
 
 
@@ -1219,6 +1164,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     // This will get called exactly once, and we will add the observer only once (since node is never replaced)
     linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
+    linearObjectRegistrationNode->AddObserver( vtkMRMLLinearObjectRegistrationNode::PositionBufferReady, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
     linearObjectRegistrationNode->UpdateScene( this->GetMRMLScene() );
     linearObjectRegistrationNode->ObserveAllReferenceNodes(); // This will update
     this->CalculateTransform( linearObjectRegistrationNode ); // Will create modified event to update widget

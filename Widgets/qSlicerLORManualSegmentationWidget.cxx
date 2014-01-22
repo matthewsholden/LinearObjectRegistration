@@ -75,10 +75,10 @@ qSlicerLORManualSegmentationWidget
 
 
 qSlicerLORManualSegmentationWidget* qSlicerLORManualSegmentationWidget
-::New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic )
+::New()
 {
   qSlicerLORManualSegmentationWidget* newLORManualSegmentationWidget = new qSlicerLORManualSegmentationWidget();
-  newLORManualSegmentationWidget->LORLogic = newLORLogic;
+  newLORManualSegmentationWidget->LORNode = NULL;
   newLORManualSegmentationWidget->setup();
   return newLORManualSegmentationWidget;
 }
@@ -90,11 +90,6 @@ void qSlicerLORManualSegmentationWidget
   Q_D(qSlicerLORManualSegmentationWidget);
 
   d->setupUi(this);
-  this->setMRMLScene( this->LORLogic->GetMRMLScene() );
-
-  this->CollectType = "";
-
-  connect( d->TransformNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onTransformNodeChanged() ) );
   
   // Use the pressed signal (otherwise we can unpress buttons without clicking them)
   connect( d->CollectButton, SIGNAL( toggled( bool ) ), this, SLOT( onCollectButtonClicked() ) );
@@ -109,63 +104,18 @@ void qSlicerLORManualSegmentationWidget
 }
 
 
-vtkMRMLNode* qSlicerLORManualSegmentationWidget
-::GetCurrentNode()
-{
-  Q_D(qSlicerLORManualSegmentationWidget);
-
-  return d->TransformNodeComboBox->currentNode();
-}
-
-
 void qSlicerLORManualSegmentationWidget
-::SetCurrentNode( vtkMRMLNode* currentNode )
+::SetLORNode( vtkMRMLNode* newNode )
 {
   Q_D(qSlicerLORManualSegmentationWidget);
 
-  vtkMRMLLinearTransformNode* currentTransformNode = vtkMRMLLinearTransformNode::SafeDownCast( currentNode );
-  d->TransformNodeComboBox->setCurrentNode( currentTransformNode );
-}
-
-
-void qSlicerLORManualSegmentationWidget
-::setCollect( std::string collectType )
-{
-  Q_D(qSlicerLORManualSegmentationWidget);
-
-  this->CollectType = collectType;
-
-  if ( collectType.compare( "" ) == 0 )
+  vtkMRMLLinearObjectRegistrationNode* newLORNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( newNode );
+  if ( newLORNode == NULL )
   {
-    this->LORLogic->FinalizeActivePositionBuffer();
-    // All buttons should be unchecked (since they may become unchecked by another button)
-    connect( d->TransformNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onTransformNodeChanged() ) );
-
-    d->CollectButton->setChecked( false );
-
-    connect( d->TransformNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onTransformNodeChanged() ) );
-  }
-  else
-  {
-    this->LORLogic->InitializeActivePositionBuffer( collectType );
-    // Individual buttons will be responsible for checking themselves (since they can only become checked on button press)
+    return;
   }
 
-}
-
-
-
-void qSlicerLORManualSegmentationWidget
-::onTransformNodeChanged()
-{
-  Q_D(qSlicerLORManualSegmentationWidget);
-
-  emit transformNodeChanged();
-
-  this->LORLogic->FinalizeActivePositionBuffer();
-  this->LORLogic->ObserveTransformNode( d->TransformNodeComboBox->currentNode() );
-
-  this->updateWidget();
+  this->LORNode = newLORNode;
 }
 
 
@@ -174,14 +124,13 @@ void qSlicerLORManualSegmentationWidget
 {
   Q_D(qSlicerLORManualSegmentationWidget);
 
-  if ( this->CollectType.compare( "" ) == 0 && this->GetCurrentNode() != NULL )
+  if ( this->LORNode->GetCollectionState().compare( "" ) == 0 )
   {
-    this->setCollect( "Collect" );
-    d->CollectButton->setChecked( true );
+    this->LORNode->StartCollecting( "Collect" );
   }
   else
   {
-    this->setCollect( "" );
+    this->LORNode->StopCollecting();
   }
 }
 
@@ -192,9 +141,14 @@ void qSlicerLORManualSegmentationWidget
 {
   Q_D(qSlicerLORManualSegmentationWidget);
 
+  if ( this->LORNode == NULL )
+  {
+    return;
+  }
+
   disconnect( d->CollectButton, SIGNAL( toggled( bool ) ), this, SLOT( onCollectButtonClicked() ) );
 
-  if ( this->CollectType.compare( "Collect" ) == 0 && this->GetCurrentNode() != NULL )
+  if ( this->LORNode->GetCollectionState().compare( "Collect" ) )
   {
     d->CollectButton->setChecked( true );
   }

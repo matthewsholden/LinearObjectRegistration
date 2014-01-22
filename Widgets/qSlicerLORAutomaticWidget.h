@@ -18,51 +18,54 @@
 
 ==============================================================================*/
 
-#ifndef __qSlicerLORManualSegmentationWidget_h
-#define __qSlicerLORManualSegmentationWidget_h
+#ifndef __qSlicerLORAutomaticWidget_h
+#define __qSlicerLORAutomaticWidget_h
 
 // Qt includes
 #include "qSlicerWidget.h"
 
 // FooBar Widgets includes
 #include "qSlicerLinearObjectRegistrationModuleWidgetsExport.h"
-#include "ui_qSlicerLORManualSegmentationWidget.h"
+#include "ui_qSlicerLORAutomaticWidget.h"
 
 #include "vtkSlicerLinearObjectRegistrationLogic.h"
 
 
-class qSlicerLORManualSegmentationWidgetPrivate;
+class qSlicerLORAutomaticWidgetPrivate;
 
 /// \ingroup Slicer_QtModules_CreateModels
 class Q_SLICER_MODULE_LINEAROBJECTREGISTRATION_WIDGETS_EXPORT 
-qSlicerLORManualSegmentationWidget : public qSlicerWidget
+qSlicerLORAutomaticWidget : public qSlicerWidget
 {
   Q_OBJECT
 public:
   typedef qSlicerWidget Superclass;
-  qSlicerLORManualSegmentationWidget(QWidget *parent=0);
-  virtual ~qSlicerLORManualSegmentationWidget();
+  qSlicerLORAutomaticWidget(QWidget *parent=0);
+  virtual ~qSlicerLORAutomaticWidget();
 
-  static qSlicerLORManualSegmentationWidget* New();
+  static qSlicerLORAutomaticWidget* New();
 
   // Slicer will delete logic
   void SetLORNode( vtkMRMLNode* newNode );
 
-protected slots:
+public slots:
 
-  void onCollectButtonClicked();
+  void show();
+  void hide();
+
+protected slots:
 
   void updateWidget();
 
 protected:
-  QScopedPointer<qSlicerLORManualSegmentationWidgetPrivate> d_ptr;
+  QScopedPointer<qSlicerLORAutomaticWidgetPrivate> d_ptr;
 
   virtual void setup();
   virtual void enter();
 
 private:
-  Q_DECLARE_PRIVATE(qSlicerLORManualSegmentationWidget);
-  Q_DISABLE_COPY(qSlicerLORManualSegmentationWidget);
+  Q_DECLARE_PRIVATE(qSlicerLORAutomaticWidget);
+  Q_DISABLE_COPY(qSlicerLORAutomaticWidget);
 
   vtkMRMLLinearObjectRegistrationNode* LORNode;
 };

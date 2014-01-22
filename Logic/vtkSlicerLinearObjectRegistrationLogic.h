@@ -32,6 +32,7 @@
 #include "vnl/vnl_matrix.h"
 
 // Slicer includes
+#include "vtkCommand.h"
 #include "vtkSlicerModuleLogic.h"
 #include "vtkMRMLLinearTransformNode.h"
 #include "vtkMRMLModelNode.h"
@@ -94,13 +95,6 @@ private:
 
 public:
 
-  static const int REFERENCE_DOF = 4; // This obviously isn't true, but we need to distinguish from points
-  static const int POINT_DOF = 0;
-  static const int LINE_DOF = 1;
-  static const int PLANE_DOF = 2;
-  static const int UNKNOWN_DOF = -1;
-
-
   void CalculateTransform( vtkMRMLNode* node );
   void UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vtkMatrix4x4* newTransformMatrix );
 
@@ -125,15 +119,8 @@ public:
 
   vtkSmartPointer< vtkMRMLLORLinearObjectNode > PositionBufferToLinearObject( vtkMRMLLORPositionBufferNode* positionBuffer, int dof = -1 );
 
-  void ObserveTransformNode( vtkMRMLNode* node );
-
   vtkMRMLLORLinearObjectCollectionNode* GetActiveCollectionNode();
   void SetActiveCollectionNode( vtkMRMLLORLinearObjectCollectionNode* newActiveCollectionNode );
-
-  void FinalizeActivePositionBuffer();
-  void InitializeActivePositionBuffer( std::string collectType );
-
-  void InsertNewLinearObject( vtkMRMLLORLinearObjectNode* linearObject );
 
   void MatchCollections( vtkMRMLLORLinearObjectCollectionNode* collection0, vtkMRMLLORLinearObjectCollectionNode* collection1, bool removeUnmatched = false );
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > GetReferences( vtkMRMLLORLinearObjectCollectionNode* collection );
@@ -147,12 +134,7 @@ public:
 
 private:
 
-  vtkMRMLLinearTransformNode* ObservedTransformNode;
-  vtkSmartPointer< vtkMRMLLORPositionBufferNode > ActivePositionBuffer;
-  std::string CollectType;
-
   std::string OutputMessage;
-
 };
 
 #endif

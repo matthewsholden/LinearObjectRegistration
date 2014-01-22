@@ -16,11 +16,11 @@
 #include "vtkMatrix4x4.h"
 #include "vtkSmartPointer.h"
 
-// VNL includes
-#include "vnl/vnl_matrix.h"
-
 // LinearObjectRegistration includes
 #include "vtkMRMLLORVectorMath.h"
+
+// VNL includes
+#include "vnl/vnl_matrix.h"
 
 #include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
 

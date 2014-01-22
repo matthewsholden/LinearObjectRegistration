@@ -23,12 +23,6 @@
 
 #include <QtGui>
 
-
-const int LINEAROBJECT_NAME_COLUMN = 0;
-const int LINEAROBJECT_TYPE_COLUMN = 1;
-const int LINEAROBJECT_COLUMNS = 2;
-
-
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_CreateModels
 class qSlicerLORManualDOFWidgetPrivate
@@ -80,10 +74,10 @@ qSlicerLORManualDOFWidget
 
 
 qSlicerLORManualDOFWidget* qSlicerLORManualDOFWidget
-::New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic )
+::New()
 {
   qSlicerLORManualDOFWidget* newLORManualDOFWidget = new qSlicerLORManualDOFWidget();
-  newLORManualDOFWidget->LORLogic = newLORLogic;
+  newLORManualDOFWidget->LORNode = NULL;
   newLORManualDOFWidget->setup();
   return newLORManualDOFWidget;
 }
@@ -95,11 +89,6 @@ void qSlicerLORManualDOFWidget
   Q_D(qSlicerLORManualDOFWidget);
 
   d->setupUi(this);
-  this->setMRMLScene( this->LORLogic->GetMRMLScene() );
-
-  this->CollectType = "";
-
-  connect( d->TransformNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onTransformNodeChanged() ) );
   
   // Use the pressed signal (otherwise we can unpress buttons without clicking them)
   connect( d->ReferenceButton, SIGNAL( toggled( bool ) ), this, SLOT( onReferenceButtonClicked() ) );
@@ -117,72 +106,18 @@ void qSlicerLORManualDOFWidget
 }
 
 
-vtkMRMLNode* qSlicerLORManualDOFWidget
-::GetCurrentNode()
-{
-  Q_D(qSlicerLORManualDOFWidget);
-
-  return d->TransformNodeComboBox->currentNode();
-}
-
-
 void qSlicerLORManualDOFWidget
-::SetCurrentNode( vtkMRMLNode* currentNode )
+::SetLORNode( vtkMRMLNode* newNode )
 {
   Q_D(qSlicerLORManualDOFWidget);
 
-  vtkMRMLLinearTransformNode* currentTransformNode = vtkMRMLLinearTransformNode::SafeDownCast( currentNode );
-  d->TransformNodeComboBox->setCurrentNode( currentTransformNode );
-}
-
-
-void qSlicerLORManualDOFWidget
-::setCollect( std::string collectType )
-{
-  Q_D(qSlicerLORManualDOFWidget);
-
-  this->CollectType = collectType;
-
-  if ( collectType.compare( "" ) == 0 )
+  vtkMRMLLinearObjectRegistrationNode* newLORNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( newNode );
+  if ( newLORNode == NULL )
   {
-    this->LORLogic->FinalizeActivePositionBuffer();
-    // All buttons should be unchecked (since they may become unchecked by another button)
-    disconnect( d->ReferenceButton, SIGNAL( toggled( bool ) ), this, SLOT( onReferenceButtonClicked() ) );
-    disconnect( d->PointButton, SIGNAL( toggled( bool ) ), this, SLOT( onPointButtonClicked() ) );
-    disconnect( d->LineButton, SIGNAL( toggled( bool ) ), this, SLOT( onLineButtonClicked() ) );
-    disconnect( d->PlaneButton, SIGNAL( toggled( bool ) ), this, SLOT( onPlaneButtonClicked() ) );
-
-    d->ReferenceButton->setChecked( false );
-    d->PointButton->setChecked( false );
-    d->LineButton->setChecked( false );
-    d->PlaneButton->setChecked( false );
-
-    connect( d->ReferenceButton, SIGNAL( toggled( bool ) ), this, SLOT( onReferenceButtonClicked() ) );
-    connect( d->PointButton, SIGNAL( toggled( bool ) ), this, SLOT( onPointButtonClicked() ) );
-    connect( d->LineButton, SIGNAL( toggled( bool ) ), this, SLOT( onLineButtonClicked() ) );
-    connect( d->PlaneButton, SIGNAL( toggled( bool ) ), this, SLOT( onPlaneButtonClicked() ) );
-  }
-  else
-  {
-    this->LORLogic->InitializeActivePositionBuffer( collectType );
-    // Individual buttons will be responsible for checking themselves (since they can only become checked on button press)
+    return;
   }
 
-}
-
-
-
-void qSlicerLORManualDOFWidget
-::onTransformNodeChanged()
-{
-  Q_D(qSlicerLORManualDOFWidget);
-
-  emit transformNodeChanged();
-
-  this->LORLogic->FinalizeActivePositionBuffer();
-  this->LORLogic->ObserveTransformNode( d->TransformNodeComboBox->currentNode() );
-
-  this->updateWidget();
+  this->LORNode = newLORNode;
 }
 
 
@@ -191,14 +126,13 @@ void qSlicerLORManualDOFWidget
 {
   Q_D(qSlicerLORManualDOFWidget);
 
-  if ( this->CollectType.compare( "" ) == 0 && this->GetCurrentNode() != NULL )
+  if ( this->LORNode->GetCollectionState().compare( "" ) == 0 )
   {
-    this->setCollect( "Reference" );
-    d->ReferenceButton->setChecked( true );
+    this->LORNode->StartCollecting( "Reference" );
   }
   else
   {
-    this->setCollect( "" );
+    this->LORNode->StopCollecting();
   }
 }
 
@@ -208,14 +142,13 @@ void qSlicerLORManualDOFWidget
 {
   Q_D(qSlicerLORManualDOFWidget);
 
-  if ( this->CollectType.compare( "" ) == 0 && this->GetCurrentNode() != NULL )
+  if ( this->LORNode->GetCollectionState().compare( "" ) == 0 )
   {
-    this->setCollect( "Point" );
-    d->PointButton->setChecked( true );
+    this->LORNode->StartCollecting( "Point" );
   }
   else
   {
-    this->setCollect( "" );
+    this->LORNode->StopCollecting();
   }
 }
 
@@ -225,14 +158,13 @@ void qSlicerLORManualDOFWidget
 {
   Q_D(qSlicerLORManualDOFWidget);
 
-  if ( this->CollectType.compare( "" ) == 0 && this->GetCurrentNode() != NULL )
+  if ( this->LORNode->GetCollectionState().compare( "" ) == 0 )
   {
-    this->setCollect( "Line" );
-    d->LineButton->setChecked( true );
+    this->LORNode->StartCollecting( "Line" );
   }
   else
   {
-    this->setCollect( "" );
+    this->LORNode->StopCollecting();
   }
 }
 
@@ -242,14 +174,13 @@ void qSlicerLORManualDOFWidget
 {
   Q_D(qSlicerLORManualDOFWidget);
 
-  if ( this->CollectType.compare( "" ) == 0 && this->GetCurrentNode() != NULL )
+  if ( this->LORNode->GetCollectionState().compare( "" ) == 0 )
   {
-    this->setCollect( "Plane" );
-    d->PlaneButton->setChecked( true );
+    this->LORNode->StartCollecting( "Plane" );
   }
   else
   {
-    this->setCollect( "" );
+    this->LORNode->StopCollecting();
   }
 }
 
@@ -260,12 +191,17 @@ void qSlicerLORManualDOFWidget
 {
   Q_D(qSlicerLORManualDOFWidget);
 
+  if ( this->LORNode == NULL )
+  {
+    return;
+  }
+
   disconnect( d->ReferenceButton, SIGNAL( toggled( bool ) ), this, SLOT( onReferenceButtonClicked() ) );
   disconnect( d->PointButton, SIGNAL( toggled( bool ) ), this, SLOT( onPointButtonClicked() ) );
   disconnect( d->LineButton, SIGNAL( toggled( bool ) ), this, SLOT( onLineButtonClicked() ) );
   disconnect( d->PlaneButton, SIGNAL( toggled( bool ) ), this, SLOT( onPlaneButtonClicked() ) );
 
-  if ( this->CollectType == "Reference" && this->GetCurrentNode() != NULL )
+  if ( this->LORNode->GetCollectionState().compare( "Reference" ) )
   {
     d->ReferenceButton->setChecked( true );
   }
@@ -274,7 +210,7 @@ void qSlicerLORManualDOFWidget
     d->ReferenceButton->setChecked( false );
   }
 
-  if ( this->CollectType == "Point" && this->GetCurrentNode() != NULL )
+  if ( this->LORNode->GetCollectionState().compare( "Point" ) )
   {
     d->PointButton->setChecked( true );
   }
@@ -283,7 +219,7 @@ void qSlicerLORManualDOFWidget
     d->PointButton->setChecked( false );
   }
 
-  if ( this->CollectType == "Line" && this->GetCurrentNode() != NULL )
+  if ( this->LORNode->GetCollectionState().compare( "Line" ) )
   {
     d->LineButton->setChecked( true );
   }
@@ -292,7 +228,7 @@ void qSlicerLORManualDOFWidget
     d->LineButton->setChecked( false );
   }
 
-  if ( this->CollectType == "Plane" && this->GetCurrentNode() != NULL )
+  if ( this->LORNode->GetCollectionState().compare( "Plane" ) )
   {
     d->PlaneButton->setChecked( true );
   }

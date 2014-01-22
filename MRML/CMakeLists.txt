@@ -5,7 +5,8 @@ set(KIT ${PROJECT_NAME})
 set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_MODULE_MRML_EXPORT")
 
 set(${KIT}_INCLUDE_DIRECTORIES
-  ${Slicer_Base_INCLUDE_DIRS}
+  ${vtkSlicer${MODULE_NAME}ModuleUtilities_SOURCE_DIR}
+  ${vtkSlicer${MODULE_NAME}ModuleUtilities_BINARY_DIR}
   )
 
 # --------------------------------------------------------------------------
@@ -14,8 +15,6 @@ set(${KIT}_INCLUDE_DIRECTORIES
 set(${KIT}_SRCS
   vtkMRMLLinearObjectRegistrationNode.cxx
   vtkMRMLLinearObjectRegistrationNode.h
-  vtkMRMLLORVectorMath.cxx
-  vtkMRMLLORVectorMath.h
   vtkMRMLLORReferenceNode.cxx
   vtkMRMLLORReferenceNode.h
   vtkMRMLLORPositionBufferNode.cxx
@@ -42,6 +41,7 @@ SET (${KIT}_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "" FORCE)
 # Build the library
 
 set(${KIT}_TARGET_LIBRARIES
+  vtkSlicer${MODULE_NAME}ModuleUtilities
   ${ITK_LIBRARIES}
   ${MRML_LIBRARIES}
   SlicerBaseLogic
