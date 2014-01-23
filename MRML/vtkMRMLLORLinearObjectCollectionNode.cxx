@@ -353,7 +353,7 @@ std::vector<double> vtkMRMLLORLinearObjectCollectionNode
 
   if ( this->Size() == 0 )
   {
-    throw std::logic_error("Failed - centroid calculation is ill-conditioned!");
+    throw std::logic_error("Centroid calculation is ill-conditioned!");
   }
 
   // Assume each will take 3 rows. If it doesn't leaving them blank won't affect the result

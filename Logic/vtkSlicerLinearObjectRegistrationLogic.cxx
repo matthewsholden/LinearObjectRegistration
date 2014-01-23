@@ -22,7 +22,6 @@ vtkStandardNewMacro( vtkSlicerLinearObjectRegistrationLogic );
 vtkSlicerLinearObjectRegistrationLogic
 ::vtkSlicerLinearObjectRegistrationLogic()
 { 
-  this->OutputMessage = "";
 }
 
 
@@ -119,16 +118,16 @@ vtkSlicerLinearObjectRegistrationLogic
 // Linear Object Registration ----------------------------------------------------
 
 std::string vtkSlicerLinearObjectRegistrationLogic
-::GetOutputMessage()
+::GetOutputMessage( std::string nodeID )
 {
-  return this->OutputMessage;
+  return this->OutputMessages[ nodeID ];
 }
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::SetOutputMessage( std::string newOutputMessage )
+::SetOutputMessage( std::string nodeID, std::string newOutputMessage )
 {
-  this->OutputMessage = newOutputMessage;
+  this->OutputMessages[ nodeID ] = newOutputMessage;
   this->Modified();
 }
 
@@ -466,7 +465,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   vtkMRMLLinearObjectRegistrationNode* linearObjectRegistrationNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( node );
   if ( linearObjectRegistrationNode == NULL )
   {
-    this->SetOutputMessage( "Failed to find module node." );
+    this->SetOutputMessage( linearObjectRegistrationNode->GetID(), "Failed to find module node." ); // This should never happen
     return;
   }
 
@@ -487,7 +486,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   if ( fromCollection == NULL || toCollection == NULL )
   {
     linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
-    this->SetOutputMessage( "One or more linear object collections not defined." );
+    this->SetOutputMessage( linearObjectRegistrationNode->GetID(), "One or more linear object collections not defined." );
     return;
   }
 
@@ -504,7 +503,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   if ( outputTransform == NULL )
   {
     linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
-    this->SetOutputMessage( "Output transform is not defined." );
+    this->SetOutputMessage( linearObjectRegistrationNode->GetID(), "Output transform is not defined." );
     return;
   }
   
@@ -526,7 +525,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   if ( fromReferenceCollection->Size() == 0 || toReferenceCollection->Size() == 0 || fromReferenceCollection->Size() != toReferenceCollection->Size() )
   {
     linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
-    this->SetOutputMessage( "Failed: Could not find appropriate references." );
+    this->SetOutputMessage( linearObjectRegistrationNode->GetID(), "Could not find appropriate references." );
     return;
   }
 
@@ -552,7 +551,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   catch( std::logic_error e )
   {
     linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
-    this->SetOutputMessage( e.what() );
+    this->SetOutputMessage( linearObjectRegistrationNode->GetID(), e.what() );
 	return;
   }
 
@@ -718,7 +717,7 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
   // Finally, calculate the registration
-  vtkSmartPointer< vtkMatrix4x4 > FromToToTransform = NULL;
+  vtkSmartPointer< vtkMatrix4x4 > FromToToTransform = vtkSmartPointer< vtkMatrix4x4 >::New();
   vtkSmartPointer< vtkMatrix4x4 > FromToToRotation = NULL;
   std::vector<double> FromToToTranslation;
 
@@ -730,7 +729,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   catch( std::logic_error e )
   {
     linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
-    this->OutputMessage = e.what();
+    this->SetOutputMessage( linearObjectRegistrationNode->GetID(), e.what() );
 	return;
   }
 
@@ -745,7 +744,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   toICPTACollection->Concatenate( toLineCollection );
   toICPTACollection->Concatenate( toPointCollection );
 
-  FromToToTransform = this->LinearObjectICPTA( fromICPTACollection, toICPTACollection, FromToToRotation );
+  double rmsError = this->LinearObjectICPTA( fromICPTACollection, toICPTACollection, FromToToRotation, FromToToTransform );
   this->MatrixRotationPart( FromToToTransform, FromToToRotation );
   FromToToTranslation = this->MatrixTranslationPart( FromToToTransform );
   FromToToTranslation = this->TranslationalRegistration( fromCentroid, vtkMRMLLORVectorMath::Add( toCentroid, FromToToTranslation ), FromToToRotation ); 
@@ -753,7 +752,9 @@ void vtkSlicerLinearObjectRegistrationLogic
 
   this->UpdateOutputTransform( outputTransform, FromToToTransform );
 
-  // No need to update output message here - it is already taken care of in the ICPTA method
+  std::stringstream successMessage;
+  successMessage << "Success! RMS Error: " << rmsError;
+  this->SetOutputMessage( linearObjectRegistrationNode->GetID(), successMessage.str() );
 }
 
 
@@ -787,7 +788,7 @@ vtkSmartPointer< vtkMatrix4x4 > vtkSlicerLinearObjectRegistrationLogic
 
   if ( fromPoints->Size() != toPoints->Size() )
   {
-    throw std::logic_error( "Failed - inconsistent number of points!" );
+    throw std::logic_error( "Inconsistent number of points!" ); // This should never happen
   }
 
   // Pick two dimensions, and find their data matrix entry
@@ -1039,8 +1040,8 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 
-vtkSmartPointer< vtkMatrix4x4 > vtkSlicerLinearObjectRegistrationLogic
-::LinearObjectICPTA( vtkMRMLLORLinearObjectCollectionNode* fromLinearObjects, vtkMRMLLORLinearObjectCollectionNode* toLinearObjects, vtkMatrix4x4* initialRotation )
+double vtkSlicerLinearObjectRegistrationLogic
+::LinearObjectICPTA( vtkMRMLLORLinearObjectCollectionNode* fromLinearObjects, vtkMRMLLORLinearObjectCollectionNode* toLinearObjects, vtkMatrix4x4* initialRotation, vtkMatrix4x4* calculatedMatrix )
 {
 
   const double CONVERGENCE_THRESHOLD = 1e-3;
@@ -1084,11 +1085,9 @@ vtkSmartPointer< vtkMatrix4x4 > vtkSlicerLinearObjectRegistrationLogic
 
   }
 
-  std::stringstream successMessage;
-  successMessage << "Success! RMS Error: " << currError;
-  this->SetOutputMessage( successMessage.str() );
+  calculatedMatrix->DeepCopy( estimatedMatrix );
 
-  return estimatedMatrix;
+  return currError;
 }
 
 

@@ -107,15 +107,15 @@ public:
   std::vector<double> MatrixTranslationPart( vtkMatrix4x4* matrix );
   void RotationTranslationToMatrix( vtkMatrix4x4* rotation, std::vector<double> translation, vtkMatrix4x4* matrix );
 
-  vtkSmartPointer< vtkMatrix4x4 > LinearObjectICPTA( vtkMRMLLORLinearObjectCollectionNode* fromLinearObjects, vtkMRMLLORLinearObjectCollectionNode* toLinearObjects, vtkMatrix4x4* initialRotation );
+  double LinearObjectICPTA( vtkMRMLLORLinearObjectCollectionNode* fromLinearObjects, vtkMRMLLORLinearObjectCollectionNode* toLinearObjects, vtkMatrix4x4* initialRotation, vtkMatrix4x4* calculatedMatrix );
 
   vtkSmartPointer< vtkMatrix4x4 > CombineRotationAndTranslation( vtkMatrix4x4* rotation, std::vector<double> translation );
 
   void FindClosestPositions( vtkMRMLLORLinearObjectCollectionNode* fromLinearObjects, vtkMRMLLORLinearObjectCollectionNode* toLinearObjects, vtkMatrix4x4* currentFromToToTransform,
                     vtkMRMLLORPositionBufferNode* fromPositions, vtkMRMLLORPositionBufferNode* toPositions );
 
-  std::string GetOutputMessage();
-  void SetOutputMessage( std::string newOutputMessage );
+  std::string GetOutputMessage( std::string nodeID );
+  void SetOutputMessage( std::string nodeID, std::string newOutputMessage );
 
   vtkSmartPointer< vtkMRMLLORLinearObjectNode > PositionBufferToLinearObject( vtkMRMLLORPositionBufferNode* positionBuffer, int dof = -1 );
 
@@ -134,7 +134,7 @@ public:
 
 private:
 
-  std::string OutputMessage;
+  std::map< std::string, std::string > OutputMessages;
 };
 
 #endif

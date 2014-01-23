@@ -380,7 +380,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   std::stringstream statusString;
   statusString << "Status: ";
-  statusString << d->logic()->GetOutputMessage();
+  statusString << d->logic()->GetOutputMessage( linearObjectRegistrationNode->GetID() );
   d->StatusLabel->setText( QString::fromStdString( statusString.str() ) ); // Also update the results
 }
 
