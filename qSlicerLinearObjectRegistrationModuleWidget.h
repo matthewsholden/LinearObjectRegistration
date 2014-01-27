@@ -24,8 +24,8 @@ public:
 
 public slots:
 
-  void OnFromMatchRequested( int matchIndex );
-  void OnToMatchRequested( int matchIndex );
+  void UpdateMatchCandidates();
+  void OnMatchButtonClicked();
 
   void UpdateToMRMLNode();
   void UpdateFromMRMLNode();
@@ -41,9 +41,6 @@ private:
   
   void ConnectWidgets();
   void DisconnectWidgets();
-
-  int FromMatchState;
-  int ToMatchState;
   
 };
 

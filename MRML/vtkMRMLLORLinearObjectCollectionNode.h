@@ -65,6 +65,8 @@ public:
   int Size();
   vtkMRMLLORLinearObjectNode* GetLinearObject( int index );
   vtkMRMLLORLinearObjectNode* GetLinearObject( std::string name );
+  int GetLinearObjectPosition( vtkMRMLLORLinearObjectNode* node );
+
   void AddLinearObject( vtkMRMLLORLinearObjectNode* newObject );
   void Concatenate( vtkMRMLLORLinearObjectCollectionNode* catBuffer );
   void SetLinearObject( int index, vtkMRMLLORLinearObjectNode* newObject );

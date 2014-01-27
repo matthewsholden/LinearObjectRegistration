@@ -21,6 +21,13 @@
 
 
 
+int LINEAROBJECT_VISIBILITY_COLUMN = 0;
+int LINEAROBJECT_NAME_COLUMN = 1;
+int LINEAROBJECT_TYPE_COLUMN = 2;
+int LINEAROBJECT_BUFFER_COLUMN = 3;
+int LINEAROBJECT_COLUMNS = 4;
+
+
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class qSlicerLinearObjectRegistrationModuleWidgetPrivate: public Ui_qSlicerLinearObjectRegistrationModule
@@ -88,41 +95,82 @@ qSlicerLinearObjectRegistrationModuleWidget::~qSlicerLinearObjectRegistrationMod
 
 
 void qSlicerLinearObjectRegistrationModuleWidget
-::OnFromMatchRequested( int matchIndex )
+::OnMatchButtonClicked()
 {
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );
 
-  this->FromMatchState = matchIndex;
+  // Find the positions and swap
+  vtkMRMLLORLinearObjectCollectionNode* fromCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->FromCollectionWidget->GetCurrentNode() );
+  vtkMRMLLORLinearObjectCollectionNode* toCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->ToCollectionWidget->GetCurrentNode() );
 
-  if ( this->ToMatchState >= 0 )
+  int fromPosition = fromCollection->GetLinearObjectPosition( d->FromCollectionWidget->GetCurrentLinearObject() );
+  int toPosition = toCollection->GetLinearObjectPosition( d->ToCollectionWidget->GetCurrentLinearObject() );
+
+  if ( fromPosition >= 0 && toPosition >= 0 )
   {
-    // Node in scene - no smart pointer
-    vtkMRMLLORLinearObjectCollectionNode* currentCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->ToCollectionWidget->GetCurrentNode() );
-    currentCollection->Swap( this->ToMatchState, this->FromMatchState );
-
-    this->ToMatchState = -1;
-    this->FromMatchState = -1;
+    toCollection->Swap( toPosition, fromPosition );
   }
-
 }
 
 
 void qSlicerLinearObjectRegistrationModuleWidget
-::OnToMatchRequested( int matchIndex )
+::UpdateMatchCandidates()
 {
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );
 
-  this->ToMatchState = matchIndex;
+  vtkMRMLLORLinearObjectNode* fromLinearObject = d->FromCollectionWidget->GetCurrentLinearObject();
+  vtkMRMLLORLinearObjectNode* toLinearObject = d->ToCollectionWidget->GetCurrentLinearObject();
 
-  if ( this->FromMatchState >= 0 )
-  {
-    // Node in scene - no smart pointer
-    vtkMRMLLORLinearObjectCollectionNode* currentCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->FromCollectionWidget->GetCurrentNode() );
-    currentCollection->Swap( this->FromMatchState, this->ToMatchState );
-
-    this->FromMatchState = -1;
-    this->ToMatchState = -1;
+  QTableWidgetItem* fromFrameItem = new QTableWidgetItem();
+  QTableWidgetItem* fromNameItem = new QTableWidgetItem();
+  QTableWidgetItem* fromTypeItem = new QTableWidgetItem();
+  QTableWidgetItem* fromBufferItem = new QTableWidgetItem();
+  if ( fromLinearObject != NULL )
+  { 
+    fromFrameItem = new QTableWidgetItem( QString::fromStdString( "From:" ) );
+    fromNameItem = new QTableWidgetItem( QString::fromStdString( fromLinearObject->GetName() ) );
+    fromTypeItem = new QTableWidgetItem( QString::fromStdString( fromLinearObject->GetType() ) );
+    fromBufferItem = new QTableWidgetItem( QString::fromStdString( fromLinearObject->GetPositionBufferString() ) );
   }
+
+  d->FromMatchTable->setColumnCount( LINEAROBJECT_COLUMNS );
+  d->FromMatchTable->setRowCount( 1 );
+
+  d->FromMatchTable->setItem( 0, LINEAROBJECT_VISIBILITY_COLUMN, fromFrameItem );
+  d->FromMatchTable->setItem( 0, LINEAROBJECT_NAME_COLUMN, fromNameItem );
+  d->FromMatchTable->setItem( 0, LINEAROBJECT_TYPE_COLUMN, fromTypeItem );
+  d->FromMatchTable->setItem( 0, LINEAROBJECT_BUFFER_COLUMN, fromBufferItem );
+
+  d->FromMatchTable->horizontalHeader()->setResizeMode( QHeaderView::Stretch );
+  d->FromMatchTable->horizontalHeader()->hide();
+  d->FromMatchTable->resizeRowsToContents();
+  d->FromMatchTable->setMaximumHeight( d->FromMatchTable->verticalHeader()->sectionSize( 0 ) );
+
+
+  QTableWidgetItem* toFrameItem = new QTableWidgetItem();
+  QTableWidgetItem* toNameItem = new QTableWidgetItem();
+  QTableWidgetItem* toTypeItem = new QTableWidgetItem();
+  QTableWidgetItem* toBufferItem = new QTableWidgetItem();
+  if ( toLinearObject != NULL )
+  {
+    toFrameItem = new QTableWidgetItem( QString::fromStdString( "To:" ) );
+    toNameItem = new QTableWidgetItem( QString::fromStdString( toLinearObject->GetName() ) );
+    toTypeItem = new QTableWidgetItem( QString::fromStdString( toLinearObject->GetType() ) );
+    toBufferItem = new QTableWidgetItem( QString::fromStdString( toLinearObject->GetPositionBufferString() ) );
+  }
+
+  d->ToMatchTable->setRowCount( 1 );
+  d->ToMatchTable->setColumnCount( LINEAROBJECT_COLUMNS );
+
+  d->ToMatchTable->setItem( 0, LINEAROBJECT_VISIBILITY_COLUMN, toFrameItem );
+  d->ToMatchTable->setItem( 0, LINEAROBJECT_NAME_COLUMN, toNameItem );
+  d->ToMatchTable->setItem( 0, LINEAROBJECT_TYPE_COLUMN, toTypeItem );
+  d->ToMatchTable->setItem( 0, LINEAROBJECT_BUFFER_COLUMN, toBufferItem );
+
+  d->ToMatchTable->horizontalHeader()->setResizeMode( QHeaderView::Stretch );
+  d->ToMatchTable->horizontalHeader()->hide();
+  d->ToMatchTable->resizeRowsToContents();
+  d->ToMatchTable->setMaximumHeight( d->ToMatchTable->verticalHeader()->sectionSize( 0 ) );
 
 }
 
@@ -153,9 +201,6 @@ qSlicerLinearObjectRegistrationModuleWidget
   d->AutomaticWidget = qSlicerLORAutomaticWidget::New();
   d->CollectionGroupBox->layout()->addWidget( d->AutomaticWidget );
 
-  this->FromMatchState = -1;
-  this->ToMatchState = -1;
-
   // If the mrml node changes, update from the mrml node 
   connect( d->ModuleNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateFromMRMLNode() ) );
   // Otherwise, we will update from the logic
@@ -165,8 +210,12 @@ qSlicerLinearObjectRegistrationModuleWidget
   this->ConnectWidgets();  
 
   // Various other connections
-  connect( d->FromCollectionWidget, SIGNAL( matchRequested( int ) ), this, SLOT( OnFromMatchRequested( int ) ) );
-  connect( d->ToCollectionWidget, SIGNAL( matchRequested( int ) ), this, SLOT( OnToMatchRequested( int ) ) );
+  connect( d->MatchButton, SIGNAL( clicked() ), this, SLOT( OnMatchButtonClicked() ) );
+
+  connect( d->FromCollectionWidget, SIGNAL( linearObjectSelected() ), this, SLOT( UpdateMatchCandidates() ) );
+  connect( d->ToCollectionWidget, SIGNAL( linearObjectSelected() ), this, SLOT( UpdateMatchCandidates() ) );
+
+  this->UpdateMatchCandidates();
 }
 
 

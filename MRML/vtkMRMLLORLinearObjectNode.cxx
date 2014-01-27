@@ -120,6 +120,21 @@ void vtkMRMLLORLinearObjectNode
 }
 
 
+std::string vtkMRMLLORLinearObjectNode
+::GetPositionBufferString()
+{
+  if ( this->GetPositionBuffer() == NULL )
+  {
+    return "None";
+  }
+
+  std::stringstream positionBufferString;
+  positionBufferString << this->GetPositionBuffer()->Size();
+  positionBufferString << " Positions";
+  return positionBufferString.str();
+}
+
+
 std::vector<double> vtkMRMLLORLinearObjectNode
 ::GetSignature()
 {

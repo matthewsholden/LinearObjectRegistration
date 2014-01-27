@@ -54,6 +54,7 @@ public:
   void SetName( std::string newName );
   std::string GetType();
   void SetType( std::string newType );
+  std::string GetPositionBufferString();
   std::vector<double> GetSignature();
   void SetSignature( std::vector<double> newSignature );
   std::vector<double> GetBasePoint();

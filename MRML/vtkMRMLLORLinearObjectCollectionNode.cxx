@@ -152,6 +152,21 @@ vtkMRMLLORLinearObjectNode* vtkMRMLLORLinearObjectCollectionNode
 }
 
 
+int vtkMRMLLORLinearObjectCollectionNode
+::GetLinearObjectPosition( vtkMRMLLORLinearObjectNode* node )
+{
+  for ( int i = 0; i < this->Size(); i++ )
+  {
+    if ( node == this->GetLinearObject( i ) )  // Indeed, do pointer comparison - test if they are the same object
+	{
+      return i;
+	}
+  }
+
+  return -1;
+}
+
+
 void vtkMRMLLORLinearObjectCollectionNode
 ::AddLinearObject( vtkMRMLLORLinearObjectNode* newObject )
 {

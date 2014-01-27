@@ -24,11 +24,11 @@
 #include <QtGui>
 
 
-int LINEAROBJECT_NAME_COLUMN = 0;
-int LINEAROBJECT_TYPE_COLUMN = 1;
-int LINEAROBJECT_BUFFER_COLUMN = 2;
-int LINEAROBJECT_COLUMNS = 3;
-
+int LINEAROBJECT_VISIBILITY_COLUMN = 0;
+int LINEAROBJECT_NAME_COLUMN = 1;
+int LINEAROBJECT_TYPE_COLUMN = 2;
+int LINEAROBJECT_BUFFER_COLUMN = 3;
+int LINEAROBJECT_COLUMNS = 4;
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_CreateModels
@@ -100,12 +100,18 @@ void qSlicerLinearObjectCollectionWidget
 
   connect( d->LinearObjectCollectionNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onCollectionNodeChanged() ) );
   
-  // Use the pressed signal (otherwise we can unpress buttons without clicking them)
+  // Use the toggled singal since it is checkable
   connect( d->ActiveButton, SIGNAL( toggled( bool ) ), this, SLOT( SetCurrentActive() ) );
 
+  // Options buttons
+  d->VisibilityButton->setIcon( QIcon( ":/Icons/Small/SlicerVisible.png" ) );
+  connect( d->VisibilityButton, SIGNAL( clicked() ), this, SLOT( onVisibilityButtonClicked() ) );
+
+  // Table connections
   d->CollectionTableWidget->setContextMenuPolicy( Qt::CustomContextMenu );
   connect( d->CollectionTableWidget, SIGNAL( customContextMenuRequested(const QPoint&) ), this, SLOT( onCollectionTableContextMenu(const QPoint&) ) );
   connect( d->CollectionTableWidget, SIGNAL( cellChanged( int, int ) ), this, SLOT( onLinearObjectEdited( int, int ) ) );
+  connect( d->CollectionTableWidget, SIGNAL( cellClicked( int, int ) ), this, SLOT( onCollectionTableClicked( int, int ) ) );
 
   // Connect to the markups mrml events
   this->qvtkConnect( this->GetCurrentNode(), vtkCommand::ModifiedEvent, this, SLOT( onCollectionNodeModified() ) );
@@ -154,6 +160,21 @@ void qSlicerLinearObjectCollectionWidget
 }
 
 
+vtkMRMLLORLinearObjectNode* qSlicerLinearObjectCollectionWidget
+::GetCurrentLinearObject()
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  if ( currentCollectionNode == NULL )
+  {
+    return NULL;
+  }
+
+  return currentCollectionNode->GetLinearObject( d->CollectionTableWidget->currentRow() );
+}
+
+
 void qSlicerLinearObjectCollectionWidget
 ::onCollectionNodeChanged()
 {
@@ -178,6 +199,32 @@ void qSlicerLinearObjectCollectionWidget
   this->updateWidget();
 }
 
+
+void qSlicerLinearObjectCollectionWidget
+::onVisibilityButtonClicked()
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  if ( currentCollectionNode == NULL )
+  {
+    this->updateWidget(); // Have to update the widget anyway
+    return;
+  }
+
+  bool allVisible = true;
+
+  // TODO: This should be changed to do all on and all off, rather than toggle
+  for ( int i = 0; i < currentCollectionNode->Size(); i++ )
+  {
+    if ( currentCollectionNode->GetLinearObject( i ) != NULL )
+    {
+      this->LORLogic->ToggleLinearObjectModelVisibility( currentCollectionNode->GetLinearObject( i ) );
+    }
+  }
+
+  this->updateWidget();
+}
 
 void qSlicerLinearObjectCollectionWidget
 ::SetCurrentActive()
@@ -213,23 +260,16 @@ void qSlicerLinearObjectCollectionWidget
   QPoint globalPosition = d->CollectionTableWidget->viewport()->mapToGlobal( position );
 
   QMenu* collectionMenu = new QMenu( d->CollectionTableWidget );
-  QAction* activateAction = new QAction( "Make collection active", collectionMenu );
-  QAction* deleteAction = new QAction( "Delete current linear object", collectionMenu );
-  QAction* upAction = new QAction( "Move current linear object up", collectionMenu );
-  QAction* downAction = new QAction( "Move current linear object down", collectionMenu );
-  QAction* shuffleAction = new QAction( "Remove blank linear objects", collectionMenu );
-  QAction* convertAction = new QAction( "Convert to reference", collectionMenu );
-  QAction* modelAction = new QAction( "Show/hide model", collectionMenu ); 
-  QAction* matchAction = new QAction( "Match...", collectionMenu );
+  QAction* deleteAction = new QAction( "Delete linear object", collectionMenu );
+  deleteAction->setIcon( QIcon( ":/Icons/LinearObjectDelete.png" ) );
+  QAction* upAction = new QAction( "Move linear object up", collectionMenu );
+  upAction->setIcon( QIcon( ":/Icons/LinearObjectUp.png" ) );
+  QAction* downAction = new QAction( "Move linear object down", collectionMenu );
+  downAction->setIcon( QIcon( ":/Icons/LinearObjectDown.png" ) );
 
-  collectionMenu->addAction( activateAction );
   collectionMenu->addAction( deleteAction );
   collectionMenu->addAction( upAction );
   collectionMenu->addAction( downAction );
-  collectionMenu->addAction( shuffleAction );  
-  collectionMenu->addAction( convertAction );
-  collectionMenu->addAction( modelAction );
-  collectionMenu->addAction( matchAction );
 
   QAction* selectedAction = collectionMenu->exec( globalPosition );
 
@@ -242,11 +282,6 @@ void qSlicerLinearObjectCollectionWidget
   }
 
   // Only do this for non-null node
-  if ( selectedAction == activateAction )
-  {
-    this->SetCurrentActive();
-  }
-
   if ( selectedAction == deleteAction )
   {
     currentCollection->RemoveLinearObject( currentIndex );
@@ -267,34 +302,6 @@ void qSlicerLinearObjectCollectionWidget
       currentCollection->Swap( currentIndex, currentIndex + 1 );
     }
   }
-
-  if ( selectedAction == shuffleAction )
-  {
-    currentCollection->ShuffleOutNull();
-  }
-
-  if ( selectedAction == convertAction )
-  {
-    vtkMRMLLORLinearObjectNode* currentNode = currentCollection->GetLinearObject( currentIndex );
-    if ( currentNode != NULL && currentNode->GetType().compare( "Point" ) == 0 )
-    {
-      vtkSmartPointer< vtkMRMLLORReferenceNode > referenceNode = vtkSmartPointer< vtkMRMLLORReferenceNode >::New();
-      referenceNode->SetBasePoint( currentNode->GetBasePoint() );
-      referenceNode->SetPositionBuffer( currentNode->GetPositionBuffer() );
-      currentCollection->SetLinearObject( currentIndex, referenceNode );
-    }
-  }
-
-  if ( selectedAction == modelAction )
-  {
-    this->LORLogic->ToggleLinearObjectModelVisibility( currentCollection->GetLinearObject( currentIndex ) );
-  }
-
-  if ( selectedAction == matchAction )
-  {
-    emit matchRequested( currentIndex );
-  }
-
   
   this->updateWidget();
 }
@@ -323,48 +330,93 @@ void qSlicerLinearObjectCollectionWidget
     currentLinearObject->SetName( qText.toStdString() );
   }
 
-  // Also allow changing the type here
-  if ( column == LINEAROBJECT_TYPE_COLUMN )
-  {
-    if ( currentLinearObject->GetPositionBuffer() == NULL )
-    {
-      this->updateWidget();
-      return;
-    }
-
-    // Otherwise, we can do any sort of change we want
-    vtkSmartPointer< vtkMRMLLORLinearObjectNode > newLinearObject = NULL;
-    if ( qText.toStdString().compare( "Reference" ) == 0 )
-    {
-      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkMRMLLORConstants::REFERENCE_DOF );
-    }
-    if ( qText.toStdString().compare( "Point" ) == 0 )
-    {
-      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkMRMLLORConstants::POINT_DOF );
-    }
-    if ( qText.toStdString().compare( "Line" ) == 0 )
-    {
-      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkMRMLLORConstants::LINE_DOF );
-    }
-    if ( qText.toStdString().compare( "Plane" ) == 0 )
-    {
-      newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), vtkMRMLLORConstants::PLANE_DOF );
-    }
-
-    if ( newLinearObject == NULL )
-    {
-      this->updateWidget();
-      return;
-    }
-
-    newLinearObject->SetName( currentLinearObject->GetName() );
-    newLinearObject->SetPositionBuffer( currentLinearObject->GetPositionBuffer() );
-    currentCollection->SetLinearObject( row, newLinearObject );
-  }
-
   this->updateWidget(); // This may not be necessary the widget is updated whenever a fiducial is changed
 }
 
+
+void qSlicerLinearObjectCollectionWidget
+::onCollectionTableClicked( int row, int col )
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  vtkMRMLLORLinearObjectCollectionNode* currentCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  vtkMRMLLORLinearObjectNode* currentLinearObject = currentCollection->GetLinearObject( row );
+  if ( currentCollection == NULL || currentLinearObject == NULL )
+  {
+    return;
+  }
+
+  if ( col == LINEAROBJECT_VISIBILITY_COLUMN )
+  {
+    this->LORLogic->ToggleLinearObjectModelVisibility( currentLinearObject );
+    this->updateWidget();
+  }
+
+  if ( col == LINEAROBJECT_TYPE_COLUMN )
+  {
+    QComboBox* typeComboBox = new QComboBox();
+    typeComboBox->addItem( QString::fromStdString( "Reference" ) );
+    typeComboBox->addItem( QString::fromStdString( "Point" ) );
+    typeComboBox->addItem( QString::fromStdString( "Line" ) );
+    typeComboBox->addItem( QString::fromStdString( "Plane" ) );
+
+    typeComboBox->setCurrentIndex( vtkMRMLLORConstants::STRING_TO_INDEX( currentLinearObject->GetType() ) );
+
+    connect( typeComboBox, SIGNAL( currentIndexChanged( int ) ), this, SLOT( onTypeSelected( int ) ) );
+
+    // Update the widget and then add the combobox
+    this->updateWidget();
+    d->CollectionTableWidget->setCellWidget( row, col, typeComboBox );
+    d->CollectionTableWidget->setCurrentCell( row, col );
+  }
+
+  if ( col == LINEAROBJECT_BUFFER_COLUMN )
+  {
+    this->updateWidget();
+  }
+
+  emit linearObjectSelected();
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::onTypeSelected( int typeIndex )
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  if ( currentCollectionNode == NULL )
+  {
+    this->updateWidget(); // Have to update the widget anyway
+    return;
+  }
+
+  vtkMRMLLORLinearObjectNode* currentLinearObject = currentCollectionNode->GetLinearObject( d->CollectionTableWidget->currentRow() );
+
+  vtkSmartPointer< vtkMRMLLORLinearObjectNode > newLinearObject = NULL;
+  if ( currentLinearObject->GetPositionBuffer() != NULL )
+  {
+    int dof = vtkMRMLLORConstants::STRING_TO_DOF( vtkMRMLLORConstants::INDEX_TO_STRING( typeIndex ) );
+    newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), dof );
+  }
+  else if ( currentLinearObject->GetType().compare( "Point" ) == 0 && typeIndex == 0 )
+  {
+    newLinearObject = vtkSmartPointer< vtkMRMLLORReferenceNode >::New();
+    newLinearObject->SetBasePoint( currentLinearObject->GetBasePoint() );
+  }
+
+  if ( newLinearObject == NULL )
+  {
+    this->updateWidget();
+    return;
+  }
+
+  newLinearObject->SetName( currentLinearObject->GetName() );
+  newLinearObject->SetPositionBuffer( currentLinearObject->GetPositionBuffer() );
+  currentCollectionNode->SetLinearObject( d->CollectionTableWidget->currentRow(), newLinearObject );
+
+  this->updateWidget();
+}
 
 
 void qSlicerLinearObjectCollectionWidget
@@ -401,7 +453,7 @@ void qSlicerLinearObjectCollectionWidget
  
   d->CollectionTableWidget->clear();
   QStringList CollectionTableHeaders;
-  CollectionTableHeaders << "Name" << "Type" << "Buffer";
+  CollectionTableHeaders << "Visibility" << "Name" << "Type" << "Buffer";
   d->CollectionTableWidget->setRowCount( currentCollectionNode->Size() );
   d->CollectionTableWidget->setColumnCount( LINEAROBJECT_COLUMNS );
   d->CollectionTableWidget->setHorizontalHeaderLabels( CollectionTableHeaders );
@@ -414,21 +466,13 @@ void qSlicerLinearObjectCollectionWidget
       continue;
     }
 
+    QTableWidgetItem* visItem = new QTableWidgetItem( QString( "" ) );
+    visItem->setIcon( QIcon( ":/Icons/Small/SlicerVisible.png" ) );
     QTableWidgetItem* nameItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetName() ) );
     QTableWidgetItem* typeItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetType() ) );
+    QTableWidgetItem* bufferItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetPositionBufferString() ) );
 
-    std::stringstream bufferString;
-    if ( currentCollectionNode->GetLinearObject( i )->GetPositionBuffer() == NULL )
-    {
-      bufferString << "None";
-    }
-    else
-    {
-      bufferString << currentCollectionNode->GetLinearObject( i )->GetPositionBuffer()->Size() << " Positions";
-    }
-    QTableWidgetItem* bufferItem = new QTableWidgetItem( QString::fromStdString( bufferString.str() ) );
-
-
+    d->CollectionTableWidget->setItem( i, LINEAROBJECT_VISIBILITY_COLUMN, visItem );
     d->CollectionTableWidget->setItem( i, LINEAROBJECT_NAME_COLUMN, nameItem );
     d->CollectionTableWidget->setItem( i, LINEAROBJECT_TYPE_COLUMN, typeItem );
     d->CollectionTableWidget->setItem( i, LINEAROBJECT_BUFFER_COLUMN, bufferItem );

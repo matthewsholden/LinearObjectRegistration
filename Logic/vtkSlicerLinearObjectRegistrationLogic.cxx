@@ -280,7 +280,7 @@ void vtkSlicerLinearObjectRegistrationLogic
         continue;
       }
 
-      if ( currentObject0->GetSignature().size() != currentObject1->GetSignature().size() )
+      if ( currentObject0->GetSignature().size() != currentObject1->GetSignature().size() || currentObject0->GetType().compare( currentObject1->GetType() ) != 0 )
       {
         continue;
       }
@@ -752,6 +752,7 @@ void vtkSlicerLinearObjectRegistrationLogic
 
   this->UpdateOutputTransform( outputTransform, FromToToTransform );
 
+  linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
   std::stringstream successMessage;
   successMessage << "Success! RMS Error: " << rmsError;
   this->SetOutputMessage( linearObjectRegistrationNode->GetID(), successMessage.str() );

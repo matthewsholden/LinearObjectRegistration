@@ -51,24 +51,27 @@ public:
   vtkMRMLNode* GetCurrentNode();
   void SetCurrentNode( vtkMRMLNode* currentNode );
   void SetNodeBaseName( std::string newNodeBaseName );
+  vtkMRMLLORLinearObjectNode* GetCurrentLinearObject();
 
 protected slots:
 
   void onCollectionNodeChanged(); // User selects a different node using the combo box
 
+  void onVisibilityButtonClicked();
+
   void SetCurrentActive();
 
   void onCollectionTableContextMenu(const QPoint& position);
-
   void onLinearObjectEdited( int row, int column );
+  void onCollectionTableClicked( int row, int col );
+  void onTypeSelected( int );
 
   void updateWidget();
 
 signals:
 
   void collectionNodeChanged();
-
-  void matchRequested( int index );
+  void linearObjectSelected();
 
 protected:
   QScopedPointer<qSlicerLinearObjectCollectionWidgetPrivate> d_ptr;

@@ -1,5 +1,8 @@
 <!DOCTYPE RCC><RCC version="1.0">
   <qresource>
     <file>Icons/LinearObjectRegistration.png</file>
+    <file>Icons/LinearObjectUp.png</file>
+    <file>Icons/LinearObjectDown.png</file>
+    <file>Icons/LinearObjectDelete.png</file>
   </qresource>
 </RCC>
