@@ -19,6 +19,8 @@ set(${KIT}_SRCS
   vtkMRMLLORReferenceNode.h
   vtkMRMLLORPositionBufferNode.cxx
   vtkMRMLLORPositionBufferNode.h
+  vtkMRMLLORRealTimePositionBufferNode.cxx
+  vtkMRMLLORRealTimePositionBufferNode.h
   vtkMRMLLORPositionNode.cxx
   vtkMRMLLORPositionNode.h
   vtkMRMLLORPointNode.cxx

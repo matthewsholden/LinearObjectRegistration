@@ -30,7 +30,7 @@
 #include "vtkObjectBase.h"
 #include "vtkObjectFactory.h"
 
-#include "vtkMRMLLORPositionBufferNode.h"
+#include "vtkMRMLLORRealTimePositionBufferNode.h"
 
 // LinearObjectRegistration includes
 #include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
@@ -110,7 +110,7 @@ private:
   std::string AutomaticMatch;
 
   std::string CollectionState;
-  vtkSmartPointer< vtkMRMLLORPositionBufferNode > ActivePositionBuffer;
+  vtkSmartPointer< vtkMRMLLORRealTimePositionBufferNode > ActivePositionBuffer;
 
 };  
 

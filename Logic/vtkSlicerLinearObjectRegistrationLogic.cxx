@@ -1111,7 +1111,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   if ( lorNode != NULL && event == vtkMRMLLinearObjectRegistrationNode::PositionBufferReady )
   {
     vtkSmartPointer< vtkMRMLLORLinearObjectNode > currentLinearObject = NULL;
-    vtkSmartPointer< vtkMRMLLORPositionBufferNode > positionBufferCopy = lorNode->GetActivePositionBuffer()->DeepCopy();
+    vtkSmartPointer< vtkMRMLLORPositionBufferNode > positionBufferCopy = lorNode->GetActivePositionBuffer()->DeepCopy(); // Note: This produces a non-real-time buffer (which is what we want)
     lorNode->GetActivePositionBuffer()->Clear();
 
     if ( lorNode->GetCollectionState().compare( "Reference" ) == 0 )

@@ -67,7 +67,7 @@ vtkMRMLLinearObjectRegistrationNode
   this->AutomaticMatch = "True";
 
   this->CollectionState = "";
-  this->ActivePositionBuffer = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
+  this->ActivePositionBuffer = vtkSmartPointer< vtkMRMLLORRealTimePositionBufferNode >::New();
 
   this->Modified();
 }
@@ -402,7 +402,7 @@ void vtkMRMLLinearObjectRegistrationNode
   vtkMRMLLORPositionNode* tempPosition = vtkMRMLLORPositionNode::New( transformNode->GetMatrixTransformToParent() );
   vtkSmartPointer< vtkMRMLLORPositionNode > newPosition = vtkSmartPointer< vtkMRMLLORPositionNode >::Take( tempPosition );
 
-  this->ActivePositionBuffer->AddPosition( newPosition );
+  this->GetActivePositionBuffer()->AddPosition( newPosition );
 
   if ( this->CollectionState.compare( "Automatic" ) != 0 )
   {

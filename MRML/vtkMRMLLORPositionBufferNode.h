@@ -45,14 +45,14 @@ public:
   // Standard collection functionality
   int Size();
   vtkMRMLLORPositionNode* GetPosition( int index );
-  void AddPosition( vtkMRMLLORPositionNode* newPosition );
+  virtual void AddPosition( vtkMRMLLORPositionNode* newPosition );
   void Clear();
   void Trim( int trimSize );
 
   void Translate( std::vector<double> translation );
 
-  std::vector<double> CalculateCentroid();
-  vnl_matrix<double>* CovarianceMatrix( std::vector<double> centroid );
+  virtual std::vector<double> CalculateCentroid();
+  virtual vnl_matrix<double>* CovarianceMatrix( std::vector<double> centroid );
   int GetDOF();
 
   std::string ToXMLString();
