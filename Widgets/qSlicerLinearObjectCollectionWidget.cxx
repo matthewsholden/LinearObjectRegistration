@@ -104,7 +104,7 @@ void qSlicerLinearObjectCollectionWidget
   connect( d->ActiveButton, SIGNAL( toggled( bool ) ), this, SLOT( SetCurrentActive() ) );
 
   // Options buttons
-  d->VisibilityButton->setIcon( QIcon( ":/Icons/Small/SlicerVisible.png" ) );
+  d->VisibilityButton->setIcon( QIcon( ":/Icons/Small/SlicerInvisible.png" ) );
   connect( d->VisibilityButton, SIGNAL( clicked() ), this, SLOT( onVisibilityButtonClicked() ) );
 
   // Table connections
@@ -215,12 +215,13 @@ void qSlicerLinearObjectCollectionWidget
   bool allVisible = true;
 
   // TODO: This should be changed to do all on and all off, rather than toggle
-  for ( int i = 0; i < currentCollectionNode->Size(); i++ )
+  if ( this->LORLogic->GetLinearObjectCollectionModelVisibility( currentCollectionNode ) )
   {
-    if ( currentCollectionNode->GetLinearObject( i ) != NULL )
-    {
-      this->LORLogic->ToggleLinearObjectModelVisibility( currentCollectionNode->GetLinearObject( i ) );
-    }
+    this->LORLogic->HideLinearObjectCollectionModel( currentCollectionNode );
+  }
+  else
+  {
+    this->LORLogic->ShowLinearObjectCollectionModel( currentCollectionNode );
   }
 
   this->updateWidget();
@@ -348,7 +349,14 @@ void qSlicerLinearObjectCollectionWidget
 
   if ( col == LINEAROBJECT_VISIBILITY_COLUMN )
   {
-    this->LORLogic->ToggleLinearObjectModelVisibility( currentLinearObject );
+    if ( this->LORLogic->GetLinearObjectModelVisibility( currentLinearObject ) )
+    {
+      this->LORLogic->HideLinearObjectModel( currentLinearObject );
+    }
+    else
+    {
+      this->LORLogic->ShowLinearObjectModel( currentLinearObject );
+    }
     this->updateWidget();
   }
 
@@ -448,6 +456,15 @@ void qSlicerLinearObjectCollectionWidget
 
   d->ActiveButton->blockSignals( false );
 
+  if ( this->LORLogic->GetLinearObjectCollectionModelVisibility( currentCollectionNode ) )
+  {
+    d->VisibilityButton->setIcon( QIcon( ":/Icons/Small/SlicerVisible.png" ) );
+  }
+  else
+  {
+    d->VisibilityButton->setIcon( QIcon( ":/Icons/Small/SlicerInvisible.png" ) );
+  }
+
   // Update the fiducials table
   d->CollectionTableWidget->blockSignals( true );
  
@@ -467,7 +484,14 @@ void qSlicerLinearObjectCollectionWidget
     }
 
     QTableWidgetItem* visItem = new QTableWidgetItem( QString( "" ) );
-    visItem->setIcon( QIcon( ":/Icons/Small/SlicerVisible.png" ) );
+    if ( this->LORLogic->GetLinearObjectModelVisibility( currentCollectionNode->GetLinearObject( i ) ) )
+    {
+      visItem->setIcon( QIcon( ":/Icons/Small/SlicerVisible.png" ) );
+    }
+    else
+    {
+      visItem->setIcon( QIcon( ":/Icons/Small/SlicerInvisible.png" ) );
+    }
     QTableWidgetItem* nameItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetName() ) );
     QTableWidgetItem* typeItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetType() ) );
     QTableWidgetItem* bufferItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetPositionBufferString() ) );

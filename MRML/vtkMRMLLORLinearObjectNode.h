@@ -59,8 +59,8 @@ public:
   void SetSignature( std::vector<double> newSignature );
   std::vector<double> GetBasePoint();
   void SetBasePoint( std::vector<double> newBasePoint );
-  std::string GetModelID();
-  void SetModelID( std::string newModelID );
+  std::string GetModelHierarchyNodeID();
+  void SetModelHierarchyNodeID( std::string newModelHierarchyNodeID );
 
   // Abstract functions that must be implemented in subclasses
   virtual vtkSmartPointer< vtkMRMLLORLinearObjectNode > DeepCopy() = 0;
@@ -77,7 +77,7 @@ protected:
 
   std::string Name;
   std::string Type;
-  std::string ModelID;
+  std::string ModelHierarchyNodeID;
   std::vector<double> Signature;
   std::vector<double> BasePoint;
 

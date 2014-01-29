@@ -21,6 +21,7 @@ vtkMRMLLORLinearObjectCollectionNode* vtkMRMLLORLinearObjectCollectionNode
 vtkMRMLLORLinearObjectCollectionNode
 ::vtkMRMLLORLinearObjectCollectionNode()
 {
+  this->ModelHierarchyNodeID = "";
 }
 
 
@@ -100,6 +101,7 @@ void vtkMRMLLORLinearObjectCollectionNode::Copy( vtkMRMLNode *anode )
       this->AddLinearObject( NULL );
     }
   }
+  this->SetModelHierarchyNodeID( node->GetModelHierarchyNodeID() );
 
   this->Modified();
 }
@@ -431,6 +433,21 @@ std::vector<double> vtkMRMLLORLinearObjectCollectionNode
   centroid.at(2) = Y->get( 2, 0 );
 
   return centroid;
+}
+
+
+std::string vtkMRMLLORLinearObjectCollectionNode
+::GetModelHierarchyNodeID()
+{
+  return this->ModelHierarchyNodeID;
+}
+
+
+void vtkMRMLLORLinearObjectCollectionNode
+::SetModelHierarchyNodeID( std::string newModelHierarchyNodeID )
+{
+  this->ModelHierarchyNodeID = newModelHierarchyNodeID;
+  this->Modified();
 }
 
 

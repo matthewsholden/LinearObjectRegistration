@@ -8,6 +8,7 @@ vtkMRMLLORLinearObjectNode
   this->Name = "Unnamed";
   this->Type = "LinearObject";
   this->PositionBuffer = NULL;
+  this->ModelHierarchyNodeID = "";
 }
 
 
@@ -166,16 +167,16 @@ void vtkMRMLLORLinearObjectNode
 
 
 std::string vtkMRMLLORLinearObjectNode
-::GetModelID()
+::GetModelHierarchyNodeID()
 {
-  return this->ModelID;
+  return this->ModelHierarchyNodeID;
 }
 
 
 void vtkMRMLLORLinearObjectNode
-::SetModelID( std::string newModelID )
+::SetModelHierarchyNodeID( std::string newModelHierarchyNodeID )
 {
-  this->ModelID = newModelID;
+  this->ModelHierarchyNodeID = newModelHierarchyNodeID;
   this->Modified();
 }
 

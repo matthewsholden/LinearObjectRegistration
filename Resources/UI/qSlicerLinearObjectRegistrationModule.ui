@@ -198,7 +198,7 @@
          <string>Match Linear Objects</string>
         </property>
         <property name="collapsed">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_8">
          <item>

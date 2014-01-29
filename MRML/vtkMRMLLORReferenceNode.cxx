@@ -36,6 +36,7 @@ vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORReferenceNode
 
   objectNodeCopy->SetName( this->GetName() );
   objectNodeCopy->SetType( this->GetType() );
+  objectNodeCopy->SetModelHierarchyNodeID( this->GetModelHierarchyNodeID() );
 
   if ( this->GetPositionBuffer() != NULL )
   {

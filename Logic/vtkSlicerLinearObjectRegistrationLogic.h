@@ -36,6 +36,7 @@
 #include "vtkSlicerModuleLogic.h"
 #include "vtkMRMLLinearTransformNode.h"
 #include "vtkMRMLModelNode.h"
+#include "vtkMRMLModelHierarchyNode.h"
 #include "vtkMRMLScene.h"
 #include "vtkMRMLSelectionNode.h"
 #include "vtkMRMLDisplayNode.h"
@@ -126,7 +127,17 @@ public:
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > GetReferences( vtkMRMLLORLinearObjectCollectionNode* collection );
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > GetNonReferences( vtkMRMLLORLinearObjectCollectionNode* collection );
 
-  void ToggleLinearObjectModelVisibility( vtkMRMLLORLinearObjectNode* linearObject );
+  void CreateLinearObjectModelHierarchyNode( vtkMRMLLORLinearObjectNode* linearObject, vtkMRMLLORLinearObjectCollectionNode* collection );
+  void CreateLinearObjectCollectionModelHierarchyNode( vtkMRMLLORLinearObjectCollectionNode* collection );
+  void CreateLinearObjectModelHierarchyNodes( vtkMRMLLORLinearObjectCollectionNode* collection );
+
+  void ShowLinearObjectModel( vtkMRMLLORLinearObjectNode* linearObject );
+  void HideLinearObjectModel( vtkMRMLLORLinearObjectNode* linearObject );
+  bool GetLinearObjectModelVisibility( vtkMRMLLORLinearObjectNode* linearObject );
+
+  void ShowLinearObjectCollectionModel( vtkMRMLLORLinearObjectCollectionNode* collection );
+  void HideLinearObjectCollectionModel( vtkMRMLLORLinearObjectCollectionNode* collection );
+  bool GetLinearObjectCollectionModelVisibility( vtkMRMLLORLinearObjectCollectionNode* collection );
 
   // Only to be called from the register method
   void GetFromAndToCollections( vtkMRMLLORLinearObjectCollectionNode* fromCollection, vtkMRMLLORLinearObjectCollectionNode* fromReferenceCollection, vtkMRMLLORLinearObjectCollectionNode* fromPointCollection, vtkMRMLLORLinearObjectCollectionNode* fromLineCollection, vtkMRMLLORLinearObjectCollectionNode* fromPlaneCollection,

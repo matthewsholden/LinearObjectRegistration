@@ -322,10 +322,12 @@ void vtkSlicerLinearObjectRegistrationLogic
   }
 
   // Now put everything back together
-  collection0->Copy( referenceCollection0 );
+  collection0->Clear();
+  collection0->Concatenate( referenceCollection0 );
   collection0->Concatenate( matchedCollection0 );
 
-  collection1->Copy( referenceCollection1 );
+  collection1->Clear();
+  collection1->Concatenate( referenceCollection1 );
   collection1->Concatenate( matchedCollection1 );
 
   if ( ! removeUnmatched )
@@ -377,42 +379,202 @@ vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkSlicerLinearObjectReg
 }
 
 
-// Show/hide the model associated with a linear object
-void vtkSlicerLinearObjectRegistrationLogic
-::ToggleLinearObjectModelVisibility( vtkMRMLLORLinearObjectNode* linearObject )
-{
-  // First, if the model exists then show it
-  std::string modelID = linearObject->GetModelID().c_str();
-  vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( modelID.c_str() ) );
+// Model display methods
+// -------------------------------------------------------------------------------------------------------
 
-  if ( modelNode != NULL && modelNode->GetDisplayNode() != NULL )
+void vtkSlicerLinearObjectRegistrationLogic
+::CreateLinearObjectModelHierarchyNode( vtkMRMLLORLinearObjectNode* linearObject, vtkMRMLLORLinearObjectCollectionNode* collection )
+{
+  if ( linearObject->GetModelHierarchyNodeID().compare( "" ) != 0 || collection->GetModelHierarchyNodeID().compare( "" ) == 0 )
   {
-    modelNode->GetDisplayNode()->SetVisibility( ! modelNode->GetDisplayNode()->GetVisibility() );
     return;
   }
 
   // Otherwise, create a new model
   vtkPolyData* linearObjectPolyData = linearObject->CreateModelPolyData();
 
-  vtkMRMLModelNode* linearObjectModel = vtkMRMLModelNode::SafeDownCast( this->GetMRMLScene()->CreateNodeByClass( "vtkMRMLModelNode" ) );
+  vtkSmartPointer< vtkMRMLModelNode > linearObjectModel;
+  linearObjectModel.TakeReference( vtkMRMLModelNode::SafeDownCast( this->GetMRMLScene()->CreateNodeByClass( "vtkMRMLModelNode" ) ) );
   linearObjectModel->SetAndObservePolyData( linearObjectPolyData );
   std::string modelName = linearObject->GetName() + "Model";
   linearObjectModel->SetName( modelName.c_str() );
   linearObjectModel->SetScene( this->GetMRMLScene() );
 
-  vtkMRMLModelDisplayNode* linearObjectModelDisplay = vtkMRMLModelDisplayNode::SafeDownCast( this->GetMRMLScene()->CreateNodeByClass( "vtkMRMLModelDisplayNode" ) );
+  vtkSmartPointer< vtkMRMLModelDisplayNode > linearObjectModelDisplay;
+  linearObjectModelDisplay.TakeReference( vtkMRMLModelDisplayNode::SafeDownCast( this->GetMRMLScene()->CreateNodeByClass( "vtkMRMLModelDisplayNode" ) ) );
   linearObjectModelDisplay->SetScene( this->GetMRMLScene() );
   linearObjectModelDisplay->SetInputPolyData( linearObjectModel->GetPolyData() );
-  linearObjectModelDisplay->SetVisibility( true );
+  linearObjectModelDisplay->SetVisibility( false );
   linearObjectModelDisplay->BackfaceCullingOff();
+
+  vtkSmartPointer< vtkMRMLModelHierarchyNode > linearObjectModelHierarchyNode;
+  linearObjectModelHierarchyNode.TakeReference( vtkMRMLModelHierarchyNode::SafeDownCast( this->GetMRMLScene()->CreateNodeByClass( "vtkMRMLModelHierarchyNode" ) ) );
+  std::string modelHierarchyNodeName = linearObject->GetName() + "ModelHierarchyNode";
+  linearObjectModelHierarchyNode->SetName( modelHierarchyNodeName.c_str() );
+  linearObjectModelHierarchyNode->SetScene( this->GetMRMLScene() );
 
   this->GetMRMLScene()->AddNode( linearObjectModelDisplay );
   this->GetMRMLScene()->AddNode( linearObjectModel );
+  this->GetMRMLScene()->AddNode( linearObjectModelHierarchyNode );
 
   linearObjectModel->SetAndObserveDisplayNodeID( linearObjectModelDisplay->GetID() );
+  //linearObjectModelHierarchyNode->SetAndObserveDisplayNodeID( linearObjectModelDisplay->GetID() );
+  linearObjectModelHierarchyNode->SetModelNodeID( linearObjectModel->GetID() );
+  linearObjectModelHierarchyNode->SetParentNodeID( collection->GetModelHierarchyNodeID().c_str() );
 
   // And let the linear object store the model's ID
-  linearObject->SetModelID( linearObjectModel->GetID() );
+  linearObject->SetModelHierarchyNodeID( linearObjectModelHierarchyNode->GetID() );
+  linearObjectModelHierarchyNode->SetHideFromEditors( true );
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
+::CreateLinearObjectCollectionModelHierarchyNode( vtkMRMLLORLinearObjectCollectionNode* collection )
+{
+  if ( collection->GetModelHierarchyNodeID().compare( "" ) != 0 )
+  {
+    return;
+  }
+
+  // Otherwise, create a new hierarchy node
+
+  vtkSmartPointer< vtkMRMLModelDisplayNode > collectionModelDisplay;
+  collectionModelDisplay.TakeReference( vtkMRMLModelDisplayNode::SafeDownCast( this->GetMRMLScene()->CreateNodeByClass( "vtkMRMLModelDisplayNode" ) ) );
+  collectionModelDisplay->SetScene( this->GetMRMLScene() );
+  collectionModelDisplay->SetVisibility( false );
+  collectionModelDisplay->BackfaceCullingOff();
+
+  vtkSmartPointer< vtkMRMLModelHierarchyNode > collectionModelHierarchyNode;
+  collectionModelHierarchyNode.TakeReference( vtkMRMLModelHierarchyNode::SafeDownCast( this->GetMRMLScene()->CreateNodeByClass( "vtkMRMLModelHierarchyNode" ) ) );
+  std::string modelHierarchyNodeName = std::string( collection->GetName() ) + "CollectionModelHierarchyNode";
+  collectionModelHierarchyNode->SetName( modelHierarchyNodeName.c_str() );
+  collectionModelHierarchyNode->SetScene( this->GetMRMLScene() );
+  collectionModelHierarchyNode->ExpandedOff();
+
+  this->GetMRMLScene()->AddNode( collectionModelDisplay );
+  this->GetMRMLScene()->AddNode( collectionModelHierarchyNode );
+
+  collectionModelHierarchyNode->SetAndObserveDisplayNodeID( collectionModelDisplay->GetID() );
+
+  // And let the linear object store the model's ID
+  collection->SetModelHierarchyNodeID( collectionModelHierarchyNode->GetID() );
+}
+
+
+// Note that this doesn't update the collection's model node, just its objects' model nodes
+void vtkSlicerLinearObjectRegistrationLogic
+::CreateLinearObjectModelHierarchyNodes( vtkMRMLLORLinearObjectCollectionNode* collection )
+{
+  // Also, update all of the linear objects' models if necessary
+  for ( int i = 0; i < collection->Size(); i++ )
+  {
+    if ( collection->GetLinearObject( i )->GetModelHierarchyNodeID().compare( "" ) == 0 )
+    {
+      this->CreateLinearObjectModelHierarchyNode( collection->GetLinearObject( i ), collection );
+    }
+  }
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
+::ShowLinearObjectModel( vtkMRMLLORLinearObjectNode* linearObject )
+{
+  vtkMRMLModelHierarchyNode* hierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( linearObject->GetModelHierarchyNodeID() ) );
+  if ( hierarchyNode == NULL || hierarchyNode->GetModelNode() == NULL )
+  {
+    return;
+  }
+  vtkMRMLDisplayNode* displayNode = hierarchyNode->GetModelNode()->GetDisplayNode();
+  if ( displayNode == NULL )
+  {
+    return;
+  }
+  displayNode->VisibilityOn();
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
+::HideLinearObjectModel( vtkMRMLLORLinearObjectNode* linearObject )
+{
+  vtkMRMLModelHierarchyNode* hierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( linearObject->GetModelHierarchyNodeID() ) );
+  if ( hierarchyNode == NULL || hierarchyNode->GetModelNode() == NULL )
+  {
+    return;
+  }
+  vtkMRMLDisplayNode* displayNode = hierarchyNode->GetModelNode()->GetDisplayNode();
+  if ( displayNode == NULL )
+  {
+    return;
+  }
+  displayNode->VisibilityOff();
+}
+
+
+bool vtkSlicerLinearObjectRegistrationLogic
+::GetLinearObjectModelVisibility( vtkMRMLLORLinearObjectNode* linearObject )
+{
+  vtkMRMLModelHierarchyNode* hierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( linearObject->GetModelHierarchyNodeID() ) );
+  if ( hierarchyNode == NULL || hierarchyNode->GetModelNode() == NULL )
+  {
+    return false;
+  }
+  vtkMRMLDisplayNode* displayNode = hierarchyNode->GetModelNode()->GetDisplayNode();
+  if ( displayNode == NULL )
+  {
+    return false;
+  }
+  return displayNode->GetVisibility();
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
+::ShowLinearObjectCollectionModel( vtkMRMLLORLinearObjectCollectionNode* collection )
+{
+  vtkMRMLModelHierarchyNode* hierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( collection->GetModelHierarchyNodeID() ) );
+  if ( hierarchyNode == NULL )
+  {
+    return;
+  }
+  vtkMRMLDisplayNode* displayNode = hierarchyNode->GetDisplayNode();
+  if ( displayNode == NULL )
+  {
+    return;
+  }
+  displayNode->VisibilityOn();
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
+::HideLinearObjectCollectionModel( vtkMRMLLORLinearObjectCollectionNode* collection )
+{
+  vtkMRMLModelHierarchyNode* hierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( collection->GetModelHierarchyNodeID() ) );
+  if ( hierarchyNode == NULL )
+  {
+    return;
+  }
+  vtkMRMLDisplayNode* displayNode = hierarchyNode->GetDisplayNode();
+  if ( displayNode == NULL )
+  {
+    return;
+  }
+  displayNode->VisibilityOff();
+}
+
+
+bool vtkSlicerLinearObjectRegistrationLogic
+::GetLinearObjectCollectionModelVisibility( vtkMRMLLORLinearObjectCollectionNode* collection )
+{
+  vtkMRMLModelHierarchyNode* hierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( collection->GetModelHierarchyNodeID() ) );
+  if ( hierarchyNode == NULL )
+  {
+    return false;
+  }
+  vtkMRMLDisplayNode* displayNode = hierarchyNode->GetDisplayNode();
+  if ( displayNode == NULL )
+  {
+    return false;
+  }
+  return displayNode->GetVisibility();
 }
 
 
@@ -1105,6 +1267,18 @@ void vtkSlicerLinearObjectRegistrationLogic
   if ( lorNode != NULL && event == vtkCommand::ModifiedEvent )
   {
     this->CalculateTransform( lorNode ); // Will create modified event to update widget
+
+    // Make sure all the models are updated (note that the collection model will have been created when the collection was added to the scene)
+    vtkMRMLLORLinearObjectCollectionNode* fromCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( lorNode->GetFromCollectionID() ) );
+    vtkMRMLLORLinearObjectCollectionNode* toCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( lorNode->GetToCollectionID() ) );
+    if ( fromCollectionNode != NULL )
+    {
+      this->CreateLinearObjectModelHierarchyNodes( fromCollectionNode );
+    }
+    if ( toCollectionNode != NULL )
+    {
+      this->CreateLinearObjectModelHierarchyNodes( toCollectionNode );
+    }
   }
 
   // The position buffer must be ready for conversion to linear object
@@ -1156,18 +1330,29 @@ void vtkSlicerLinearObjectRegistrationLogic
 {
   vtkMRMLScene* callerNode = vtkMRMLScene::SafeDownCast( caller );
 
-  // If the added node was a fiducial registration wizard node then observe it
+  // If the added node was a linear object registration node then observe it
   vtkMRMLNode* addedNode = reinterpret_cast< vtkMRMLNode* >( callData );
   vtkMRMLLinearObjectRegistrationNode* linearObjectRegistrationNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( addedNode );
 
   if ( event == vtkMRMLScene::NodeAddedEvent && linearObjectRegistrationNode != NULL )
   {
-    // This will get called exactly once, and we will add the observer only once (since node is never replaced)
+    // This will get called exactly once
     linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
     linearObjectRegistrationNode->AddObserver( vtkMRMLLinearObjectRegistrationNode::PositionBufferReady, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
     linearObjectRegistrationNode->UpdateScene( this->GetMRMLScene() );
     linearObjectRegistrationNode->ObserveAllReferenceNodes(); // This will update
     this->CalculateTransform( linearObjectRegistrationNode ); // Will create modified event to update widget
+  }
+
+  vtkMRMLLORLinearObjectCollectionNode* collectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( addedNode );
+
+  if ( event == vtkMRMLScene::NodeAddedEvent && collectionNode != NULL )
+  {
+    if ( collectionNode->GetModelHierarchyNodeID().compare( "" ) == 0 )
+    {
+      this->CreateLinearObjectCollectionModelHierarchyNode( collectionNode );
+      this->CreateLinearObjectModelHierarchyNodes( collectionNode );
+    }
   }
 
 }

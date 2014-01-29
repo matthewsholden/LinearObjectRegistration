@@ -85,12 +85,17 @@ public:
 
   std::vector<double> CalculateCentroid();
 
+  std::string GetModelHierarchyNodeID();
+  void SetModelHierarchyNodeID( std::string newModelHierarchyNodeID );
+
   std::string ToXMLString();
   void FromXMLElement( vtkXMLDataElement* element );
 
 
 private:
 	std::vector< vtkSmartPointer< vtkMRMLLORLinearObjectNode > > LinearObjects;
+
+    std::string ModelHierarchyNodeID;
 
 };
 
