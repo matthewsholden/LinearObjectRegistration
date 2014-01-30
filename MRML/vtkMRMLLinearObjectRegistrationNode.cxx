@@ -69,6 +69,12 @@ vtkMRMLLinearObjectRegistrationNode
   this->CollectionState = "";
   this->ActivePositionBuffer = vtkSmartPointer< vtkMRMLLORRealTimePositionBufferNode >::New();
 
+  //TODO: Should these be zero or "default" values
+  this->NoiseThreshold = 0.5;
+  this->MatchingThreshold = 10.0;
+  this->MinimumCollectionPositions = 100;
+  this->TrimPositions = 10;
+
   this->Modified();
 }
 
@@ -110,6 +116,10 @@ void vtkMRMLLinearObjectRegistrationNode
   
   of << indent << " CollectionMode=\"" << this->CollectionMode << "\"";
   of << indent << " AutomaticMatch=\"" << this->AutomaticMatch << "\"";
+  of << indent << "NoiseThreshold=\"" << this->NoiseThreshold << "\"";
+  of << indent << "MatchingThreshold=\"" << this->MatchingThreshold << "\"";
+  of << indent << "MinimumCollectionPositions=\"" << this->MinimumCollectionPositions << "\"";
+  of << indent << "TrimPositions=\"" << this->TrimPositions << "\"";
 }
 
 
@@ -135,6 +145,22 @@ void vtkMRMLLinearObjectRegistrationNode::ReadXMLAttributes( const char** atts )
     {
       this->AutomaticMatch = std::string( attValue );
     }
+    if ( ! strcmp( attName, "NoiseThreshold" ) )
+    {
+      this->NoiseThreshold = atof( attValue );
+    }
+    if ( ! strcmp( attName, "MatchingThreshold" ) )
+    {
+      this->MatchingThreshold = atof( attValue );
+    }
+    if ( ! strcmp( attName, "MinimumCollectionPositions" ) )
+    {
+      this->MinimumCollectionPositions = atoi( attValue );
+    }
+    if ( ! strcmp( attName, "TrimPositions" ) )
+    {
+      this->TrimPositions = atoi( attValue );
+    }
 
   }
 
@@ -156,6 +182,10 @@ void vtkMRMLLinearObjectRegistrationNode
   // So, anything we want in the MRML file we must copy here (I don't think we need to copy other things)
   this->CollectionMode = node->CollectionMode;
   this->AutomaticMatch = node->AutomaticMatch;
+  this->NoiseThreshold = node->NoiseThreshold;
+  this->MatchingThreshold = node->MatchingThreshold;
+  this->MinimumCollectionPositions = node->MinimumCollectionPositions;
+  this->TrimPositions = node->TrimPositions;
   this->Modified();
 }
 
@@ -167,6 +197,10 @@ void vtkMRMLLinearObjectRegistrationNode
   vtkMRMLNode::PrintSelf(os,indent); // This will take care of referenced nodes
   os << indent << "CollectionMode: " << this->CollectionMode << "\n";
   os << indent << "AutomaticMatch: " << this->AutomaticMatch << "\n";
+  os << indent << "NoiseThreshold: " << this->NoiseThreshold << "\n";
+  os << indent << "MatchingThreshold: " << this->MatchingThreshold << "\n";
+  os << indent << "MinimumCollectionPositions: " << this->MinimumCollectionPositions << "\n";
+  os << indent << "TrimPositions: " << this->TrimPositions << "\n";
 }
 
 
@@ -317,6 +351,90 @@ void vtkMRMLLinearObjectRegistrationNode
 }
 
 
+double vtkMRMLLinearObjectRegistrationNode
+::GetNoiseThreshold()
+{
+  return this->NoiseThreshold;
+}
+
+
+void vtkMRMLLinearObjectRegistrationNode
+::SetNoiseThreshold( double newNoiseThreshold, int modifyType )
+{
+  if ( this->GetNoiseThreshold() != newNoiseThreshold && newNoiseThreshold > 0 )
+  {
+    this->NoiseThreshold = newNoiseThreshold;
+  }
+  if ( this->GetNoiseThreshold() != newNoiseThreshold && newNoiseThreshold > 0 && modifyType == DefaultModify || modifyType == AlwaysModify ) 
+  {
+    this->Modified();
+  }
+}
+
+
+double vtkMRMLLinearObjectRegistrationNode
+::GetMatchingThreshold()
+{
+  return this->MatchingThreshold;
+}
+
+
+void vtkMRMLLinearObjectRegistrationNode
+::SetMatchingThreshold( double newMatchingThreshold, int modifyType )
+{
+  if ( this->GetMatchingThreshold() != newMatchingThreshold && newMatchingThreshold > 0 )
+  {
+    this->MatchingThreshold = newMatchingThreshold;
+  }
+  if ( this->GetMatchingThreshold() != newMatchingThreshold && newMatchingThreshold > 0 && modifyType == DefaultModify || modifyType == AlwaysModify ) 
+  {
+    this->Modified();
+  }
+}
+
+
+int vtkMRMLLinearObjectRegistrationNode
+::GetMinimumCollectionPositions()
+{
+  return this->MinimumCollectionPositions;
+}
+
+
+void vtkMRMLLinearObjectRegistrationNode
+::SetMinimumCollectionPositions( int newMinimumCollectionPositions, int modifyType )
+{
+  if ( this->GetMinimumCollectionPositions() != newMinimumCollectionPositions && newMinimumCollectionPositions > 0 )
+  {
+    this->MinimumCollectionPositions = newMinimumCollectionPositions;
+  }
+  if ( this->GetMinimumCollectionPositions() != newMinimumCollectionPositions && newMinimumCollectionPositions > 0 && modifyType == DefaultModify || modifyType == AlwaysModify ) 
+  {
+    this->Modified();
+  }
+}
+
+
+int vtkMRMLLinearObjectRegistrationNode
+::GetTrimPositions()
+{
+  return this->TrimPositions;
+}
+
+
+void vtkMRMLLinearObjectRegistrationNode
+::SetTrimPositions( int newTrimPositions, int modifyType )
+{
+  if ( this->GetTrimPositions() != newTrimPositions && newTrimPositions > 0 )
+  {
+    this->TrimPositions = newTrimPositions;
+  }
+  if ( this->GetTrimPositions() != newTrimPositions && newTrimPositions > 0 && modifyType == DefaultModify || modifyType == AlwaysModify ) 
+  {
+    this->Modified();
+  }
+}
+
+
 std::string vtkMRMLLinearObjectRegistrationNode
 ::GetNodeReferenceIDString( std::string referenceRole )
 {
@@ -372,7 +490,7 @@ void vtkMRMLLinearObjectRegistrationNode
 ::StopCollecting()
 {
   // Emit an event indicating that the position buffer is ready to be converted to a linear object
-  if ( this->CollectionState.compare( "Automatic" ) != 0 || this->GetActivePositionBuffer()->Size() > vtkMRMLLORConstants::MINIMUM_COLLECTION_POSITIONS )
+  if ( this->CollectionState.compare( "Automatic" ) != 0 || this->GetActivePositionBuffer()->Size() > this->GetMinimumCollectionPositions() )
   {
     this->InvokeEvent( PositionBufferReady );
   }
@@ -410,7 +528,7 @@ void vtkMRMLLinearObjectRegistrationNode
   }
 
   // Check if the position buffer is still linear
-  int positionBufferDOF = this->GetActivePositionBuffer()->GetDOF();
+  int positionBufferDOF = this->GetActivePositionBuffer()->GetDOF( this->GetNoiseThreshold() );
 
   // If it is, then keep going
   if ( positionBufferDOF <= vtkMRMLLORConstants::PLANE_DOF )
@@ -419,7 +537,7 @@ void vtkMRMLLinearObjectRegistrationNode
   }
 
   // If it is not, then emit a ready event if we have the required number of collected frames
-  if ( this->GetActivePositionBuffer()->Size() > vtkMRMLLORConstants::MINIMUM_COLLECTION_POSITIONS )
+  if ( this->GetActivePositionBuffer()->Size() > this->GetMinimumCollectionPositions() )
   {
     this->InvokeEvent( PositionBufferReady );
     this->Modified(); // TODO: For some reason, the collection node modified event is never caught when it is called from the processmrmlevents method

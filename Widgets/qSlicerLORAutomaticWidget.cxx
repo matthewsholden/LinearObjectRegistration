@@ -157,5 +157,5 @@ void qSlicerLORAutomaticWidget
     return;
   }
 
-  d->CollectProgressBar->setValue( int( 100 * this->LORNode->GetActivePositionBuffer()->Size() / vtkMRMLLORConstants::MINIMUM_COLLECTION_POSITIONS ) );
+  d->CollectProgressBar->setValue( int( 100 * this->LORNode->GetActivePositionBuffer()->Size() / this->LORNode->GetMinimumCollectionPositions() ) );
 }

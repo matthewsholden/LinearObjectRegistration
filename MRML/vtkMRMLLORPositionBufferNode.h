@@ -53,7 +53,7 @@ public:
 
   virtual std::vector<double> CalculateCentroid();
   virtual vnl_matrix<double>* CovarianceMatrix( std::vector<double> centroid );
-  int GetDOF();
+  int GetDOF( double noiseThreshold );
 
   std::string ToXMLString();
   void FromXMLElement( vtkXMLDataElement* element );

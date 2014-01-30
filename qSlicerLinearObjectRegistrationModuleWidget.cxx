@@ -234,6 +234,11 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   connect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
+
+  connect( d->NoiseThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->MatchingThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->MinimumCollectionPositionsSpinBox, SIGNAL( valueChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->TrimPositionsSpinBox, SIGNAL( valueChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
 }
 
 
@@ -252,6 +257,11 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   disconnect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
+
+  disconnect( d->NoiseThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->MatchingThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->MinimumCollectionPositionsSpinBox, SIGNAL( valueChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->TrimPositionsSpinBox, SIGNAL( valueChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
 }
 
 
@@ -328,6 +338,11 @@ void qSlicerLinearObjectRegistrationModuleWidget
     linearObjectRegistrationNode->SetAutomaticMatch( "False", vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
 
+  linearObjectRegistrationNode->SetNoiseThreshold( d->NoiseThresholdSpinBox->value(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
+  linearObjectRegistrationNode->SetMatchingThreshold( d->MatchingThresholdSpinBox->value(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
+  linearObjectRegistrationNode->SetMinimumCollectionPositions( d->MinimumCollectionPositionsSpinBox->value(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
+  linearObjectRegistrationNode->SetTrimPositions( d->TrimPositionsSpinBox->value(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
+
   this->qvtkBlockAll( false );
 
   // The modified event will be blocked... Now allow it to happen
@@ -356,6 +371,10 @@ void qSlicerLinearObjectRegistrationModuleWidget
     d->AutomaticWidget->setEnabled( false );
     d->FromCollectionWidget->setEnabled( false );
     d->ToCollectionWidget->setEnabled( false );
+    d->NoiseThresholdSpinBox->setEnabled( false );
+    d->MatchingThresholdSpinBox->setEnabled( false );
+    d->MinimumCollectionPositionsSpinBox->setEnabled( false );
+    d->TrimPositionsSpinBox->setEnabled( false );
     d->StatusLabel->setText( "No Linear Object Registration module node selected." );
     return;
   }
@@ -370,6 +389,10 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->AutomaticWidget->setEnabled( true );
   d->FromCollectionWidget->setEnabled( true );
   d->ToCollectionWidget->setEnabled( true );
+  d->NoiseThresholdSpinBox->setEnabled( true );
+  d->MatchingThresholdSpinBox->setEnabled( true );
+  d->MinimumCollectionPositionsSpinBox->setEnabled( true );
+  d->TrimPositionsSpinBox->setEnabled( true );
 
   // Disconnect to prevent signals form cuing slots
   this->DisconnectWidgets();
@@ -423,6 +446,11 @@ void qSlicerLinearObjectRegistrationModuleWidget
   {
     d->AutomaticMatchCheckBox->setChecked( Qt::Unchecked );
   }
+
+  d->NoiseThresholdSpinBox->setValue( linearObjectRegistrationNode->GetNoiseThreshold() );
+  d->MatchingThresholdSpinBox->setValue( linearObjectRegistrationNode->GetMatchingThreshold() );
+  d->MinimumCollectionPositionsSpinBox->setValue( linearObjectRegistrationNode->GetMinimumCollectionPositions() );
+  d->TrimPositionsSpinBox->setValue( linearObjectRegistrationNode->GetTrimPositions() );
 
   // Unblock all singals from firing
   this->ConnectWidgets();

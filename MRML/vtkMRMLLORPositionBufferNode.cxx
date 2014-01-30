@@ -190,7 +190,7 @@ std::vector<double> vtkMRMLLORPositionBufferNode
 
 
 int vtkMRMLLORPositionBufferNode
-::GetDOF()
+::GetDOF( double noiseThreshold )
 {
   std::vector<double> centroid = this->CalculateCentroid();
   vnl_matrix<double>* cov = this->CovarianceMatrix( centroid );

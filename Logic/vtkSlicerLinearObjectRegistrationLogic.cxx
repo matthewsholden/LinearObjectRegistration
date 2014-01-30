@@ -164,7 +164,7 @@ vtkMRMLLORLinearObjectCollectionNode* vtkSlicerLinearObjectRegistrationLogic
 
 // Return smart pointer since we created the object in this function
 vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkSlicerLinearObjectRegistrationLogic
-::PositionBufferToLinearObject( vtkMRMLLORPositionBufferNode* positionBuffer, int dof )
+::PositionBufferToLinearObject( vtkMRMLLORPositionBufferNode* positionBuffer, double noiseThreshold, int dof )
 {
   if ( positionBuffer == NULL || positionBuffer->Size() == 0 )
   {
@@ -201,7 +201,9 @@ vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkSlicerLinearObjectRegistrationL
   double calculatedDOF = 0;
   for ( int i = 0; i < vtkMRMLLORPositionNode::SIZE; i++ )
   {
-    if ( abs( eigenvalues.get( i ) ) > vtkMRMLLORConstants::NOISE_THRESHOLD )
+    // Assuming RMS error E, then the eigenvalues should be E^2
+    // Thus, compare the eigenvalues to the squared assumed rms noise level
+    if ( abs( eigenvalues.get( i ) ) > noiseThreshold * noiseThreshold )
     {
       calculatedDOF++;
     }
@@ -234,7 +236,7 @@ vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkSlicerLinearObjectRegistrationL
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::MatchCollections( vtkMRMLLORLinearObjectCollectionNode* collection0, vtkMRMLLORLinearObjectCollectionNode* collection1, bool removeUnmatched )
+::MatchCollections( vtkMRMLLORLinearObjectCollectionNode* collection0, vtkMRMLLORLinearObjectCollectionNode* collection1, double matchingThreshold, bool removeUnmatched )
 {
   // Get the reference from both to calculate all of their objects' signatures
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > referenceCollection0 = this->GetReferences( collection0 );
@@ -294,7 +296,7 @@ void vtkSlicerLinearObjectRegistrationLogic
       }
     }// for over collection 1
 
-    if ( bestDistance < vtkMRMLLORConstants::MATCHING_THRESHOLD )
+    if ( bestDistance < matchingThreshold )
     {
       matchedCollection0->AddLinearObject( currentObject0 );
       matchedCollection1->AddLinearObject( nonReferenceCollection1->GetLinearObject( bestIndex ) );
@@ -468,7 +470,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   // Also, update all of the linear objects' models if necessary
   for ( int i = 0; i < collection->Size(); i++ )
   {
-    if ( collection->GetLinearObject( i )->GetModelHierarchyNodeID().compare( "" ) == 0 )
+    if ( collection->GetLinearObject( i ) != NULL && collection->GetLinearObject( i )->GetModelHierarchyNodeID().compare( "" ) == 0 )
     {
       this->CreateLinearObjectModelHierarchyNode( collection->GetLinearObject( i ), collection );
     }
@@ -1290,28 +1292,28 @@ void vtkSlicerLinearObjectRegistrationLogic
 
     if ( lorNode->GetCollectionState().compare( "Reference" ) == 0 )
     {
-      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, vtkMRMLLORConstants::REFERENCE_DOF );
+      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), vtkMRMLLORConstants::REFERENCE_DOF );
     }
     if ( lorNode->GetCollectionState().compare( "Point" ) == 0 )
     {
-      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, vtkMRMLLORConstants::POINT_DOF );
+      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), vtkMRMLLORConstants::POINT_DOF );
     }
     if ( lorNode->GetCollectionState().compare( "Line" ) == 0 )
     {
-      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, vtkMRMLLORConstants::LINE_DOF );
+      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), vtkMRMLLORConstants::LINE_DOF );
     }
     if ( lorNode->GetCollectionState().compare( "Plane" ) == 0 )
     {
-      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, vtkMRMLLORConstants::PLANE_DOF );
+      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), vtkMRMLLORConstants::PLANE_DOF );
     }
     if ( lorNode->GetCollectionState().compare( "Collect" ) == 0 )
     {
-      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, vtkMRMLLORConstants::UNKNOWN_DOF );
+      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), vtkMRMLLORConstants::UNKNOWN_DOF );
     }
     if ( lorNode->GetCollectionState().compare( "Automatic" ) == 0 )
     {
-      positionBufferCopy->Trim( vtkMRMLLORConstants::TRIM_POSITIONS );
-      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, vtkMRMLLORConstants::UNKNOWN_DOF );
+      positionBufferCopy->Trim( lorNode->GetTrimPositions() );
+      currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), vtkMRMLLORConstants::UNKNOWN_DOF );
     }
 
     if ( currentLinearObject != NULL && this->GetActiveCollectionNode() != NULL )
