@@ -236,6 +236,43 @@ vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkSlicerLinearObjectRegistrationL
 
 
 void vtkSlicerLinearObjectRegistrationLogic
+::PairCollections( vtkMRMLLORLinearObjectCollectionNode* collection0, vtkMRMLLORLinearObjectCollectionNode* collection1 )
+{
+  // Find the smaller size
+  int smallSize = 0;
+  if ( collection0->Size() < collection1->Size() )
+  {
+    smallSize = collection0->Size();
+  }
+  else
+  {
+    smallSize = collection1->Size();
+  }
+
+  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > pairedCollection0 = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
+  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > pairedCollection1 = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
+
+  for ( int i = 0; i < smallSize; i++ )
+  {
+    vtkMRMLLORLinearObjectNode* currentObject0 = collection0->GetLinearObject( i );
+    vtkMRMLLORLinearObjectNode* currentObject1 = collection1->GetLinearObject( i );
+    if ( currentObject0 != NULL && currentObject1 != NULL && currentObject0->GetType().compare( currentObject1->GetType() ) == 0 && currentObject0->GetType().compare( "Reference" ) != 0 )
+    {
+      pairedCollection0->AddLinearObject( currentObject0 );
+      pairedCollection1->AddLinearObject( currentObject1 );
+    }
+  }
+
+  collection0->Clear();
+  collection0->Concatenate( pairedCollection0 );
+
+  collection1->Clear();
+  collection1->Concatenate( pairedCollection1 );
+
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
 ::MatchCollections( vtkMRMLLORLinearObjectCollectionNode* collection0, vtkMRMLLORLinearObjectCollectionNode* collection1, double matchingThreshold, bool removeUnmatched )
 {
   // Get the reference from both to calculate all of their objects' signatures
@@ -244,6 +281,16 @@ void vtkSlicerLinearObjectRegistrationLogic
 
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > nonReferenceCollection0 = this->GetNonReferences( collection0 );
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > nonReferenceCollection1 = this->GetNonReferences( collection1 );
+
+  if ( referenceCollection0->Size() != referenceCollection1->Size() )
+  {
+    throw std::logic_error( "Could not find sufficient references." ); // The original collections are unchanged
+  }
+  // If there are no references then change nothing
+  if ( referenceCollection0->Size() == 0 && referenceCollection1->Size() == 0 )
+  {
+    return;
+  }
 
   nonReferenceCollection0->CalculateSignature( referenceCollection0 );
   nonReferenceCollection1->CalculateSignature( referenceCollection1 );
@@ -257,9 +304,9 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
   // This changes the from collection, but creates a new to collection - we want to change the old to collection
-  if ( nonReferenceCollection0->Size() == 0 || nonReferenceCollection1->Size() == 0 || referenceCollection0->Size() != referenceCollection1->Size() )
+  if ( referenceCollection0->Size() == 0 || nonReferenceCollection1->Size() == 0 || referenceCollection0->Size() != referenceCollection1->Size() )
   {
-    return; // The original collections are unchanged
+    throw std::logic_error( "Could not find sufficient references." ); // The original collections are unchanged
   }
 
   for( int i = 0; i < nonReferenceCollection0->Size(); i++ )
@@ -644,8 +691,8 @@ void vtkSlicerLinearObjectRegistrationLogic
   vtkMRMLLORLinearObjectCollectionNode* toCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( linearObjectRegistrationNode->GetToCollectionID() ) );
   vtkMRMLLinearTransformNode* outputTransform = vtkMRMLLinearTransformNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( linearObjectRegistrationNode->GetOutputTransformID() ) );
   // This is not
-  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > fromMatchedCollection = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
-  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > toMatchedCollection = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
+  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > fromPairedCollection = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
+  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > toPairedCollection = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
 
   if ( fromCollection == NULL || toCollection == NULL )
   {
@@ -656,20 +703,30 @@ void vtkSlicerLinearObjectRegistrationLogic
 
   if ( linearObjectRegistrationNode->GetAutomaticMatch().compare( "True" ) == 0 )
   {
-    // Match the collections (for the interface)
-    this->MatchCollections( fromCollection, toCollection, false );
-    // Match and remove collections (for the algorithm)
-    fromMatchedCollection->Copy( fromCollection );
-    toMatchedCollection->Copy( toCollection );
-    this->MatchCollections( fromMatchedCollection, toMatchedCollection, true );
+    // Match the collections
+    try
+    {
+      this->MatchCollections( fromCollection, toCollection, linearObjectRegistrationNode->GetMatchingThreshold(), false );
+    }
+    catch( std::logic_error e )
+    {
+      linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
+      this->SetOutputMessage( linearObjectRegistrationNode->GetID(), e.what() );
+      return;
+    }
   }
-
+    
   if ( outputTransform == NULL )
   {
     linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
     this->SetOutputMessage( linearObjectRegistrationNode->GetID(), "Output transform is not defined." );
     return;
   }
+
+  // Pair collections, removing any incomplete pairs
+  fromPairedCollection->Copy( fromCollection );
+  toPairedCollection->Copy( toCollection );
+  this->PairCollections( fromPairedCollection, toPairedCollection );
   
   // Grab the linear object collections
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > fromReferenceCollection = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
@@ -682,16 +739,10 @@ void vtkSlicerLinearObjectRegistrationLogic
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > toLineCollection = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
   vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > toPlaneCollection = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
   
-  this->GetFromAndToCollections( fromMatchedCollection, fromReferenceCollection, fromPointCollection, fromLineCollection, fromPlaneCollection, 
-    toMatchedCollection, toReferenceCollection, toPointCollection, toLineCollection, toPlaneCollection );
+  this->GetFromAndToCollections( fromPairedCollection, fromReferenceCollection, fromPointCollection, fromLineCollection, fromPlaneCollection, 
+    toPairedCollection, toReferenceCollection, toPointCollection, toLineCollection, toPlaneCollection );
   // Note: The number of each type of collection should be the same
 
-  if ( fromReferenceCollection->Size() == 0 || toReferenceCollection->Size() == 0 || fromReferenceCollection->Size() != toReferenceCollection->Size() )
-  {
-    linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
-    this->SetOutputMessage( linearObjectRegistrationNode->GetID(), "Could not find appropriate references." );
-    return;
-  }
 
   // The matching should already be done (in real-time)
 
@@ -822,7 +873,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     TempFromCollection->Concatenate( fromReferenceCollection );
 
     // Do the matching
-    this->MatchCollections( TempToCollection, TempFromCollection, true );
+    this->MatchCollections( TempToCollection, TempFromCollection, linearObjectRegistrationNode->GetMatchingThreshold(), true );
 
     vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > TempToNonReferenceCollection = this->GetNonReferences( TempToCollection );
     vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > TempFromNonReferenceCollection = this->GetNonReferences( TempFromCollection );
@@ -864,7 +915,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     TempFromCollection->Concatenate( fromReferenceCollection );
 
     // Do the matching
-    this->MatchCollections( TempToCollection, TempFromCollection, true );
+    this->MatchCollections( TempToCollection, TempFromCollection, linearObjectRegistrationNode->GetMatchingThreshold(), true );
 
     vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > TempToNonReferenceCollection = this->GetNonReferences( TempToCollection );
     vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > TempFromNonReferenceCollection = this->GetNonReferences( TempFromCollection );
