@@ -102,8 +102,8 @@ void qSlicerLinearObjectRegistrationModuleWidget
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );
 
   // Find the positions and swap
-  vtkMRMLLORLinearObjectCollectionNode* fromCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->FromCollectionWidget->GetCurrentNode() );
-  vtkMRMLLORLinearObjectCollectionNode* toCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->ToCollectionWidget->GetCurrentNode() );
+  vtkMRMLLinearObjectCollectionNode* fromCollection = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->FromCollectionWidget->GetCurrentNode() );
+  vtkMRMLLinearObjectCollectionNode* toCollection = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->ToCollectionWidget->GetCurrentNode() );
 
   int fromPosition = fromCollection->GetLinearObjectPosition( d->FromCollectionWidget->GetCurrentLinearObject() );
   int toPosition = toCollection->GetLinearObjectPosition( d->ToCollectionWidget->GetCurrentLinearObject() );
@@ -120,8 +120,8 @@ void qSlicerLinearObjectRegistrationModuleWidget
 {
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );
 
-  vtkMRMLLORLinearObjectNode* fromLinearObject = d->FromCollectionWidget->GetCurrentLinearObject();
-  vtkMRMLLORLinearObjectNode* toLinearObject = d->ToCollectionWidget->GetCurrentLinearObject();
+  vtkLORLinearObject* fromLinearObject = d->FromCollectionWidget->GetCurrentLinearObject();
+  vtkLORLinearObject* toLinearObject = d->ToCollectionWidget->GetCurrentLinearObject();
 
   QTableWidgetItem* fromFrameItem = new QTableWidgetItem();
   QTableWidgetItem* fromNameItem = new QTableWidgetItem();

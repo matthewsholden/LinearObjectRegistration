@@ -1,6 +1,6 @@
 
-#ifndef __vtkMRMLLORPositionNode_h
-#define __vtkMRMLLORPositionNode_h
+#ifndef __vtkLORPosition_h
+#define __vtkLORPosition_h
 
 // Standard includes
 #include <string>
@@ -17,7 +17,7 @@
 #include "vtkSmartPointer.h"
 
 // LinearObjectRegistration includes
-#include "vtkMRMLLORVectorMath.h"
+#include "LORMath.h"
 
 // VNL includes
 #include "vnl/vnl_matrix.h"
@@ -27,22 +27,22 @@
 
 // This class stores a vector of values only - we do not care about time
 class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
-vtkMRMLLORPositionNode : public vtkObject
+vtkLORPosition : public vtkObject
 {
 public:
-  vtkTypeMacro( vtkMRMLLORPositionNode, vtkObject );
+  vtkTypeMacro( vtkLORPosition, vtkObject );
 
-  static vtkMRMLLORPositionNode* New();
-  static vtkMRMLLORPositionNode* New( std::vector<double> newPosition );
-  static vtkMRMLLORPositionNode* New( vtkMatrix4x4* newMatrix );
+  static vtkLORPosition* New();
+  static vtkLORPosition* New( std::vector<double> newPosition );
+  static vtkLORPosition* New( vtkMatrix4x4* newMatrix );
 
-  vtkSmartPointer< vtkMRMLLORPositionNode > DeepCopy();
+  vtkSmartPointer< vtkLORPosition > DeepCopy();
 
 protected:
 
   // Constructor/destructor
-  vtkMRMLLORPositionNode();
-  virtual ~vtkMRMLLORPositionNode();
+  vtkLORPosition();
+  virtual ~vtkLORPosition();
 
 public:
 

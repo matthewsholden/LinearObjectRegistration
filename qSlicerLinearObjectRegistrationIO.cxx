@@ -25,7 +25,7 @@
 
 // MRML includes
 #include "vtkMRMLScene.h"
-#include "vtkMRMLLORLinearObjectCollectionNode.h"
+#include "vtkMRMLLinearObjectCollectionNode.h"
 
 // VTK includes
 #include <vtkSmartPointer.h>
@@ -75,8 +75,8 @@ bool qSlicerLinearObjectRegistrationIO::load(const IOProperties& properties)
   Q_ASSERT( properties.contains("fileName") );
   QString fileName = properties["fileName"].toString();
   
-  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > importCollectionNode;
-  importCollectionNode.TakeReference( vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( this->mrmlScene()->CreateNodeByClass( "vtkMRMLLORLinearObjectCollectionNode" ) ) );
+  vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > importCollectionNode;
+  importCollectionNode.TakeReference( vtkMRMLLinearObjectCollectionNode::SafeDownCast( this->mrmlScene()->CreateNodeByClass( "vtkMRMLLinearObjectCollectionNode" ) ) );
   importCollectionNode->SetScene( this->mrmlScene() );
   this->mrmlScene()->AddNode( importCollectionNode );
   

@@ -1,6 +1,6 @@
 
-#ifndef __vtkMRMLLORRealTimePositionBufferNode_h
-#define __vtkMRMLLORRealTimePositionBufferNode_h
+#ifndef __vtkLORRealTimePositionBuffer_h
+#define __vtkLORRealTimePositionBuffer_h
 
 // Standard includes
 #include <string>
@@ -10,29 +10,29 @@
 
 
 // LinearObjectRegistration includes
-#include "vtkMRMLLORPositionBufferNode.h"
+#include "vtkLORPositionBuffer.h"
 #include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
 
 
 class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
-vtkMRMLLORRealTimePositionBufferNode : public vtkMRMLLORPositionBufferNode
+vtkLORRealTimePositionBuffer : public vtkLORPositionBuffer
 {
 public:
-  vtkTypeMacro( vtkMRMLLORRealTimePositionBufferNode, vtkObject );
+  vtkTypeMacro( vtkLORRealTimePositionBuffer, vtkObject );
 
-  static vtkMRMLLORRealTimePositionBufferNode* New();
+  static vtkLORRealTimePositionBuffer* New();
 
 protected:
 
   // Constructor/destructor
-  vtkMRMLLORRealTimePositionBufferNode();
-  virtual ~vtkMRMLLORRealTimePositionBufferNode();
+  vtkLORRealTimePositionBuffer();
+  virtual ~vtkLORRealTimePositionBuffer();
 
 public:
 
 
   // Standard collection functionality
-  void AddPosition( vtkMRMLLORPositionNode* newPosition );
+  void AddPosition( vtkLORPosition* newPosition );
 
   std::vector<double> CalculateCentroid();
   vnl_matrix<double>* CovarianceMatrix( std::vector<double> centroid );

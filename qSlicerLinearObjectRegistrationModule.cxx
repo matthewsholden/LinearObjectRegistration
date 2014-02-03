@@ -110,7 +110,7 @@ void qSlicerLinearObjectRegistrationModule::setup()
   
   // Register the IO
   app->coreIOManager()->registerIO( new qSlicerLinearObjectRegistrationIO( this ) );
-  app->coreIOManager()->registerIO( new qSlicerNodeWriter( "LinearObjectRegistration", QString( "LinearObjectCollection" ), QStringList() << "vtkMRMLLORLinearObjectCollectionNode", this ) );
+  app->coreIOManager()->registerIO( new qSlicerNodeWriter( "LinearObjectRegistration", QString( "LinearObjectCollection" ), QStringList() << "vtkMRMLLinearObjectCollectionNode", this ) );
   
 }
 

@@ -1,7 +1,7 @@
 
-#include "vtkMRMLLORVectorMath.h"
+#include "LORMath.h"
 
-std::vector<double> vtkMRMLLORVectorMath 
+std::vector<double> LORMath 
 ::Abs( std::vector<double> vector )
 {
 
@@ -14,14 +14,14 @@ std::vector<double> vtkMRMLLORVectorMath
 }
 
 
-std::vector<double> vtkMRMLLORVectorMath 
+std::vector<double> LORMath 
 ::Normalize( std::vector<double> vector )
 {
   return Multiply( 1 / Norm( vector ), vector );
 }
 
 
-double vtkMRMLLORVectorMath 
+double LORMath 
 ::Distance( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != v2.size() )
@@ -39,7 +39,7 @@ double vtkMRMLLORVectorMath
 }
 
 
-double vtkMRMLLORVectorMath 
+double LORMath 
 ::Norm( std::vector<double> vector )
 {
   double norm = 0.0;
@@ -52,7 +52,7 @@ double vtkMRMLLORVectorMath
 }
 
 
-double vtkMRMLLORVectorMath 
+double LORMath 
 ::Dot( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != v2.size() )
@@ -70,7 +70,7 @@ double vtkMRMLLORVectorMath
 }
 
 
-std::vector<double> vtkMRMLLORVectorMath 
+std::vector<double> LORMath 
 ::Cross( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != 3 || v2.size() != 3 )
@@ -87,7 +87,7 @@ std::vector<double> vtkMRMLLORVectorMath
 }
 
 
-std::vector<double> vtkMRMLLORVectorMath 
+std::vector<double> LORMath 
 ::Add( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != v2.size() )
@@ -105,7 +105,7 @@ std::vector<double> vtkMRMLLORVectorMath
 }
 
 
-std::vector<double> vtkMRMLLORVectorMath 
+std::vector<double> LORMath 
 ::Subtract( std::vector<double> v1, std::vector<double> v2 )
 {
   if ( v1.size() != v2.size() )
@@ -123,7 +123,7 @@ std::vector<double> vtkMRMLLORVectorMath
 }
 
 
-std::vector<double> vtkMRMLLORVectorMath 
+std::vector<double> LORMath 
 ::Multiply( double c, std::vector<double> vector )
 {
   std::vector<double> result( vector.size(), 0.0 );
@@ -136,7 +136,7 @@ std::vector<double> vtkMRMLLORVectorMath
 }
 
 
-std::string vtkMRMLLORVectorMath 
+std::string LORMath 
 ::VectorToString( std::vector<double> vector )
 {
   std::stringstream s;
@@ -150,7 +150,7 @@ std::string vtkMRMLLORVectorMath
 }
 
 
-std::vector<double> vtkMRMLLORVectorMath 
+std::vector<double> LORMath 
 ::StringToVector( std::string s, int size )
 {
   std::stringstream ss( s );

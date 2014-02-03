@@ -15,26 +15,26 @@ set(${KIT}_INCLUDE_DIRECTORIES
 set(${KIT}_SRCS
   vtkMRMLLinearObjectRegistrationNode.cxx
   vtkMRMLLinearObjectRegistrationNode.h
-  vtkMRMLLORReferenceNode.cxx
-  vtkMRMLLORReferenceNode.h
-  vtkMRMLLORPositionBufferNode.cxx
-  vtkMRMLLORPositionBufferNode.h
-  vtkMRMLLORRealTimePositionBufferNode.cxx
-  vtkMRMLLORRealTimePositionBufferNode.h
-  vtkMRMLLORPositionNode.cxx
-  vtkMRMLLORPositionNode.h
-  vtkMRMLLORPointNode.cxx
-  vtkMRMLLORPointNode.h
-  vtkMRMLLORPlaneNode.cxx
-  vtkMRMLLORPlaneNode.h
-  vtkMRMLLORLinearObjectCollectionNode.cxx
-  vtkMRMLLORLinearObjectCollectionNode.h
-  vtkMRMLLORLinearObjectCollectionStorageNode.cxx
-  vtkMRMLLORLinearObjectCollectionStorageNode.h
-  vtkMRMLLORLinearObjectNode.cxx
-  vtkMRMLLORLinearObjectNode.h
-  vtkMRMLLORLineNode.cxx
-  vtkMRMLLORLineNode.h
+  vtkMRMLLinearObjectCollectionNode.cxx
+  vtkMRMLLinearObjectCollectionNode.h
+  vtkMRMLLinearObjectCollectionStorageNode.cxx
+  vtkMRMLLinearObjectCollectionStorageNode.h
+  vtkLORReference.cxx
+  vtkLORReference.h
+  vtkLORPositionBuffer.cxx
+  vtkLORPositionBuffer.h
+  vtkLORRealTimePositionBuffer.cxx
+  vtkLORRealTimePositionBuffer.h
+  vtkLORPosition.cxx
+  vtkLORPosition.h
+  vtkLORPoint.cxx
+  vtkLORPoint.h
+  vtkLORPlane.cxx
+  vtkLORPlane.h
+  vtkLORLinearObject.cxx
+  vtkLORLinearObject.h
+  vtkLORLine.cxx
+  vtkLORLine.h
   )
 
 SET (${KIT}_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "" FORCE)

@@ -1,37 +1,37 @@
 
-#include "vtkMRMLLORLineNode.h"
+#include "vtkLORLine.h"
 
-vtkStandardNewMacro( vtkMRMLLORLineNode )
+vtkStandardNewMacro( vtkLORLine )
 
 
-vtkMRMLLORLineNode* vtkMRMLLORLineNode
+vtkLORLine* vtkLORLine
 ::New( std::vector<double> newBasePoint, std::vector<double> newEndPoint )
 {
-  vtkMRMLLORLineNode* newLine = vtkMRMLLORLineNode::New();
+  vtkLORLine* newLine = vtkLORLine::New();
   newLine->BasePoint = newBasePoint;
   newLine->EndPoint = newEndPoint;
   return newLine;
 }
 
 
-vtkMRMLLORLineNode
-::vtkMRMLLORLineNode()
+vtkLORLine
+::vtkLORLine()
 {
   this->Type = "Line";
 }
 
 
-vtkMRMLLORLineNode
-::~vtkMRMLLORLineNode()
+vtkLORLine
+::~vtkLORLine()
 {
   this->EndPoint.clear();
 }
 
 
-vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORLineNode
+vtkSmartPointer< vtkLORLinearObject > vtkLORLine
 ::DeepCopy()
 {
-  vtkSmartPointer< vtkMRMLLORLineNode > objectNodeCopy = vtkSmartPointer< vtkMRMLLORLineNode >::New();
+  vtkSmartPointer< vtkLORLine > objectNodeCopy = vtkSmartPointer< vtkLORLine >::New();
 
   objectNodeCopy->BasePoint = this->BasePoint;
   objectNodeCopy->EndPoint = this->EndPoint;
@@ -50,23 +50,23 @@ vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORLineNode
 }
 
 
-std::vector<double> vtkMRMLLORLineNode
+std::vector<double> vtkLORLine
 ::GetDirection()
 {
-  std::vector<double> vector = vtkMRMLLORVectorMath::Subtract( this->EndPoint, this->BasePoint );
-  return vtkMRMLLORVectorMath::Multiply( 1 / vtkMRMLLORVectorMath::Norm( vector ), vector );
+  std::vector<double> vector = LORMath::Subtract( this->EndPoint, this->BasePoint );
+  return LORMath::Multiply( 1 / LORMath::Norm( vector ), vector );
 }
 
 
-std::vector<double> vtkMRMLLORLineNode
+std::vector<double> vtkLORLine
 ::ProjectVector( std::vector<double> vector )
 {
-  std::vector<double> outVec = vtkMRMLLORVectorMath::Subtract( vector, this->BasePoint );
-  return vtkMRMLLORVectorMath::Add( vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( this->GetDirection(), outVec ), this->GetDirection() ), this->BasePoint );
+  std::vector<double> outVec = LORMath::Subtract( vector, this->BasePoint );
+  return LORMath::Add( LORMath::Multiply( LORMath::Dot( this->GetDirection(), outVec ), this->GetDirection() ), this->BasePoint );
 }
 
 
-void vtkMRMLLORLineNode
+void vtkLORLine
 ::Translate( std::vector<double> vector )
 {
   for ( int i = 0; i < vector.size(); i++ )
@@ -77,7 +77,7 @@ void vtkMRMLLORLineNode
 }
 
 
-vtkPolyData* vtkMRMLLORLineNode
+vtkPolyData* vtkLORLine
 ::CreateModelPolyData()
 {
   vtkLineSource* lineSource = vtkLineSource::New();
@@ -99,9 +99,9 @@ vtkPolyData* vtkMRMLLORLineNode
   for ( int i = 0; i < this->GetPositionBuffer()->Size(); i++ )
   {
     // Project onto line
-    std::vector<double> outVec = vtkMRMLLORVectorMath::Subtract( this->GetPositionBuffer()->GetPosition( i )->GetPositionVector(), this->BasePoint );
+    std::vector<double> outVec = LORMath::Subtract( this->GetPositionBuffer()->GetPosition( i )->GetPositionVector(), this->BasePoint );
 
-    double parameter = vtkMRMLLORVectorMath::Dot( this->GetDirection(), outVec );
+    double parameter = LORMath::Dot( this->GetDirection(), outVec );
 
     if ( parameter > maxParameter )
     {
@@ -113,11 +113,11 @@ vtkPolyData* vtkMRMLLORLineNode
     }
   }
 
-  std::vector<double> maxVector = vtkMRMLLORVectorMath::Multiply( maxParameter, this->GetDirection() );
-  std::vector<double> minVector = vtkMRMLLORVectorMath::Multiply( minParameter, this->GetDirection() );
+  std::vector<double> maxVector = LORMath::Multiply( maxParameter, this->GetDirection() );
+  std::vector<double> minVector = LORMath::Multiply( minParameter, this->GetDirection() );
 
-  std::vector<double> point1 = vtkMRMLLORVectorMath::Add( this->BasePoint, minVector );
-  std::vector<double> point2 = vtkMRMLLORVectorMath::Add( this->BasePoint, maxVector );
+  std::vector<double> point1 = LORMath::Add( this->BasePoint, minVector );
+  std::vector<double> point2 = LORMath::Add( this->BasePoint, maxVector );
 
   lineSource->SetPoint1( point1.at(0), point1.at(1), point1.at(2) );
   lineSource->SetPoint2( point2.at(0), point2.at(1), point2.at(2) );
@@ -126,7 +126,7 @@ vtkPolyData* vtkMRMLLORLineNode
 }
 
 
-std::vector<double> vtkMRMLLORLineNode
+std::vector<double> vtkLORLine
 ::GetOrthogonalNormal1()
 {
   // Find the two axis unit vectors least parallel with the direction vector
@@ -148,17 +148,17 @@ std::vector<double> vtkMRMLLORLineNode
 	e2.at(0) = 0; e2.at(1) = 1; e2.at(2) = 0;
   }
 
-  std::vector<double> Normal1 = vtkMRMLLORVectorMath::Subtract( e1, vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( e1, this->GetDirection() ), this->GetDirection() ) );
-  Normal1 = vtkMRMLLORVectorMath::Multiply( 1 / vtkMRMLLORVectorMath::Norm( Normal1 ), Normal1 );
+  std::vector<double> Normal1 = LORMath::Subtract( e1, LORMath::Multiply( LORMath::Dot( e1, this->GetDirection() ), this->GetDirection() ) );
+  Normal1 = LORMath::Multiply( 1 / LORMath::Norm( Normal1 ), Normal1 );
 
-  std::vector<double> Normal2 = vtkMRMLLORVectorMath::Subtract( e2, vtkMRMLLORVectorMath::Add( vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( e2, this->GetDirection() ), this->GetDirection() ), vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( e2, Normal1 ), Normal1 ) ) );
-  Normal2 = vtkMRMLLORVectorMath::Multiply( 1 / vtkMRMLLORVectorMath::Norm( Normal2 ), Normal2 );
+  std::vector<double> Normal2 = LORMath::Subtract( e2, LORMath::Add( LORMath::Multiply( LORMath::Dot( e2, this->GetDirection() ), this->GetDirection() ), LORMath::Multiply( LORMath::Dot( e2, Normal1 ), Normal1 ) ) );
+  Normal2 = LORMath::Multiply( 1 / LORMath::Norm( Normal2 ), Normal2 );
 
   return Normal1;
 }
 
 
-std::vector<double> vtkMRMLLORLineNode
+std::vector<double> vtkLORLine
 ::GetOrthogonalNormal2()
 {
   // Find the two axis unit vectors least parallel with the direction vector
@@ -180,24 +180,24 @@ std::vector<double> vtkMRMLLORLineNode
 	e2.at(0) = 0; e2.at(1) = 1; e2.at(2) = 0;
   }
 
-  std::vector<double> Normal1 = vtkMRMLLORVectorMath::Subtract( e1, vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( e1, this->GetDirection() ), this->GetDirection() ) );
-  Normal1 = vtkMRMLLORVectorMath::Multiply( 1 / vtkMRMLLORVectorMath::Norm( Normal1 ), Normal1 );
+  std::vector<double> Normal1 = LORMath::Subtract( e1, LORMath::Multiply( LORMath::Dot( e1, this->GetDirection() ), this->GetDirection() ) );
+  Normal1 = LORMath::Multiply( 1 / LORMath::Norm( Normal1 ), Normal1 );
 
-  std::vector<double> Normal2 = vtkMRMLLORVectorMath::Subtract( e2, vtkMRMLLORVectorMath::Add( vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( e2, this->GetDirection() ), this->GetDirection() ), vtkMRMLLORVectorMath::Multiply( vtkMRMLLORVectorMath::Dot( e2, Normal1 ), Normal1 ) ) );
-  Normal2 = vtkMRMLLORVectorMath::Multiply( 1 / vtkMRMLLORVectorMath::Norm( Normal2 ), Normal2 );
+  std::vector<double> Normal2 = LORMath::Subtract( e2, LORMath::Add( LORMath::Multiply( LORMath::Dot( e2, this->GetDirection() ), this->GetDirection() ), LORMath::Multiply( LORMath::Dot( e2, Normal1 ), Normal1 ) ) );
+  Normal2 = LORMath::Multiply( 1 / LORMath::Norm( Normal2 ), Normal2 );
 
   return Normal2;
 }
 
 
-std::string vtkMRMLLORLineNode
+std::string vtkLORLine
 ::ToXMLString()
 {
   std::stringstream xmlstring;
 
   xmlstring << "  <Line Name=\"" << this->Name << "\">" << std::endl;
-  xmlstring << "    <BasePoint Value=\"" << vtkMRMLLORVectorMath::VectorToString( this->BasePoint ) << "\"/>" << std::endl;
-  xmlstring << "    <EndPoint Value=\"" << vtkMRMLLORVectorMath::VectorToString( this->EndPoint ) << "\"/>" << std::endl;
+  xmlstring << "    <BasePoint Value=\"" << LORMath::VectorToString( this->BasePoint ) << "\"/>" << std::endl;
+  xmlstring << "    <EndPoint Value=\"" << LORMath::VectorToString( this->EndPoint ) << "\"/>" << std::endl;
 
   if ( this->GetPositionBuffer() != NULL )
   {
@@ -210,7 +210,7 @@ std::string vtkMRMLLORLineNode
 }
 
 
-void vtkMRMLLORLineNode
+void vtkLORLine
 ::FromXMLElement( vtkXMLDataElement* element )
 {
 
@@ -230,15 +230,15 @@ void vtkMRMLLORLineNode
     
 	if ( strcmp( noteElement->GetName(), "BasePoint" ) == 0 )
 	{
-      this->BasePoint = vtkMRMLLORVectorMath::StringToVector( std::string( noteElement->GetAttribute( "Value" ) ), vtkMRMLLORLinearObjectNode::DIMENSION );
+      this->BasePoint = LORMath::StringToVector( std::string( noteElement->GetAttribute( "Value" ) ), vtkLORLinearObject::DIMENSION );
 	}
 	if ( strcmp( noteElement->GetName(), "EndPoint" ) == 0 )
 	{
-      this->EndPoint = vtkMRMLLORVectorMath::StringToVector( std::string( noteElement->GetAttribute( "Value" ) ), vtkMRMLLORLinearObjectNode::DIMENSION );
+      this->EndPoint = LORMath::StringToVector( std::string( noteElement->GetAttribute( "Value" ) ), vtkLORLinearObject::DIMENSION );
 	}
 	if ( strcmp( noteElement->GetName(), "Buffer" ) == 0 )
 	{
-      vtkSmartPointer< vtkMRMLLORPositionBufferNode > bufferNode = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
+      vtkSmartPointer< vtkLORPositionBuffer > bufferNode = vtkSmartPointer< vtkLORPositionBuffer >::New();
 	  bufferNode->FromXMLElement( noteElement );
       this->SetPositionBuffer( bufferNode );
 	}

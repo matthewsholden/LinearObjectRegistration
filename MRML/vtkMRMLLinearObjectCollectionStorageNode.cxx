@@ -12,42 +12,42 @@ Version:   $Revision: 1.2 $
 
 =========================================================================auto=*/
 
-#include "vtkMRMLLORLinearObjectCollectionStorageNode.h"
-#include "vtkMRMLLORLinearObjectCollectionNode.h"
+#include "vtkMRMLLinearObjectCollectionStorageNode.h"
+#include "vtkMRMLLinearObjectCollectionNode.h"
 
 
 // Standard MRML Node Methods ------------------------------------------------------------
 
-vtkMRMLLORLinearObjectCollectionStorageNode* vtkMRMLLORLinearObjectCollectionStorageNode
+vtkMRMLLinearObjectCollectionStorageNode* vtkMRMLLinearObjectCollectionStorageNode
 ::New()
 {
   // First try to create the object from the vtkObjectFactory
-  vtkObject* ret = vtkObjectFactory::CreateInstance( "vtkMRMLLORLinearObjectCollectionStorageNode" );
+  vtkObject* ret = vtkObjectFactory::CreateInstance( "vtkMRMLLinearObjectCollectionStorageNode" );
   if( ret )
     {
-      return ( vtkMRMLLORLinearObjectCollectionStorageNode* )ret;
+      return ( vtkMRMLLinearObjectCollectionStorageNode* )ret;
     }
   // If the factory was unable to create the object, then create it here.
-  return new vtkMRMLLORLinearObjectCollectionStorageNode();
+  return new vtkMRMLLinearObjectCollectionStorageNode();
 }
 
 
-vtkMRMLNode* vtkMRMLLORLinearObjectCollectionStorageNode
+vtkMRMLNode* vtkMRMLLinearObjectCollectionStorageNode
 ::CreateNodeInstance()
 {
   // First try to create the object from the vtkObjectFactory
-  vtkObject* ret = vtkObjectFactory::CreateInstance( "vtkMRMLLORLinearObjectCollectionStorageNode" );
+  vtkObject* ret = vtkObjectFactory::CreateInstance( "vtkMRMLLinearObjectCollectionStorageNode" );
   if( ret )
     {
-      return ( vtkMRMLLORLinearObjectCollectionStorageNode* )ret;
+      return ( vtkMRMLLinearObjectCollectionStorageNode* )ret;
     }
   // If the factory was unable to create the object, then create it here.
-  return new vtkMRMLLORLinearObjectCollectionStorageNode();
+  return new vtkMRMLLinearObjectCollectionStorageNode();
 }
 
 
 
-void vtkMRMLLORLinearObjectCollectionStorageNode
+void vtkMRMLLinearObjectCollectionStorageNode
 ::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
@@ -56,33 +56,33 @@ void vtkMRMLLORLinearObjectCollectionStorageNode
 
 // Constructors and Destructors --------------------------------------------------------------------
 
-vtkMRMLLORLinearObjectCollectionStorageNode
-::vtkMRMLLORLinearObjectCollectionStorageNode()
+vtkMRMLLinearObjectCollectionStorageNode
+::vtkMRMLLinearObjectCollectionStorageNode()
 {
 }
 
 
-vtkMRMLLORLinearObjectCollectionStorageNode
-::~vtkMRMLLORLinearObjectCollectionStorageNode()
+vtkMRMLLinearObjectCollectionStorageNode
+::~vtkMRMLLinearObjectCollectionStorageNode()
 {
 }
 
 // Storage node specific methods ----------------------------------------------------------------------------
-bool vtkMRMLLORLinearObjectCollectionStorageNode
+bool vtkMRMLLinearObjectCollectionStorageNode
 ::CanReadInReferenceNode(vtkMRMLNode *refNode)
 {
-  return refNode->IsA( "vtkMRMLLORLinearObjectCollectionNode" );
+  return refNode->IsA( "vtkMRMLLinearObjectCollectionNode" );
 }
 
 
-void vtkMRMLLORLinearObjectCollectionStorageNode
+void vtkMRMLLinearObjectCollectionStorageNode
 ::InitializeSupportedWriteFileTypes()
 {
   this->SupportedWriteFileTypes->InsertNextValue("Linear Object Collection (.xml)");
 }
 
 
-const char* vtkMRMLLORLinearObjectCollectionStorageNode
+const char* vtkMRMLLinearObjectCollectionStorageNode
 ::GetDefaultWriteFileExtension()
 {
   return "xml";
@@ -91,15 +91,15 @@ const char* vtkMRMLLORLinearObjectCollectionStorageNode
 
 
 // Read and Write methods ----------------------------------------------------------------------------
-int vtkMRMLLORLinearObjectCollectionStorageNode
+int vtkMRMLLinearObjectCollectionStorageNode
 ::ReadDataInternal(vtkMRMLNode *refNode)
 {
-  vtkMRMLLORLinearObjectCollectionNode* collectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( refNode );
+  vtkMRMLLinearObjectCollectionNode* collectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( refNode );
 
   std::string fullName = this->GetFullNameFromFileName(); 
   if ( fullName == std::string( "" ) ) 
   {
-    vtkErrorMacro("vtkMRMLLORLinearObjectCollectionNode: File name not specified");
+    vtkErrorMacro("vtkMRMLLinearObjectCollectionNode: File name not specified");
     return 0;
   }
 
@@ -119,15 +119,15 @@ int vtkMRMLLORLinearObjectCollectionStorageNode
 }
 
 //----------------------------------------------------------------------------
-int vtkMRMLLORLinearObjectCollectionStorageNode
+int vtkMRMLLinearObjectCollectionStorageNode
 ::WriteDataInternal(vtkMRMLNode *refNode)
 {
-  vtkMRMLLORLinearObjectCollectionNode* collectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( refNode );
+  vtkMRMLLinearObjectCollectionNode* collectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( refNode );
 
   std::string fullName =  this->GetFullNameFromFileName();
   if ( fullName == std::string( "" ) ) 
   {
-    vtkErrorMacro("vtkMRMLLORLinearObjectCollectionNode: File name not specified");
+    vtkErrorMacro("vtkMRMLLinearObjectCollectionNode: File name not specified");
     return 0;
   }
 

@@ -1,47 +1,47 @@
 
-#include "vtkMRMLLORLinearObjectCollectionNode.h"
+#include "vtkMRMLLinearObjectCollectionNode.h"
 
 // Constructors and Destructors
 // ----------------------------------------------------------------------------
 
-vtkMRMLLORLinearObjectCollectionNode* vtkMRMLLORLinearObjectCollectionNode
+vtkMRMLLinearObjectCollectionNode* vtkMRMLLinearObjectCollectionNode
 ::New()
 {
   // First try to create the object from the vtkObjectFactory
-  vtkObject* ret = vtkObjectFactory::CreateInstance( "vtkMRMLLORLinearObjectCollectionNode" );
+  vtkObject* ret = vtkObjectFactory::CreateInstance( "vtkMRMLLinearObjectCollectionNode" );
   if( ret )
     {
-      return ( vtkMRMLLORLinearObjectCollectionNode* )ret;
+      return ( vtkMRMLLinearObjectCollectionNode* )ret;
     }
   // If the factory was unable to create the object, then create it here.
-  return new vtkMRMLLORLinearObjectCollectionNode;
+  return new vtkMRMLLinearObjectCollectionNode;
 }
 
 
-vtkMRMLLORLinearObjectCollectionNode
-::vtkMRMLLORLinearObjectCollectionNode()
+vtkMRMLLinearObjectCollectionNode
+::vtkMRMLLinearObjectCollectionNode()
 {
   this->ModelHierarchyNodeID = "";
 }
 
 
-vtkMRMLLORLinearObjectCollectionNode
-::~vtkMRMLLORLinearObjectCollectionNode()
+vtkMRMLLinearObjectCollectionNode
+::~vtkMRMLLinearObjectCollectionNode()
 {
   this->Clear();
 }
 
-vtkMRMLNode* vtkMRMLLORLinearObjectCollectionNode
+vtkMRMLNode* vtkMRMLLinearObjectCollectionNode
 ::CreateNodeInstance()
 {
   // First try to create the object from the vtkObjectFactory
-  vtkObject* ret = vtkObjectFactory::CreateInstance( "vtkMRMLLORLinearObjectCollectionNode" );
+  vtkObject* ret = vtkObjectFactory::CreateInstance( "vtkMRMLLinearObjectCollectionNode" );
   if( ret )
     {
-      return ( vtkMRMLLORLinearObjectCollectionNode* )ret;
+      return ( vtkMRMLLinearObjectCollectionNode* )ret;
     }
   // If the factory was unable to create the object, then create it here.
-  return new vtkMRMLLORLinearObjectCollectionNode;
+  return new vtkMRMLLinearObjectCollectionNode;
 }
 
 
@@ -49,7 +49,7 @@ vtkMRMLNode* vtkMRMLLORLinearObjectCollectionNode
 // ----------------------------------------------------------------------------
 
 
-void vtkMRMLLORLinearObjectCollectionNode::WriteXML( ostream& of, int nIndent )
+void vtkMRMLLinearObjectCollectionNode::WriteXML( ostream& of, int nIndent )
 {
   Superclass::WriteXML(of, nIndent);
   // TODO: Implement this method
@@ -57,7 +57,7 @@ void vtkMRMLLORLinearObjectCollectionNode::WriteXML( ostream& of, int nIndent )
 
 
 
-void vtkMRMLLORLinearObjectCollectionNode::ReadXMLAttributes( const char** atts )
+void vtkMRMLLinearObjectCollectionNode::ReadXMLAttributes( const char** atts )
 {
   Superclass::ReadXMLAttributes(atts);
 
@@ -81,10 +81,10 @@ void vtkMRMLLORLinearObjectCollectionNode::ReadXMLAttributes( const char** atts 
 // Slicer Scene
 // ----------------------------------------------------------------------------
 
-void vtkMRMLLORLinearObjectCollectionNode::Copy( vtkMRMLNode *anode )
+void vtkMRMLLinearObjectCollectionNode::Copy( vtkMRMLNode *anode )
 {  
   Superclass::Copy( anode );
-  vtkMRMLLORLinearObjectCollectionNode *node = ( vtkMRMLLORLinearObjectCollectionNode* ) anode;
+  vtkMRMLLinearObjectCollectionNode *node = ( vtkMRMLLinearObjectCollectionNode* ) anode;
   
   // Note: It seems that the WriteXML function copies the node then writes the copied node to file
   // So, anything we want in the MRML file we must copy here (I don't think we need to copy other things)
@@ -108,7 +108,7 @@ void vtkMRMLLORLinearObjectCollectionNode::Copy( vtkMRMLNode *anode )
 
 
 
-void vtkMRMLLORLinearObjectCollectionNode::PrintSelf( ostream& os, vtkIndent indent )
+void vtkMRMLLinearObjectCollectionNode::PrintSelf( ostream& os, vtkIndent indent )
 {
   vtkMRMLNode::PrintSelf(os,indent);
   // TODO: Implement this
@@ -120,14 +120,14 @@ void vtkMRMLLORLinearObjectCollectionNode::PrintSelf( ostream& os, vtkIndent ind
 // Linear Object Collection node specific methods
 // ----------------------------------------------------------------------------
 
-int vtkMRMLLORLinearObjectCollectionNode
+int vtkMRMLLinearObjectCollectionNode
 ::Size()
 {
   return this->LinearObjects.size();
 }
 
 
-vtkMRMLLORLinearObjectNode* vtkMRMLLORLinearObjectCollectionNode
+vtkLORLinearObject* vtkMRMLLinearObjectCollectionNode
 ::GetLinearObject( int index )
 {
   if ( index < 0 || index >= this->Size() )
@@ -139,7 +139,7 @@ vtkMRMLLORLinearObjectNode* vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-vtkMRMLLORLinearObjectNode* vtkMRMLLORLinearObjectCollectionNode
+vtkLORLinearObject* vtkMRMLLinearObjectCollectionNode
 ::GetLinearObject( std::string name )
 {
   for ( int i = 0; i < this->Size(); i++ )
@@ -154,8 +154,8 @@ vtkMRMLLORLinearObjectNode* vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-int vtkMRMLLORLinearObjectCollectionNode
-::GetLinearObjectPosition( vtkMRMLLORLinearObjectNode* node )
+int vtkMRMLLinearObjectCollectionNode
+::GetLinearObjectPosition( vtkLORLinearObject* node )
 {
   for ( int i = 0; i < this->Size(); i++ )
   {
@@ -169,16 +169,16 @@ int vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-void vtkMRMLLORLinearObjectCollectionNode
-::AddLinearObject( vtkMRMLLORLinearObjectNode* newObject )
+void vtkMRMLLinearObjectCollectionNode
+::AddLinearObject( vtkLORLinearObject* newObject )
 {
   this->LinearObjects.push_back( newObject );
   this->Modified();
 }
 
 
-void vtkMRMLLORLinearObjectCollectionNode
-::Concatenate( vtkMRMLLORLinearObjectCollectionNode* catBuffer )
+void vtkMRMLLinearObjectCollectionNode
+::Concatenate( vtkMRMLLinearObjectCollectionNode* catBuffer )
 {
   for ( int i = 0; i < catBuffer->Size(); i++ )
   {
@@ -187,8 +187,8 @@ void vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-void vtkMRMLLORLinearObjectCollectionNode
-::SetLinearObject( int index, vtkMRMLLORLinearObjectNode* newObject )
+void vtkMRMLLinearObjectCollectionNode
+::SetLinearObject( int index, vtkLORLinearObject* newObject )
 {
   if ( index < 0 )
   {
@@ -204,7 +204,7 @@ void vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-void vtkMRMLLORLinearObjectCollectionNode
+void vtkMRMLLinearObjectCollectionNode
 ::RemoveLinearObject( int index )
 {
   // The exact slot is important, so don't change anything else
@@ -216,10 +216,10 @@ void vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-void vtkMRMLLORLinearObjectCollectionNode
+void vtkMRMLLinearObjectCollectionNode
 ::ShuffleOutNull()
 {
-  std::vector< vtkSmartPointer< vtkMRMLLORLinearObjectNode > > newObjects;
+  std::vector< vtkSmartPointer< vtkLORLinearObject > > newObjects;
 
   for ( int i = 0; i < this->Size(); i++ )
   {
@@ -234,7 +234,7 @@ void vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-void vtkMRMLLORLinearObjectCollectionNode
+void vtkMRMLLinearObjectCollectionNode
 ::Swap( int index0, int index1 )
 {
   // Allow indices bigger than the size - this will just add more objects to the collection
@@ -244,8 +244,8 @@ void vtkMRMLLORLinearObjectCollectionNode
   }
 
   // These should be vtkSmartPointers so the underlying objects are not deleted
-  vtkSmartPointer< vtkMRMLLORLinearObjectNode > linearObject0 = this->GetLinearObject( index0 );
-  vtkSmartPointer< vtkMRMLLORLinearObjectNode > linearObject1 = this->GetLinearObject( index1 );
+  vtkSmartPointer< vtkLORLinearObject > linearObject0 = this->GetLinearObject( index0 );
+  vtkSmartPointer< vtkLORLinearObject > linearObject1 = this->GetLinearObject( index1 );
 
   this->SetLinearObject( index0, linearObject1 );
   this->SetLinearObject( index1, linearObject0 );
@@ -254,7 +254,7 @@ void vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-void vtkMRMLLORLinearObjectCollectionNode
+void vtkMRMLLinearObjectCollectionNode
 ::Clear()
 {
   this->LinearObjects.clear();
@@ -262,12 +262,12 @@ void vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-void vtkMRMLLORLinearObjectCollectionNode
+void vtkMRMLLinearObjectCollectionNode
 ::Translate( std::vector<double> vector )
 {
   for ( int i = 0; i < this->Size(); i++ )
   {
-    vtkMRMLLORLinearObjectNode* currentLinearObject = this->GetLinearObject( i );
+    vtkLORLinearObject* currentLinearObject = this->GetLinearObject( i );
 
     if ( currentLinearObject == NULL )
     {
@@ -284,8 +284,8 @@ void vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-void vtkMRMLLORLinearObjectCollectionNode
-::CalculateSignature( vtkMRMLLORLinearObjectCollectionNode* refBuffer )
+void vtkMRMLLinearObjectCollectionNode
+::CalculateSignature( vtkMRMLLinearObjectCollectionNode* refBuffer )
 {
   // Calculate the signature of everything in this, assume the inputted object is a buffer of references
   for ( int i = 0; i < this->Size(); i++ )
@@ -303,12 +303,12 @@ void vtkMRMLLORLinearObjectCollectionNode
 
 
 // TODO: This function may be should be moved to the logic
-vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkMRMLLORLinearObjectCollectionNode
-::GetMatches( vtkMRMLLORLinearObjectCollectionNode* candidates, double matchingThreshold )
+vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > vtkMRMLLinearObjectCollectionNode
+::GetMatches( vtkMRMLLinearObjectCollectionNode* candidates, double matchingThreshold )
 {
   // For each object in this, find the object in candidates that has the closest signature
-  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > matchedCandidates = vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode >::New();
-  std::vector< vtkSmartPointer< vtkMRMLLORLinearObjectNode > > matchedObjects;
+  vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > matchedCandidates = vtkSmartPointer< vtkMRMLLinearObjectCollectionNode >::New();
+  std::vector< vtkSmartPointer< vtkLORLinearObject > > matchedObjects;
 
   if ( this->Size() == 0 || candidates->Size() == 0 )
   {
@@ -319,12 +319,12 @@ vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkMRMLLORLinearObjectCo
   for ( int i = 0; i < this->Size(); i++ )
   {
 
-    vtkMRMLLORLinearObjectNode* closestObject = candidates->GetLinearObject(0);
-    double closestDistance = vtkMRMLLORVectorMath::Distance( this->GetLinearObject(i)->GetSignature(), closestObject->GetSignature() );
+    vtkLORLinearObject* closestObject = candidates->GetLinearObject(0);
+    double closestDistance = LORMath::Distance( this->GetLinearObject(i)->GetSignature(), closestObject->GetSignature() );
 
     for ( int j = 0; j < candidates->Size(); j++ )
 	{
-      double currDistance = vtkMRMLLORVectorMath::Distance( this->GetLinearObject(i)->GetSignature(), candidates->GetLinearObject(j)->GetSignature() );
+      double currDistance = LORMath::Distance( this->GetLinearObject(i)->GetSignature(), candidates->GetLinearObject(j)->GetSignature() );
 	  if ( currDistance < closestDistance )
 	  {
 	    closestObject = candidates->GetLinearObject(j);
@@ -349,7 +349,7 @@ vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > vtkMRMLLORLinearObjectCo
 }
 
 
-bool vtkMRMLLORLinearObjectCollectionNode
+bool vtkMRMLLinearObjectCollectionNode
 ::AllHavePositionBuffers()
 {
   for ( int i = 0; i < this->Size(); i++ )
@@ -363,7 +363,7 @@ bool vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-std::vector<double> vtkMRMLLORLinearObjectCollectionNode
+std::vector<double> vtkMRMLLinearObjectCollectionNode
 ::CalculateCentroid()
 {
   const double CONDITION_THRESHOLD = 1e-3;
@@ -374,17 +374,17 @@ std::vector<double> vtkMRMLLORLinearObjectCollectionNode
   }
 
   // Assume each will take 3 rows. If it doesn't leaving them blank won't affect the result
-  vnl_matrix<double>* A = new vnl_matrix<double>( vtkMRMLLORLinearObjectNode::DIMENSION * this->Size(), vtkMRMLLORLinearObjectNode::DIMENSION, 0.0 );
-  vnl_matrix<double>* B = new vnl_matrix<double>( vtkMRMLLORLinearObjectNode::DIMENSION * this->Size(), 1, 0.0 );
+  vnl_matrix<double>* A = new vnl_matrix<double>( vtkLORLinearObject::DIMENSION * this->Size(), vtkLORLinearObject::DIMENSION, 0.0 );
+  vnl_matrix<double>* B = new vnl_matrix<double>( vtkLORLinearObject::DIMENSION * this->Size(), 1, 0.0 );
 
   // We wish to solve the system A * X = B
   for ( int i = 0; i < this->Size(); i++ )
   {
-    int row = vtkMRMLLORLinearObjectNode::DIMENSION * i; 
+    int row = vtkLORLinearObject::DIMENSION * i; 
     // A = I for point, B = coordinates
     if ( strcmp( this->GetLinearObject(i)->GetType().c_str(), "Point" ) == 0 )
 	{
-      vtkSmartPointer< vtkMRMLLORPointNode > PointObject = vtkMRMLLORPointNode::SafeDownCast( this->GetLinearObject(i) );
+      vtkSmartPointer< vtkLORPoint > PointObject = vtkLORPoint::SafeDownCast( this->GetLinearObject(i) );
       A->put( row + 0, 0, 1.0 ); 
       A->put( row + 1, 1, 1.0 );
 	  A->put( row + 2, 2, 1.0 );
@@ -396,25 +396,25 @@ std::vector<double> vtkMRMLLORLinearObjectCollectionNode
 	// A = Normal 1, Normal 2, B = Dot( Normal 1, BasePoint ), Dot( Normal 2, BasePoint )
 	if ( strcmp( this->GetLinearObject(i)->GetType().c_str(), "Line" ) == 0 )
 	{
-      vtkSmartPointer< vtkMRMLLORLineNode > LineObject = vtkMRMLLORLineNode::SafeDownCast( this->GetLinearObject(i) );
+      vtkSmartPointer< vtkLORLine > LineObject = vtkLORLine::SafeDownCast( this->GetLinearObject(i) );
       A->put( row + 0, 0, LineObject->GetOrthogonalNormal1().at(0) );
 	  A->put( row + 0, 1, LineObject->GetOrthogonalNormal1().at(1) );
 	  A->put( row + 0, 2, LineObject->GetOrthogonalNormal1().at(2) );
       A->put( row + 1, 0, LineObject->GetOrthogonalNormal2().at(0) );
 	  A->put( row + 1, 1, LineObject->GetOrthogonalNormal2().at(1) );
 	  A->put( row + 1, 2, LineObject->GetOrthogonalNormal2().at(2) );
-      B->put( row + 0, 0, vtkMRMLLORVectorMath::Dot( LineObject->GetOrthogonalNormal1(), LineObject->GetBasePoint() ) );
-      B->put( row + 1, 0, vtkMRMLLORVectorMath::Dot( LineObject->GetOrthogonalNormal2(), LineObject->GetBasePoint() ) );
+      B->put( row + 0, 0, LORMath::Dot( LineObject->GetOrthogonalNormal1(), LineObject->GetBasePoint() ) );
+      B->put( row + 1, 0, LORMath::Dot( LineObject->GetOrthogonalNormal2(), LineObject->GetBasePoint() ) );
 	}
 
 	// A = Normal, B = Dot( Normal, BasePoint )
 	if ( strcmp( this->GetLinearObject(i)->GetType().c_str(), "Plane" ) == 0 )
 	{
-      vtkSmartPointer< vtkMRMLLORPlaneNode > PlaneObject = vtkMRMLLORPlaneNode::SafeDownCast( this->GetLinearObject(i) );
+      vtkSmartPointer< vtkLORPlane > PlaneObject = vtkLORPlane::SafeDownCast( this->GetLinearObject(i) );
       A->put( row + 0, 0, PlaneObject->GetNormal().at(0) );
 	  A->put( row + 0, 1, PlaneObject->GetNormal().at(1) );
 	  A->put( row + 0, 2, PlaneObject->GetNormal().at(2) );
-      B->put( row + 0, 0, vtkMRMLLORVectorMath::Dot( PlaneObject->GetNormal(), PlaneObject->GetBasePoint() ) );
+      B->put( row + 0, 0, LORMath::Dot( PlaneObject->GetNormal(), PlaneObject->GetBasePoint() ) );
 	}
 
   }
@@ -427,7 +427,7 @@ std::vector<double> vtkMRMLLORLinearObjectCollectionNode
   }
   vnl_matrix<double>* Y = new vnl_matrix<double>( X->inverse() * A->transpose() * (*B) );
 
-  std::vector<double> centroid( vtkMRMLLORLinearObjectNode::DIMENSION, 0.0 );
+  std::vector<double> centroid( vtkLORLinearObject::DIMENSION, 0.0 );
   centroid.at(0) = Y->get( 0, 0 );
   centroid.at(1) = Y->get( 1, 0 );
   centroid.at(2) = Y->get( 2, 0 );
@@ -436,14 +436,14 @@ std::vector<double> vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-std::string vtkMRMLLORLinearObjectCollectionNode
+std::string vtkMRMLLinearObjectCollectionNode
 ::GetModelHierarchyNodeID()
 {
   return this->ModelHierarchyNodeID;
 }
 
 
-void vtkMRMLLORLinearObjectCollectionNode
+void vtkMRMLLinearObjectCollectionNode
 ::SetModelHierarchyNodeID( std::string newModelHierarchyNodeID )
 {
   this->ModelHierarchyNodeID = newModelHierarchyNodeID;
@@ -451,7 +451,7 @@ void vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-std::string vtkMRMLLORLinearObjectCollectionNode
+std::string vtkMRMLLinearObjectCollectionNode
 ::ToXMLString()
 {
   std::stringstream xmlstring;
@@ -467,7 +467,7 @@ std::string vtkMRMLLORLinearObjectCollectionNode
 }
 
 
-void vtkMRMLLORLinearObjectCollectionNode
+void vtkMRMLLinearObjectCollectionNode
 ::FromXMLElement( vtkXMLDataElement* element )
 {
   if ( strcmp( element->GetName(), "LinearObjectCollection" ) != 0 )
@@ -475,8 +475,8 @@ void vtkMRMLLORLinearObjectCollectionNode
     return;
   }
 
-  vtkSmartPointer< vtkMRMLLORLinearObjectNode > blankObject = NULL;
-  this->LinearObjects = std::vector< vtkSmartPointer< vtkMRMLLORLinearObjectNode > >( 0, blankObject );
+  vtkSmartPointer< vtkLORLinearObject > blankObject = NULL;
+  this->LinearObjects = std::vector< vtkSmartPointer< vtkLORLinearObject > >( 0, blankObject );
 
   int numElements = element->GetNumberOfNestedElements();
 
@@ -487,25 +487,25 @@ void vtkMRMLLORLinearObjectCollectionNode
     
 	if ( strcmp( noteElement->GetName(), "Reference" ) == 0 )
 	{
-      vtkSmartPointer< vtkMRMLLORReferenceNode > newObject = vtkSmartPointer< vtkMRMLLORReferenceNode >::New();
+      vtkSmartPointer< vtkLORReference > newObject = vtkSmartPointer< vtkLORReference >::New();
 	  newObject->FromXMLElement( noteElement );
 	  this->AddLinearObject( newObject );
 	}
 	if ( strcmp( noteElement->GetName(), "Point" ) == 0 )
 	{
-      vtkSmartPointer< vtkMRMLLORPointNode > newObject = vtkSmartPointer< vtkMRMLLORPointNode >::New();
+      vtkSmartPointer< vtkLORPoint > newObject = vtkSmartPointer< vtkLORPoint >::New();
 	  newObject->FromXMLElement( noteElement );
 	  this->AddLinearObject( newObject );
 	}
 	if ( strcmp( noteElement->GetName(), "Line" ) == 0 )
 	{
-      vtkSmartPointer< vtkMRMLLORLineNode > newObject = vtkSmartPointer< vtkMRMLLORLineNode >::New();
+      vtkSmartPointer< vtkLORLine > newObject = vtkSmartPointer< vtkLORLine >::New();
 	  newObject->FromXMLElement( noteElement );
 	  this->AddLinearObject( newObject );
 	}
 	if ( strcmp( noteElement->GetName(), "Plane" ) == 0 )
 	{
-      vtkSmartPointer< vtkMRMLLORPlaneNode > newObject = vtkSmartPointer< vtkMRMLLORPlaneNode >::New();
+      vtkSmartPointer< vtkLORPlane > newObject = vtkSmartPointer< vtkLORPlane >::New();
 	  newObject->FromXMLElement( noteElement );
 	  this->AddLinearObject( newObject );
 	}

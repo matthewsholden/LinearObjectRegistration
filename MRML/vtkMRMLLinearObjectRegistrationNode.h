@@ -30,7 +30,7 @@
 #include "vtkObjectBase.h"
 #include "vtkObjectFactory.h"
 
-#include "vtkMRMLLORRealTimePositionBufferNode.h"
+#include "vtkLORRealTimePositionBuffer.h"
 
 // LinearObjectRegistration includes
 #include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
@@ -105,7 +105,7 @@ public:
   void ObserveAllReferenceNodes();
 
   std::string GetCollectionState();
-  vtkMRMLLORPositionBufferNode* GetActivePositionBuffer();
+  vtkLORPositionBuffer* GetActivePositionBuffer();
 
   void StartCollecting( std::string newCollectionState );
   void StopCollecting();
@@ -118,7 +118,7 @@ private:
   std::string AutomaticMatch;
 
   std::string CollectionState;
-  vtkSmartPointer< vtkMRMLLORRealTimePositionBufferNode > ActivePositionBuffer;
+  vtkSmartPointer< vtkLORRealTimePositionBuffer > ActivePositionBuffer;
 
   double NoiseThreshold;
   double MatchingThreshold;

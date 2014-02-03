@@ -12,10 +12,10 @@ set(${KIT}_INCLUDE_DIRECTORIES
 # Sources
 
 set(${KIT}_SRCS
-  vtkMRMLLORVectorMath.cxx
-  vtkMRMLLORVectorMath.h
-  vtkMRMLLORConstants.cxx
-  vtkMRMLLORConstants.h
+  LORMath.cxx
+  LORMath.h
+  LORConstants.cxx
+  LORConstants.h
   )
 
 SET (${KIT}_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "" FORCE)

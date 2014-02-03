@@ -51,7 +51,7 @@ public:
   vtkMRMLNode* GetCurrentNode();
   void SetCurrentNode( vtkMRMLNode* currentNode );
   void SetNodeBaseName( std::string newNodeBaseName );
-  vtkMRMLLORLinearObjectNode* GetCurrentLinearObject();
+  vtkLORLinearObject* GetCurrentLinearObject();
 
 protected slots:
 

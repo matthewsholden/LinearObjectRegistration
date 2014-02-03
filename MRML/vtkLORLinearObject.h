@@ -1,6 +1,6 @@
 
-#ifndef __vtkMRMLLORLinearObjectNode_h
-#define __vtkMRMLLORLinearObjectNode_h
+#ifndef __vtkLORLinearObject_h
+#define __vtkLORLinearObject_h
 
 // Standard includes
 #include <string>
@@ -17,25 +17,25 @@
 #include "vtkPolyData.h"
 
 // LinearObjectRegistration includes
-#include "vtkMRMLLORVectorMath.h"
+#include "LORMath.h"
 
-#include "vtkMRMLLORPositionBufferNode.h"
+#include "vtkLORPositionBuffer.h"
 #include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
 
 // This class stores a vector of values and a string label
 class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
-vtkMRMLLORLinearObjectNode : public vtkObject
+vtkLORLinearObject : public vtkObject
 {
 public:
-  vtkTypeMacro( vtkMRMLLORLinearObjectNode, vtkObject );
+  vtkTypeMacro( vtkLORLinearObject, vtkObject );
 
   // No "New" function - this class will be abstract
 
 protected:
 
   // Constructor/Destructor
-  vtkMRMLLORLinearObjectNode();
-  virtual ~vtkMRMLLORLinearObjectNode();
+  vtkLORLinearObject();
+  virtual ~vtkLORLinearObject();
 
 public:
 
@@ -44,8 +44,8 @@ public:
 
   double DistanceToVector( std::vector<double> vector );
 
-  vtkMRMLLORPositionBufferNode* GetPositionBuffer();
-  void SetPositionBuffer( vtkMRMLLORPositionBufferNode* newPositionBuffer );
+  vtkLORPositionBuffer* GetPositionBuffer();
+  void SetPositionBuffer( vtkLORPositionBuffer* newPositionBuffer );
 
   void Filter( int filterWidth );
 
@@ -63,7 +63,7 @@ public:
   void SetModelHierarchyNodeID( std::string newModelHierarchyNodeID );
 
   // Abstract functions that must be implemented in subclasses
-  virtual vtkSmartPointer< vtkMRMLLORLinearObjectNode > DeepCopy() = 0;
+  virtual vtkSmartPointer< vtkLORLinearObject > DeepCopy() = 0;
 
   virtual vtkPolyData* CreateModelPolyData() = 0;
 
@@ -81,7 +81,7 @@ protected:
   std::vector<double> Signature;
   std::vector<double> BasePoint;
 
-  vtkSmartPointer< vtkMRMLLORPositionBufferNode > PositionBuffer;
+  vtkSmartPointer< vtkLORPositionBuffer > PositionBuffer;
 
 };
 

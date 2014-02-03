@@ -6,14 +6,14 @@
   or http://www.slicer.org/copyright/copyright.txt for details.
 
   Program:   3D Slicer
-  Module:    $RCSfile: vtkMRMLLORLinearObjectCollectionStorageNode.h,v $
+  Module:    $RCSfile: vtkMRMLLinearObjectCollectionStorageNode.h,v $
   Date:      $Date: 2006/03/19 17:12:29 $
   Version:   $Revision: 1.3 $
 
 =========================================================================auto=*/
 
-#ifndef __vtkMRMLLORLinearObjectCollectionStorageNode_h
-#define __vtkMRMLLORLinearObjectCollectionStorageNode_h
+#ifndef __vtkMRMLLinearObjectCollectionStorageNode_h
+#define __vtkMRMLLinearObjectCollectionStorageNode_h
 
 // Standard includes
 #include <ctime>
@@ -32,13 +32,13 @@
 
 /// Storage nodes has methods to read/write transform bufferss to/from disk.
 class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
-vtkMRMLLORLinearObjectCollectionStorageNode : public vtkMRMLStorageNode
+vtkMRMLLinearObjectCollectionStorageNode : public vtkMRMLStorageNode
 {
 public:
-  vtkTypeMacro( vtkMRMLLORLinearObjectCollectionStorageNode, vtkMRMLStorageNode );
+  vtkTypeMacro( vtkMRMLLinearObjectCollectionStorageNode, vtkMRMLStorageNode );
 
   // Standard MRML node methods  
-  static vtkMRMLLORLinearObjectCollectionStorageNode* New();
+  static vtkMRMLLinearObjectCollectionStorageNode* New();
   virtual vtkMRMLNode* CreateNodeInstance();
   virtual const char* GetNodeTagName()  { return "LORLinearObjectCollectionStorage"; };
   void PrintSelf(ostream& os, vtkIndent indent);
@@ -54,10 +54,10 @@ public:
 
 protected:
   // Constructor/deconstructor
-  vtkMRMLLORLinearObjectCollectionStorageNode();
-  ~vtkMRMLLORLinearObjectCollectionStorageNode();
-  vtkMRMLLORLinearObjectCollectionStorageNode(const vtkMRMLLORLinearObjectCollectionStorageNode&);
-  void operator=(const vtkMRMLLORLinearObjectCollectionStorageNode&);
+  vtkMRMLLinearObjectCollectionStorageNode();
+  ~vtkMRMLLinearObjectCollectionStorageNode();
+  vtkMRMLLinearObjectCollectionStorageNode(const vtkMRMLLinearObjectCollectionStorageNode&);
+  void operator=(const vtkMRMLLinearObjectCollectionStorageNode&);
 
 
   /// Read data and set it in the referenced node

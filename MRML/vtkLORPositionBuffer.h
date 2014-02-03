@@ -1,6 +1,6 @@
 
-#ifndef __vtkMRMLLORPositionBufferNode_h
-#define __vtkMRMLLORPositionBufferNode_h
+#ifndef __vtkLORPositionBuffer_h
+#define __vtkLORPositionBuffer_h
 
 // Standard includes
 #include <string>
@@ -20,32 +20,32 @@
 #include "vnl/algo/vnl_svd.h"
 
 // LinearObjectRegistration includes
-#include "vtkMRMLLORPositionNode.h"
+#include "vtkLORPosition.h"
 #include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
 
 
 class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
-vtkMRMLLORPositionBufferNode : public vtkObject
+vtkLORPositionBuffer : public vtkObject
 {
 public:
-  vtkTypeMacro( vtkMRMLLORPositionBufferNode, vtkObject );
+  vtkTypeMacro( vtkLORPositionBuffer, vtkObject );
 
-  static vtkMRMLLORPositionBufferNode* New();
+  static vtkLORPositionBuffer* New();
 
-  vtkSmartPointer< vtkMRMLLORPositionBufferNode > DeepCopy();
+  vtkSmartPointer< vtkLORPositionBuffer > DeepCopy();
 
 protected:
 
   // Constructor/destructor
-  vtkMRMLLORPositionBufferNode();
-  virtual ~vtkMRMLLORPositionBufferNode();
+  vtkLORPositionBuffer();
+  virtual ~vtkLORPositionBuffer();
 
 public:
 
   // Standard collection functionality
   int Size();
-  vtkMRMLLORPositionNode* GetPosition( int index );
-  virtual void AddPosition( vtkMRMLLORPositionNode* newPosition );
+  vtkLORPosition* GetPosition( int index );
+  virtual void AddPosition( vtkLORPosition* newPosition );
   void Clear();
   void Trim( int trimSize );
 
@@ -59,7 +59,7 @@ public:
   void FromXMLElement( vtkXMLDataElement* element );
 
 protected:
-  std::vector< vtkSmartPointer< vtkMRMLLORPositionNode > > Positions;
+  std::vector< vtkSmartPointer< vtkLORPosition > > Positions;
 
 };
 

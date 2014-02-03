@@ -67,7 +67,7 @@ vtkMRMLLinearObjectRegistrationNode
   this->AutomaticMatch = "True";
 
   this->CollectionState = "";
-  this->ActivePositionBuffer = vtkSmartPointer< vtkMRMLLORRealTimePositionBufferNode >::New();
+  this->ActivePositionBuffer = vtkSmartPointer< vtkLORRealTimePositionBuffer >::New();
 
   //TODO: Should these be zero or "default" values
   this->NoiseThreshold = 0.5;
@@ -458,7 +458,7 @@ std::string vtkMRMLLinearObjectRegistrationNode
 // ----------------------------------------------------------------------------------------------------------
 
 
-vtkMRMLLORPositionBufferNode* vtkMRMLLinearObjectRegistrationNode
+vtkLORPositionBuffer* vtkMRMLLinearObjectRegistrationNode
 ::GetActivePositionBuffer()
 {
   return this->ActivePositionBuffer;
@@ -517,8 +517,8 @@ void vtkMRMLLinearObjectRegistrationNode
     return;
   }
 
-  vtkMRMLLORPositionNode* tempPosition = vtkMRMLLORPositionNode::New( transformNode->GetMatrixTransformToParent() );
-  vtkSmartPointer< vtkMRMLLORPositionNode > newPosition = vtkSmartPointer< vtkMRMLLORPositionNode >::Take( tempPosition );
+  vtkLORPosition* tempPosition = vtkLORPosition::New( transformNode->GetMatrixTransformToParent() );
+  vtkSmartPointer< vtkLORPosition > newPosition = vtkSmartPointer< vtkLORPosition >::Take( tempPosition );
 
   this->GetActivePositionBuffer()->AddPosition( newPosition );
 
@@ -531,7 +531,7 @@ void vtkMRMLLinearObjectRegistrationNode
   int positionBufferDOF = this->GetActivePositionBuffer()->GetDOF( this->GetNoiseThreshold() );
 
   // If it is, then keep going
-  if ( positionBufferDOF <= vtkMRMLLORConstants::PLANE_DOF )
+  if ( positionBufferDOF <= LORConstants::PLANE_DOF )
   {
     return;
   }

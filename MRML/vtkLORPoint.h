@@ -1,7 +1,7 @@
+#ifndef __vtkLORPoint_h
+#define __vtkLORPoint_h
 
-#ifndef __vtkMRMLLORLineNode_h
-#define __vtkMRMLLORLineNode_h
-
+#include "vtkLORLinearObject.h"
 
 // Standard includes
 #include <string>
@@ -10,39 +10,37 @@
 #include <cmath>
 
 // VTK includes
-#include "vtkSmartPointer.h"
 #include "vtkObject.h"
 #include "vtkObjectBase.h"
 #include "vtkObjectFactory.h"
 #include "vtkXMLDataElement.h"
-#include "vtkLineSource.h"
+#include "vtkPointSource.h"
 
 // LinearObjectRegistration includes
-#include "vtkMRMLLORLinearObjectNode.h"
+#include "vtkLORLinearObject.h"
 #include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
+
 
 // This class stores a vector of values and a string label
 class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
-vtkMRMLLORLineNode : public vtkMRMLLORLinearObjectNode
+vtkLORPoint : public vtkLORLinearObject
 {
 public:
-  vtkTypeMacro( vtkMRMLLORLineNode, vtkObject );
+  vtkTypeMacro( vtkLORPoint, vtkObject );
 
-  static vtkMRMLLORLineNode* New();
-  static vtkMRMLLORLineNode* New( std::vector<double> newBasePoint, std::vector<double> newEndPoint );
+  static vtkLORPoint* New();
+  static vtkLORPoint* New( std::vector<double> newBasePoint );
 
-  vtkSmartPointer< vtkMRMLLORLinearObjectNode > DeepCopy();
+  vtkSmartPointer< vtkLORLinearObject > DeepCopy();
 
 protected:
 
-  // Constructor/destructor
-  vtkMRMLLORLineNode();
-  virtual ~vtkMRMLLORLineNode();
+  // Constructor/desstructor
+  vtkLORPoint();
+  virtual ~vtkLORPoint();
 
 
 public:
-
-  std::vector<double> GetDirection();
 
   // Implement inherited abstract methods
   std::vector<double> ProjectVector( std::vector<double> vector );
@@ -50,17 +48,9 @@ public:
 
   vtkPolyData* CreateModelPolyData();
 
-  std::vector<double> GetOrthogonalNormal1();
-  std::vector<double> GetOrthogonalNormal2();
-
   // Implement inherited abstract methods
   std::string ToXMLString();
   void FromXMLElement( vtkXMLDataElement* element );
-
-
-protected:
-
-  std::vector<double> EndPoint;
 
 };
 

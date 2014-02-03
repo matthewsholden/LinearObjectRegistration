@@ -1,6 +1,6 @@
 
-#ifndef __vtkMRMLLORPlaneNode_h
-#define __vtkMRMLLORPlaneNode_h
+#ifndef __vtkLORReference_h
+#define __vtkLORReference_h
 
 // Standard includes
 #include <string>
@@ -13,34 +13,33 @@
 #include "vtkObjectBase.h"
 #include "vtkObjectFactory.h"
 #include "vtkXMLDataElement.h"
-#include "vtkPlaneSource.h"
+#include "vtkPointSource.h"
 
 // LinearObjectRegistration includes
-#include "vtkMRMLLORLinearObjectNode.h"
+#include "vtkLORLinearObject.h"
 #include "vtkSlicerLinearObjectRegistrationModuleMRMLExport.h"
+
 
 
 // This class stores a vector of values and a string label
 class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
-vtkMRMLLORPlaneNode : public vtkMRMLLORLinearObjectNode
+vtkLORReference : public vtkLORLinearObject
 {
 public:
-  vtkTypeMacro( vtkMRMLLORPlaneNode, vtkObject );
+  vtkTypeMacro( vtkLORReference, vtkObject );
 
-  static vtkMRMLLORPlaneNode* New();
-  static vtkMRMLLORPlaneNode* New( std::vector<double> newBasePoint, std::vector<double> newEndPoint1, std::vector<double> newEndPoint2 );
+  static vtkLORReference* New();
+  static vtkLORReference* New( std::vector<double> newBasePoint );
 
-  vtkSmartPointer< vtkMRMLLORLinearObjectNode > DeepCopy();
+  vtkSmartPointer< vtkLORLinearObject > DeepCopy();
 
 protected:
 
   // Constructor/destructor
-  vtkMRMLLORPlaneNode();
-  virtual ~vtkMRMLLORPlaneNode();
+  vtkLORReference();
+  virtual ~vtkLORReference();
 
 public:
-
-  std::vector<double> GetNormal();
 
   // Implement inherited abstract methods
   std::vector<double> ProjectVector( std::vector<double> vector );
@@ -51,11 +50,6 @@ public:
   // Implement inherited abstract methods
   std::string ToXMLString();
   void FromXMLElement( vtkXMLDataElement* element );
-
-protected:
-
-  std::vector<double> EndPoint1;
-  std::vector<double> EndPoint2;
 
 };
 

@@ -137,7 +137,7 @@ void qSlicerLinearObjectCollectionWidget
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
 
-  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( currentNode );
+  vtkMRMLLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( currentNode );
 
   // Prevent the active fiducial list from being changed when this is called programatically
   disconnect( d->LinearObjectCollectionNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onCollectionNodeChanged() ) );
@@ -157,12 +157,12 @@ void qSlicerLinearObjectCollectionWidget
 }
 
 
-vtkMRMLLORLinearObjectNode* qSlicerLinearObjectCollectionWidget
+vtkLORLinearObject* qSlicerLinearObjectCollectionWidget
 ::GetCurrentLinearObject()
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
 
-  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  vtkMRMLLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
   if ( currentCollectionNode == NULL )
   {
     return NULL;
@@ -179,7 +179,7 @@ void qSlicerLinearObjectCollectionWidget
 
   emit collectionNodeChanged();
 
-  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  vtkMRMLLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
 
   if ( currentCollectionNode == NULL )
   {
@@ -198,7 +198,7 @@ void qSlicerLinearObjectCollectionWidget
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
 
-  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  vtkMRMLLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
   if ( currentCollectionNode == NULL )
   {
     this->updateWidget(); // Have to update the widget anyway
@@ -225,7 +225,7 @@ void qSlicerLinearObjectCollectionWidget
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
 
-  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  vtkMRMLLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
 
   if ( currentCollectionNode == NULL )
   {
@@ -236,7 +236,7 @@ void qSlicerLinearObjectCollectionWidget
 
   // Modify all collection nodes to force the other LOR collection widgets to change the state of their active button
   vtkSmartPointer< vtkCollection > collectionNodeCollection;
-  collectionNodeCollection.TakeReference( this->mrmlScene()->GetNodesByClass( "vtkMRMLLORLinearObjectCollectionNode" ) );
+  collectionNodeCollection.TakeReference( this->mrmlScene()->GetNodesByClass( "vtkMRMLLinearObjectCollectionNode" ) );
   for ( int i = 0; i < collectionNodeCollection->GetNumberOfItems(); i++ )
   {
     collectionNodeCollection->GetItemAsObject( i )->Modified();
@@ -268,7 +268,7 @@ void qSlicerLinearObjectCollectionWidget
   QAction* selectedAction = collectionMenu->exec( globalPosition );
 
   int currentIndex = d->CollectionTableWidget->currentRow();
-  vtkMRMLLORLinearObjectCollectionNode* currentCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  vtkMRMLLinearObjectCollectionNode* currentCollection = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
   
   if ( currentCollection == NULL )
   {
@@ -306,8 +306,8 @@ void qSlicerLinearObjectCollectionWidget
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
 
-  vtkMRMLLORLinearObjectCollectionNode* currentCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
-  vtkMRMLLORLinearObjectNode* currentLinearObject = currentCollection->GetLinearObject( row );
+  vtkMRMLLinearObjectCollectionNode* currentCollection = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  vtkLORLinearObject* currentLinearObject = currentCollection->GetLinearObject( row );
   if ( currentCollection == NULL && currentLinearObject != NULL )
   {
     this->updateWidget();
@@ -333,8 +333,8 @@ void qSlicerLinearObjectCollectionWidget
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
 
-  vtkMRMLLORLinearObjectCollectionNode* currentCollection = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
-  vtkMRMLLORLinearObjectNode* currentLinearObject = currentCollection->GetLinearObject( row );
+  vtkMRMLLinearObjectCollectionNode* currentCollection = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  vtkLORLinearObject* currentLinearObject = currentCollection->GetLinearObject( row );
   if ( currentCollection == NULL || currentLinearObject == NULL )
   {
     return;
@@ -361,7 +361,7 @@ void qSlicerLinearObjectCollectionWidget
     typeComboBox->addItem( QString::fromStdString( "Line" ) );
     typeComboBox->addItem( QString::fromStdString( "Plane" ) );
 
-    typeComboBox->setCurrentIndex( vtkMRMLLORConstants::STRING_TO_INDEX( currentLinearObject->GetType() ) );
+    typeComboBox->setCurrentIndex( LORConstants::STRING_TO_INDEX( currentLinearObject->GetType() ) );
 
     connect( typeComboBox, SIGNAL( currentIndexChanged( int ) ), this, SLOT( onTypeSelected( int ) ) );
 
@@ -385,24 +385,24 @@ void qSlicerLinearObjectCollectionWidget
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
 
-  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  vtkMRMLLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
   if ( currentCollectionNode == NULL )
   {
     this->updateWidget(); // Have to update the widget anyway
     return;
   }
 
-  vtkMRMLLORLinearObjectNode* currentLinearObject = currentCollectionNode->GetLinearObject( d->CollectionTableWidget->currentRow() );
+  vtkLORLinearObject* currentLinearObject = currentCollectionNode->GetLinearObject( d->CollectionTableWidget->currentRow() );
 
-  vtkSmartPointer< vtkMRMLLORLinearObjectNode > newLinearObject = NULL;
+  vtkSmartPointer< vtkLORLinearObject > newLinearObject = NULL;
   if ( currentLinearObject->GetPositionBuffer() != NULL )
   {
-    int dof = vtkMRMLLORConstants::STRING_TO_DOF( vtkMRMLLORConstants::INDEX_TO_STRING( typeIndex ) );
+    int dof = LORConstants::STRING_TO_DOF( LORConstants::INDEX_TO_STRING( typeIndex ) );
     newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), dof );
   }
   else if ( currentLinearObject->GetType().compare( "Point" ) == 0 && typeIndex == 0 )
   {
-    newLinearObject = vtkSmartPointer< vtkMRMLLORReferenceNode >::New();
+    newLinearObject = vtkSmartPointer< vtkLORReference >::New();
     newLinearObject->SetBasePoint( currentLinearObject->GetBasePoint() );
   }
 
@@ -425,7 +425,7 @@ void qSlicerLinearObjectCollectionWidget
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
 
-  vtkMRMLLORLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLORLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  vtkMRMLLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
   if ( currentCollectionNode == NULL )
   {
     d->CollectionTableWidget->clear();

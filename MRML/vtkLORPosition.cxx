@@ -1,21 +1,21 @@
 
-#include "vtkMRMLLORPositionNode.h"
+#include "vtkLORPosition.h"
 
-vtkStandardNewMacro( vtkMRMLLORPositionNode );
+vtkStandardNewMacro( vtkLORPosition );
 
 
-vtkMRMLLORPositionNode* vtkMRMLLORPositionNode
+vtkLORPosition* vtkLORPosition
 ::New( std::vector< double > newPositionVector )
 {
-  vtkMRMLLORPositionNode* newPositionNode = vtkMRMLLORPositionNode::New();
+  vtkLORPosition* newPositionNode = vtkLORPosition::New();
   newPositionNode->PositionVector = newPositionVector;
   return newPositionNode;
 }
 
-vtkMRMLLORPositionNode* vtkMRMLLORPositionNode
+vtkLORPosition* vtkLORPosition
 ::New( vtkMatrix4x4* newMatrix )
 {
-  vtkMRMLLORPositionNode* newPositionNode = vtkMRMLLORPositionNode::New();
+  vtkLORPosition* newPositionNode = vtkLORPosition::New();
   std::vector< double > newPosition( SIZE, 0.0 );
   newPosition.at(0) = newMatrix->GetElement( 0, 3 );
   newPosition.at(1) = newMatrix->GetElement( 1, 3 );
@@ -25,10 +25,10 @@ vtkMRMLLORPositionNode* vtkMRMLLORPositionNode
 }
 
 
-vtkSmartPointer< vtkMRMLLORPositionNode > vtkMRMLLORPositionNode
+vtkSmartPointer< vtkLORPosition > vtkLORPosition
 ::DeepCopy()
 {
-  vtkSmartPointer< vtkMRMLLORPositionNode > positionNodeCopy = vtkSmartPointer< vtkMRMLLORPositionNode >::New();
+  vtkSmartPointer< vtkLORPosition > positionNodeCopy = vtkSmartPointer< vtkLORPosition >::New();
   std::vector< double > positionCopy( SIZE, 0.0 );
   positionCopy.at(0) = this->GetPositionVector().at( 0 );
   positionCopy.at(1) = this->GetPositionVector().at( 1 );
@@ -38,30 +38,30 @@ vtkSmartPointer< vtkMRMLLORPositionNode > vtkMRMLLORPositionNode
 }
 
 
-vtkMRMLLORPositionNode
-::vtkMRMLLORPositionNode()
+vtkLORPosition
+::vtkLORPosition()
 {
 }
 
 
-vtkMRMLLORPositionNode
-::~vtkMRMLLORPositionNode()
+vtkLORPosition
+::~vtkLORPosition()
 {
   this->PositionVector.clear();
 }
 
 
-void vtkMRMLLORPositionNode
+void vtkLORPosition
 ::Translate( std::vector<double> translation )
 {
-  this->SetPositionVector( vtkMRMLLORVectorMath::Add( this->GetPositionVector(), translation ) );
+  this->SetPositionVector( LORMath::Add( this->GetPositionVector(), translation ) );
 }
 
 
-void vtkMRMLLORPositionNode
+void vtkLORPosition
 ::Rotate( vnl_matrix<double>* rotation )
 {
-  vnl_matrix<double>* currPoint = new vnl_matrix<double>( vtkMRMLLORPositionNode::SIZE, 1, 0.0 );
+  vnl_matrix<double>* currPoint = new vnl_matrix<double>( vtkLORPosition::SIZE, 1, 0.0 );
   currPoint->put( 0, 0, this->GetPositionVector().at(0) );
   currPoint->put( 1, 0, this->GetPositionVector().at(1) );
   currPoint->put( 2, 0, this->GetPositionVector().at(2) );
@@ -75,7 +75,7 @@ void vtkMRMLLORPositionNode
 }
 
 
-void vtkMRMLLORPositionNode
+void vtkLORPosition
 ::Transform( vtkMatrix4x4* matrix )
 {
   double untransformedPoint[ 4 ] = { 0.0, 0.0, 0.0, 1.0 };
@@ -97,14 +97,14 @@ void vtkMRMLLORPositionNode
 }
 
 
-std::vector<double> vtkMRMLLORPositionNode
+std::vector<double> vtkLORPosition
 ::GetPositionVector()
 {
   return this->PositionVector;
 }
 
 
-void vtkMRMLLORPositionNode
+void vtkLORPosition
 ::SetPositionVector( std::vector<double> newPosition )
 {
   this->PositionVector = newPosition;
@@ -112,20 +112,20 @@ void vtkMRMLLORPositionNode
 }
 
 
-std::string vtkMRMLLORPositionNode
+std::string vtkLORPosition
 ::ToXMLString()
 {
   std::stringstream xmlstring;
 
   xmlstring << "      <Position";
-  xmlstring << " Value=\"" << vtkMRMLLORVectorMath::VectorToString( this->GetPositionVector() ) << "\"";
+  xmlstring << " Value=\"" << LORMath::VectorToString( this->GetPositionVector() ) << "\"";
   xmlstring << " />" << std::endl;
 
   return xmlstring.str();
 }
 
 
-void vtkMRMLLORPositionNode
+void vtkLORPosition
 ::FromXMLElement( vtkXMLDataElement* element )
 {
 
@@ -134,12 +134,12 @@ void vtkMRMLLORPositionNode
     return;  // If it's not a "Position" jump to the next.
   }
 
-  this->SetPositionVector( vtkMRMLLORVectorMath::StringToVector( std::string( element->GetAttribute( "Value" ) ), SIZE ) );
+  this->SetPositionVector( LORMath::StringToVector( std::string( element->GetAttribute( "Value" ) ), SIZE ) );
 }
 
 
 /*
-bool vtkMRMLLORPositionNode
+bool vtkLORPosition
 ::FromXMLElement( vtkXMLDataElement* currElement, vtkXMLDataElement* prevElement )
 {
   const double ROTATION_THRESHOLD = 0.005;
@@ -180,7 +180,7 @@ bool vtkMRMLLORPositionNode
 
   // Check to ensure that the current position is appreciably different from the previous
   // If not, don't record (because the stylus was likely just lying around, not collecting)
-  if ( vtkMRMLLORVectorMath::Distance( currRotation, prevRotation ) > ROTATION_THRESHOLD || vtkMRMLLORVectorMath::Distance( currTranslation, prevTranslation ) > TRANSLATION_THRESHOLD )
+  if ( LORMath::Distance( currRotation, prevRotation ) > ROTATION_THRESHOLD || LORMath::Distance( currTranslation, prevTranslation ) > TRANSLATION_THRESHOLD )
   {
     this->FromXMLElement( currElement );
 	return true;

@@ -1,9 +1,9 @@
 
-#include "vtkMRMLLORLinearObjectNode.h"
+#include "vtkLORLinearObject.h"
 
 
-vtkMRMLLORLinearObjectNode
-::vtkMRMLLORLinearObjectNode()
+vtkLORLinearObject
+::vtkLORLinearObject()
 {
   this->Name = "Unnamed";
   this->Type = "LinearObject";
@@ -12,37 +12,37 @@ vtkMRMLLORLinearObjectNode
 }
 
 
-vtkMRMLLORLinearObjectNode
-::~vtkMRMLLORLinearObjectNode()
+vtkLORLinearObject
+::~vtkLORLinearObject()
 {
   this->BasePoint.clear();
   this->Signature.clear();
 }
 
 
-vtkMRMLLORPositionBufferNode* vtkMRMLLORLinearObjectNode
+vtkLORPositionBuffer* vtkLORLinearObject
 ::GetPositionBuffer()
 {
   return this->PositionBuffer;
 }
 
 
-void vtkMRMLLORLinearObjectNode
-::SetPositionBuffer( vtkMRMLLORPositionBufferNode* newPositionBuffer )
+void vtkLORLinearObject
+::SetPositionBuffer( vtkLORPositionBuffer* newPositionBuffer )
 {
   this->PositionBuffer = newPositionBuffer;
   this->Modified();
 }
 
 
-double vtkMRMLLORLinearObjectNode
+double vtkLORLinearObject
 ::DistanceToVector( std::vector<double> vector )
 {
-  return vtkMRMLLORVectorMath::Distance( vector, this->ProjectVector( vector ) );
+  return LORMath::Distance( vector, this->ProjectVector( vector ) );
 }
 
 
-void vtkMRMLLORLinearObjectNode
+void vtkLORLinearObject
 ::Filter( int filterWidth )
 {
   const int THRESHOLD = 1e-3; // Deal with the case of very little noise
@@ -67,7 +67,7 @@ void vtkMRMLLORLinearObjectNode
     stdev = sqrt( stdev - meanDistance * meanDistance );
     
     // Keep only the points that are within certain number of standard deviations
-    vtkSmartPointer< vtkMRMLLORPositionBufferNode > newPositionBuffer = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
+    vtkSmartPointer< vtkLORPositionBuffer > newPositionBuffer = vtkSmartPointer< vtkLORPositionBuffer >::New();
     for ( int i = 0; i < this->GetPositionBuffer()->Size(); i++ )
     {
       if ( distances.at(i) < filterWidth * stdev || distances.at(i) < THRESHOLD )
@@ -91,14 +91,14 @@ void vtkMRMLLORLinearObjectNode
 }
 
 
-std::string vtkMRMLLORLinearObjectNode
+std::string vtkLORLinearObject
 ::GetName()
 {
   return this->Name;
 }
 
 
-void vtkMRMLLORLinearObjectNode
+void vtkLORLinearObject
 ::SetName( std::string newName )
 {
   this->Name = newName;
@@ -106,14 +106,14 @@ void vtkMRMLLORLinearObjectNode
 }
 
 
-std::string vtkMRMLLORLinearObjectNode
+std::string vtkLORLinearObject
 ::GetType()
 {
   return this->Type;
 }
 
 
-void vtkMRMLLORLinearObjectNode
+void vtkLORLinearObject
 ::SetType( std::string newType )
 {
   this->Type = newType;
@@ -121,7 +121,7 @@ void vtkMRMLLORLinearObjectNode
 }
 
 
-std::string vtkMRMLLORLinearObjectNode
+std::string vtkLORLinearObject
 ::GetPositionBufferString()
 {
   if ( this->GetPositionBuffer() == NULL )
@@ -136,14 +136,14 @@ std::string vtkMRMLLORLinearObjectNode
 }
 
 
-std::vector<double> vtkMRMLLORLinearObjectNode
+std::vector<double> vtkLORLinearObject
 ::GetSignature()
 {
   return this->Signature;
 }
 
 
-void vtkMRMLLORLinearObjectNode
+void vtkLORLinearObject
 ::SetSignature( std::vector<double> newSignature )
 {
   this->Signature = newSignature;
@@ -151,14 +151,14 @@ void vtkMRMLLORLinearObjectNode
 }
 
 
-std::vector<double> vtkMRMLLORLinearObjectNode
+std::vector<double> vtkLORLinearObject
 ::GetBasePoint()
 {
   return this->BasePoint;
 }
 
 
-void vtkMRMLLORLinearObjectNode
+void vtkLORLinearObject
 ::SetBasePoint( std::vector<double> newBasePoint )
 {
   this->BasePoint = newBasePoint;
@@ -166,14 +166,14 @@ void vtkMRMLLORLinearObjectNode
 }
 
 
-std::string vtkMRMLLORLinearObjectNode
+std::string vtkLORLinearObject
 ::GetModelHierarchyNodeID()
 {
   return this->ModelHierarchyNodeID;
 }
 
 
-void vtkMRMLLORLinearObjectNode
+void vtkLORLinearObject
 ::SetModelHierarchyNodeID( std::string newModelHierarchyNodeID )
 {
   this->ModelHierarchyNodeID = newModelHierarchyNodeID;

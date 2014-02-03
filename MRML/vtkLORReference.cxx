@@ -1,35 +1,35 @@
 
-#include "vtkMRMLLORPointNode.h"
+#include "vtkLORReference.h"
 
-vtkStandardNewMacro( vtkMRMLLORPointNode );
+vtkStandardNewMacro( vtkLORReference );
 
 
-vtkMRMLLORPointNode* vtkMRMLLORPointNode
+vtkLORReference* vtkLORReference
 ::New( std::vector<double> newBasePoint )
 {
-  vtkMRMLLORPointNode* newPoint = vtkMRMLLORPointNode::New();
-  newPoint->BasePoint = newBasePoint;
-  return newPoint;
+  vtkLORReference* newReference = vtkLORReference::New();
+  newReference->BasePoint = newBasePoint;
+  return newReference;
 }
 
 
-vtkMRMLLORPointNode
-::vtkMRMLLORPointNode()
+vtkLORReference
+::vtkLORReference()
 {
-  this->Type = "Point";
+  this->Type = "Reference";
 }
 
 
-vtkMRMLLORPointNode
-::~vtkMRMLLORPointNode()
+vtkLORReference
+::~vtkLORReference()
 {
 }
 
 
-vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORPointNode
+vtkSmartPointer< vtkLORLinearObject > vtkLORReference
 ::DeepCopy()
 {
-  vtkSmartPointer< vtkMRMLLORPointNode > objectNodeCopy = vtkSmartPointer< vtkMRMLLORPointNode >::New();
+  vtkSmartPointer< vtkLORReference > objectNodeCopy = vtkSmartPointer< vtkLORReference >::New();
 
   objectNodeCopy->BasePoint = this->BasePoint;
   objectNodeCopy->Signature = this->Signature;
@@ -37,7 +37,7 @@ vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORPointNode
   objectNodeCopy->SetName( this->GetName() );
   objectNodeCopy->SetType( this->GetType() );
   objectNodeCopy->SetModelHierarchyNodeID( this->GetModelHierarchyNodeID() );
-   
+
   if ( this->GetPositionBuffer() != NULL )
   {
     objectNodeCopy->SetPositionBuffer( this->GetPositionBuffer()->DeepCopy() );
@@ -47,14 +47,14 @@ vtkSmartPointer< vtkMRMLLORLinearObjectNode > vtkMRMLLORPointNode
 }
 
 
-std::vector<double> vtkMRMLLORPointNode
+std::vector<double> vtkLORReference
 ::ProjectVector( std::vector<double> vector )
 {
   return this->BasePoint;
 }
 
 
-void vtkMRMLLORPointNode
+void vtkLORReference
 ::Translate( std::vector<double> vector )
 {
   for ( int i = 0; i < vector.size(); i++ )
@@ -64,7 +64,7 @@ void vtkMRMLLORPointNode
 }
 
 
-vtkPolyData* vtkMRMLLORPointNode
+vtkPolyData* vtkLORReference
 ::CreateModelPolyData()
 {
   vtkPointSource* pointSource = vtkPointSource::New();
@@ -78,30 +78,30 @@ vtkPolyData* vtkMRMLLORPointNode
 }
 
 
-std::string vtkMRMLLORPointNode
+std::string vtkLORReference
 ::ToXMLString()
 {
   std::stringstream xmlstring;
 
-  xmlstring << "  <Point Name=\"" << this->Name << "\">" << std::endl;
-  xmlstring << "    <BasePoint Value=\"" << vtkMRMLLORVectorMath::VectorToString( this->BasePoint ) << "\"/>" << std::endl;
+  xmlstring << "  <Reference Name=\"" << this->Name << "\">" << std::endl;
+  xmlstring << "    <BasePoint Value=\"" << LORMath::VectorToString( this->BasePoint ) << "\"/>" << std::endl;
 
   if ( this->GetPositionBuffer() != NULL )
   {
     xmlstring << this->GetPositionBuffer()->ToXMLString();
   }
 
-  xmlstring << "  </Point>" << std::endl;
+  xmlstring << "  </Reference>" << std::endl;
 
   return xmlstring.str();
 }
 
 
-void vtkMRMLLORPointNode
+void vtkLORReference
 ::FromXMLElement( vtkXMLDataElement* element )
 {
 
-  if ( strcmp( element->GetName(), "Point" ) != 0 )
+  if ( strcmp( element->GetName(), "Reference" ) != 0 )
   {
     return;  // If it's not a "reference" jump to the next.
   }
@@ -117,11 +117,11 @@ void vtkMRMLLORPointNode
     
 	if ( strcmp( noteElement->GetName(), "BasePoint" ) == 0 )
 	{
-      this->BasePoint = vtkMRMLLORVectorMath::StringToVector( std::string( noteElement->GetAttribute( "Value" ) ), vtkMRMLLORLinearObjectNode::DIMENSION );
+      this->BasePoint = LORMath::StringToVector( std::string( noteElement->GetAttribute( "Value" ) ), vtkLORLinearObject::DIMENSION );
 	}
 	if ( strcmp( noteElement->GetName(), "Buffer" ) == 0 )
 	{
-      vtkSmartPointer< vtkMRMLLORPositionBufferNode > bufferNode = vtkSmartPointer< vtkMRMLLORPositionBufferNode >::New();
+      vtkSmartPointer< vtkLORPositionBuffer > bufferNode = vtkSmartPointer< vtkLORPositionBuffer >::New();
 	  bufferNode->FromXMLElement( noteElement );
       this->SetPositionBuffer( bufferNode );
 	}

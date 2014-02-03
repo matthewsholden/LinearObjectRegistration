@@ -1,6 +1,6 @@
 
-#ifndef vtkMRMLLORLinearObjectCollectionNode_h
-#define vtkMRMLLORLinearObjectCollectionNode_h
+#ifndef vtkMRMLLinearObjectCollectionNode_h
+#define vtkMRMLLinearObjectCollectionNode_h
 
 // Standard includes
 #include <string>
@@ -21,23 +21,23 @@
 #include "vnl/algo/vnl_matrix_inverse.h"
 
 // LinearObjectRegistration includes
-#include "vtkMRMLLORLinearObjectCollectionStorageNode.h"
-#include "vtkMRMLLORLinearObjectNode.h"
-#include "vtkMRMLLORReferenceNode.h"
-#include "vtkMRMLLORPointNode.h"
-#include "vtkMRMLLORLineNode.h"
-#include "vtkMRMLLORPlaneNode.h"
+#include "vtkMRMLLinearObjectCollectionStorageNode.h"
+#include "vtkLORLinearObject.h"
+#include "vtkLORReference.h"
+#include "vtkLORPoint.h"
+#include "vtkLORLine.h"
+#include "vtkLORPlane.h"
 
 
 // This class stores a vector of values and a string label
 class VTK_SLICER_LINEAROBJECTREGISTRATION_MODULE_MRML_EXPORT
-vtkMRMLLORLinearObjectCollectionNode : public vtkMRMLStorableNode
+vtkMRMLLinearObjectCollectionNode : public vtkMRMLStorableNode
 {
 public:
-  vtkTypeMacro( vtkMRMLLORLinearObjectCollectionNode, vtkMRMLStorableNode );
+  vtkTypeMacro( vtkMRMLLinearObjectCollectionNode, vtkMRMLStorableNode );
   
   // Standard MRML node methods  
-  static vtkMRMLLORLinearObjectCollectionNode *New();  
+  static vtkMRMLLinearObjectCollectionNode *New();  
 
   virtual vtkMRMLNode* CreateNodeInstance();
   virtual const char* GetNodeTagName() { return "LinearObjectCollection"; };
@@ -47,29 +47,29 @@ public:
   virtual void Copy( vtkMRMLNode *node );
   
   // To use the storage node
-  virtual vtkMRMLStorageNode* CreateDefaultStorageNode() { return vtkMRMLLORLinearObjectCollectionStorageNode::New(); };
+  virtual vtkMRMLStorageNode* CreateDefaultStorageNode() { return vtkMRMLLinearObjectCollectionStorageNode::New(); };
   bool GetModifiedSinceRead() { return ( this->GetMTime() > this->GetStoredTime() ); };
   virtual void UpdateScene( vtkMRMLScene *scene ) { Superclass::UpdateScene(scene); };
   
 protected:
 
   // Constructor/desctructor methods
-  vtkMRMLLORLinearObjectCollectionNode();
-  virtual ~vtkMRMLLORLinearObjectCollectionNode();
-  vtkMRMLLORLinearObjectCollectionNode ( const vtkMRMLLORLinearObjectCollectionNode& );
-  void operator=( const vtkMRMLLORLinearObjectCollectionNode& );
+  vtkMRMLLinearObjectCollectionNode();
+  virtual ~vtkMRMLLinearObjectCollectionNode();
+  vtkMRMLLinearObjectCollectionNode ( const vtkMRMLLinearObjectCollectionNode& );
+  void operator=( const vtkMRMLLinearObjectCollectionNode& );
 
 public:
 
   // Basic collection functionality
   int Size();
-  vtkMRMLLORLinearObjectNode* GetLinearObject( int index );
-  vtkMRMLLORLinearObjectNode* GetLinearObject( std::string name );
-  int GetLinearObjectPosition( vtkMRMLLORLinearObjectNode* node );
+  vtkLORLinearObject* GetLinearObject( int index );
+  vtkLORLinearObject* GetLinearObject( std::string name );
+  int GetLinearObjectPosition( vtkLORLinearObject* node );
 
-  void AddLinearObject( vtkMRMLLORLinearObjectNode* newObject );
-  void Concatenate( vtkMRMLLORLinearObjectCollectionNode* catBuffer );
-  void SetLinearObject( int index, vtkMRMLLORLinearObjectNode* newObject );
+  void AddLinearObject( vtkLORLinearObject* newObject );
+  void Concatenate( vtkMRMLLinearObjectCollectionNode* catBuffer );
+  void SetLinearObject( int index, vtkLORLinearObject* newObject );
   void RemoveLinearObject( int index );
   void ShuffleOutNull();
   void Swap( int index0, int index1 );
@@ -77,9 +77,9 @@ public:
 
   void Translate( std::vector<double> vector );
 
-  void CalculateSignature( vtkMRMLLORLinearObjectCollectionNode* refBuffer );
+  void CalculateSignature( vtkMRMLLinearObjectCollectionNode* refBuffer );
 
-  vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > GetMatches( vtkMRMLLORLinearObjectCollectionNode* candidates, double matchingThreshold );
+  vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > GetMatches( vtkMRMLLinearObjectCollectionNode* candidates, double matchingThreshold );
 
   bool AllHavePositionBuffers();
 
@@ -93,7 +93,7 @@ public:
 
 
 private:
-	std::vector< vtkSmartPointer< vtkMRMLLORLinearObjectNode > > LinearObjects;
+	std::vector< vtkSmartPointer< vtkLORLinearObject > > LinearObjects;
 
     std::string ModelHierarchyNodeID;
 
