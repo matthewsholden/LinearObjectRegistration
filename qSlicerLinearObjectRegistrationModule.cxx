@@ -66,20 +66,20 @@ qSlicerLinearObjectRegistrationModule::~qSlicerLinearObjectRegistrationModule()
 //-----------------------------------------------------------------------------
 QString qSlicerLinearObjectRegistrationModule::helpText()const
 {
-  return "For help on how to use this module visit: <a href='https://www.assembla.com/spaces/slicerigt'>SlicerIGT</a>";
+  return "For help on how to use this module visit: <a href='https://github.com/mholden8/LinearObjectRegistration/wiki'>Linear Object Registration</a>";
 }
 
 //-----------------------------------------------------------------------------
 QString qSlicerLinearObjectRegistrationModule::acknowledgementText()const
 {
-  return "This work was was funded by Cancer Care Ontario and the Ontario Consortium for Adaptive Interventions in Radiation Oncology (OCAIRO)";
+  return "This work was was funded by Cancer Care Ontario.";
 }
 
 //-----------------------------------------------------------------------------
 QStringList qSlicerLinearObjectRegistrationModule::contributors()const
 {
   QStringList moduleContributors;
-  moduleContributors << QString("Tamas Ungi (Queen's University");
+  moduleContributors << QString("Matthew S. Holden (Queen's University)");
   return moduleContributors;
 }
 
