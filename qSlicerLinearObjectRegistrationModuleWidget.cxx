@@ -15,6 +15,7 @@
 #include "qSlicerLORManualDOFWidget.h"
 #include "qSlicerLORManualSegmentationWidget.h"
 #include "qSlicerLORAutomaticWidget.h"
+#include "qSlicerTransformPreviewWidget.h"
 
 #include "vtkMRMLModelNode.h"
 #include "vtkMRMLNode.h"
@@ -46,6 +47,7 @@ public:
   qSlicerLORManualDOFWidget* ManualDOFWidget;
   qSlicerLORManualSegmentationWidget* ManualSegmentationWidget;
   qSlicerLORAutomaticWidget* AutomaticWidget;
+  qSlicerTransformPreviewWidget* TransformPreviewWidget;
 };
 
 
@@ -200,6 +202,9 @@ qSlicerLinearObjectRegistrationModuleWidget
 
   d->AutomaticWidget = qSlicerLORAutomaticWidget::New();
   d->CollectionGroupBox->layout()->addWidget( d->AutomaticWidget );
+
+  d->TransformPreviewWidget = qSlicerTransformPreviewWidget::New( d->logic()->GetMRMLScene() );
+  d->PreviewTransformGroupBox->layout()->addWidget( d->TransformPreviewWidget );
 
   // If the mrml node changes, update from the mrml node 
   connect( d->ModuleNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateFromMRMLNode() ) );
@@ -371,6 +376,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
     d->AutomaticWidget->setEnabled( false );
     d->FromCollectionWidget->setEnabled( false );
     d->ToCollectionWidget->setEnabled( false );
+    d->TransformPreviewWidget->setEnabled( false );
     d->NoiseThresholdSpinBox->setEnabled( false );
     d->MatchingThresholdSpinBox->setEnabled( false );
     d->MinimumCollectionPositionsSpinBox->setEnabled( false );
@@ -389,6 +395,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->AutomaticWidget->setEnabled( true );
   d->FromCollectionWidget->setEnabled( true );
   d->ToCollectionWidget->setEnabled( true );
+  d->TransformPreviewWidget->setEnabled( true );
   d->NoiseThresholdSpinBox->setEnabled( true );
   d->MatchingThresholdSpinBox->setEnabled( true );
   d->MinimumCollectionPositionsSpinBox->setEnabled( true );
@@ -402,6 +409,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   d->FromCollectionWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetFromCollectionID() ) );
   d->ToCollectionWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetToCollectionID() ) );
+  d->TransformPreviewWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetOutputTransformID() ) );
 
   d->ManualDOFWidget->SetLORNode( linearObjectRegistrationNode );
   d->ManualSegmentationWidget->SetLORNode( linearObjectRegistrationNode );
