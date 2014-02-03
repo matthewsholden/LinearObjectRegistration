@@ -63,8 +63,8 @@ vtkMRMLLinearObjectRegistrationNode
   this->AddNodeReferenceRole( TO_COLLECTION_REFERENCE_ROLE );
   this->AddNodeReferenceRole( OUTPUT_TRANSFORM_REFERENCE_ROLE );
 
-  this->CollectionMode = "ManualDOF";
-  this->AutomaticMatch = "True";
+  this->CollectionMode = LORConstants::MANUAL_DOF_STRING;
+  this->AutomaticMatch = true;
 
   this->CollectionState = "";
   this->ActivePositionBuffer = vtkSmartPointer< vtkLORRealTimePositionBuffer >::New();
@@ -143,7 +143,14 @@ void vtkMRMLLinearObjectRegistrationNode::ReadXMLAttributes( const char** atts )
     }
     if ( ! strcmp( attName, "AutomaticMath" ) )
     {
-      this->AutomaticMatch = std::string( attValue );
+      if ( std::string( attValue ).compare( "false" ) == 0 )
+      {
+        this->AutomaticMatch = false;
+      }
+      else
+      {
+        this->AutomaticMatch = true;
+      }
     }
     if ( ! strcmp( attName, "NoiseThreshold" ) )
     {
@@ -330,7 +337,7 @@ void vtkMRMLLinearObjectRegistrationNode
 }
 
 
-std::string vtkMRMLLinearObjectRegistrationNode
+bool vtkMRMLLinearObjectRegistrationNode
 ::GetAutomaticMatch()
 {
   return this->AutomaticMatch;
@@ -338,13 +345,13 @@ std::string vtkMRMLLinearObjectRegistrationNode
 
 
 void vtkMRMLLinearObjectRegistrationNode
-::SetAutomaticMatch( std::string newAutomaticMatch, int modifyType )
+::SetAutomaticMatch( bool newAutomaticMatch, int modifyType )
 {
-  if ( this->GetAutomaticMatch().compare( newAutomaticMatch ) != 0 )
+  if ( this->GetAutomaticMatch() != newAutomaticMatch )
   {
     this->AutomaticMatch = newAutomaticMatch;
   }
-  if ( this->GetAutomaticMatch().compare( newAutomaticMatch ) != 0 && modifyType == DefaultModify || modifyType == AlwaysModify ) 
+  if ( this->GetAutomaticMatch() != newAutomaticMatch && modifyType == DefaultModify || modifyType == AlwaysModify ) 
   {
     this->Modified();
   }
@@ -490,7 +497,7 @@ void vtkMRMLLinearObjectRegistrationNode
 ::StopCollecting()
 {
   // Emit an event indicating that the position buffer is ready to be converted to a linear object
-  if ( this->CollectionState.compare( "Automatic" ) != 0 || this->GetActivePositionBuffer()->Size() > this->GetMinimumCollectionPositions() )
+  if ( this->CollectionState.compare( LORConstants::AUTOMATIC_STRING ) != 0 || this->GetActivePositionBuffer()->Size() > this->GetMinimumCollectionPositions() )
   {
     this->InvokeEvent( PositionBufferReady );
   }
@@ -522,7 +529,7 @@ void vtkMRMLLinearObjectRegistrationNode
 
   this->GetActivePositionBuffer()->AddPosition( newPosition );
 
-  if ( this->CollectionState.compare( "Automatic" ) != 0 )
+  if ( this->CollectionState.compare( LORConstants::AUTOMATIC_STRING ) != 0 )
   {
     return;
   }

@@ -18,6 +18,7 @@
 
 // LinearObjectRegistration includes
 #include "LORMath.h"
+#include "LORConstants.h"
 
 // VNL includes
 #include "vnl/vnl_matrix.h"

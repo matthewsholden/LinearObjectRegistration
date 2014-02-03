@@ -205,7 +205,7 @@ int vtkLORPositionBuffer
   int calculatedDOF = 0;
   for ( int i = 0; i < vtkLORPosition::SIZE; i++ )
   {
-    if ( abs( eigenvalues.get( i ) ) > LORConstants::NOISE_THRESHOLD )
+    if ( abs( eigenvalues.get( i ) ) > noiseThreshold )
     {
       calculatedDOF++;
     }

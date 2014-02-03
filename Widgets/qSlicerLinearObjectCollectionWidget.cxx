@@ -372,10 +372,10 @@ void qSlicerLinearObjectCollectionWidget
   if ( col == LINEAROBJECT_TYPE_COLUMN )
   {
     QComboBox* typeComboBox = new QComboBox();
-    typeComboBox->addItem( QString::fromStdString( "Reference" ) );
-    typeComboBox->addItem( QString::fromStdString( "Point" ) );
-    typeComboBox->addItem( QString::fromStdString( "Line" ) );
-    typeComboBox->addItem( QString::fromStdString( "Plane" ) );
+    typeComboBox->addItem( QString::fromStdString( LORConstants::REFERENCE_STRING ) );
+    typeComboBox->addItem( QString::fromStdString( LORConstants::POINT_STRING ) );
+    typeComboBox->addItem( QString::fromStdString( LORConstants::LINE_STRING ) );
+    typeComboBox->addItem( QString::fromStdString( LORConstants::PLANE_STRING ) );
 
     typeComboBox->setCurrentIndex( LORConstants::STRING_TO_INDEX( currentLinearObject->GetType() ) );
 
@@ -416,7 +416,7 @@ void qSlicerLinearObjectCollectionWidget
     int dof = LORConstants::STRING_TO_DOF( LORConstants::INDEX_TO_STRING( typeIndex ) );
     newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), this->LORNode->GetNoiseThreshold(), dof );
   }
-  else if ( currentLinearObject->GetType().compare( "Point" ) == 0 && typeIndex == LORConstants::REFERENCE_INDEX )
+  else if ( currentLinearObject->GetType().compare( LORConstants::POINT_STRING ) == 0 && typeIndex == LORConstants::REFERENCE_INDEX )
   {
     newLinearObject = vtkSmartPointer< vtkLORReference >::New();
     newLinearObject->SetBasePoint( currentLinearObject->GetBasePoint() );

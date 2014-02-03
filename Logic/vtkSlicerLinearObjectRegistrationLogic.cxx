@@ -398,7 +398,7 @@ vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > vtkSlicerLinearObjectRegist
   {
     vtkLORLinearObject* currentLinearObject = collection->GetLinearObject( i );
 
-    if ( currentLinearObject != NULL && currentLinearObject->GetType().compare( "Reference" ) == 0 )
+    if ( currentLinearObject != NULL && currentLinearObject->GetType().compare( LORConstants::REFERENCE_STRING ) == 0 )
     {
       referenceCollection->AddLinearObject( currentLinearObject );
     }
@@ -418,7 +418,7 @@ vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > vtkSlicerLinearObjectRegist
   {
     vtkLORLinearObject* currentLinearObject = collection->GetLinearObject( i );
 
-    if ( currentLinearObject != NULL && currentLinearObject->GetType().compare( "Reference" ) != 0 )
+    if ( currentLinearObject != NULL && currentLinearObject->GetType().compare( LORConstants::REFERENCE_STRING ) != 0 )
     {
       nonReferenceCollection->AddLinearObject( currentLinearObject );
     }
@@ -644,22 +644,22 @@ void vtkSlicerLinearObjectRegistrationLogic
       continue;
     }
 
-    if ( currentFromLinearObject->GetType().compare( "Reference" ) == 0 && currentToLinearObject->GetType().compare( "Reference" ) == 0 )
+    if ( currentFromLinearObject->GetType().compare( LORConstants::REFERENCE_STRING ) == 0 && currentToLinearObject->GetType().compare( LORConstants::REFERENCE_STRING ) == 0 )
     {
       fromReferenceCollection->AddLinearObject( currentFromLinearObject );
       toReferenceCollection->AddLinearObject( currentToLinearObject );
     }
-    if ( currentFromLinearObject->GetType().compare( "Point" ) == 0 && currentToLinearObject->GetType().compare( "Point" ) == 0 )
+    if ( currentFromLinearObject->GetType().compare( LORConstants::POINT_STRING ) == 0 && currentToLinearObject->GetType().compare( LORConstants::POINT_STRING ) == 0 )
     {
       fromPointCollection->AddLinearObject( currentFromLinearObject );
       toPointCollection->AddLinearObject( currentToLinearObject );
     }
-    if ( currentFromLinearObject->GetType().compare( "Line" ) == 0 && currentToLinearObject->GetType().compare( "Line" ) == 0 )
+    if ( currentFromLinearObject->GetType().compare( LORConstants::LINE_STRING ) == 0 && currentToLinearObject->GetType().compare( LORConstants::LINE_STRING ) == 0 )
     {
       fromLineCollection->AddLinearObject( currentFromLinearObject );
       toLineCollection->AddLinearObject( currentToLinearObject );
     }
-    if ( currentFromLinearObject->GetType().compare( "Plane" ) == 0 && currentToLinearObject->GetType().compare( "Plane" ) == 0 )
+    if ( currentFromLinearObject->GetType().compare( LORConstants::PLANE_STRING ) == 0 && currentToLinearObject->GetType().compare( LORConstants::PLANE_STRING ) == 0 )
     {
       fromPlaneCollection->AddLinearObject( currentFromLinearObject );
       toPlaneCollection->AddLinearObject( currentToLinearObject );
@@ -701,7 +701,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     return;
   }
 
-  if ( linearObjectRegistrationNode->GetAutomaticMatch().compare( "True" ) == 0 )
+  if ( linearObjectRegistrationNode->GetAutomaticMatch() )
   {
     // Match the collections
     try
@@ -1341,27 +1341,27 @@ void vtkSlicerLinearObjectRegistrationLogic
     vtkSmartPointer< vtkLORPositionBuffer > positionBufferCopy = lorNode->GetActivePositionBuffer()->DeepCopy(); // Note: This produces a non-real-time buffer (which is what we want)
     lorNode->GetActivePositionBuffer()->Clear();
 
-    if ( lorNode->GetCollectionState().compare( "Reference" ) == 0 )
+    if ( lorNode->GetCollectionState().compare( LORConstants::REFERENCE_STRING ) == 0 )
     {
       currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), LORConstants::REFERENCE_DOF );
     }
-    if ( lorNode->GetCollectionState().compare( "Point" ) == 0 )
+    if ( lorNode->GetCollectionState().compare( LORConstants::POINT_STRING ) == 0 )
     {
       currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), LORConstants::POINT_DOF );
     }
-    if ( lorNode->GetCollectionState().compare( "Line" ) == 0 )
+    if ( lorNode->GetCollectionState().compare( LORConstants::LINE_STRING ) == 0 )
     {
       currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), LORConstants::LINE_DOF );
     }
-    if ( lorNode->GetCollectionState().compare( "Plane" ) == 0 )
+    if ( lorNode->GetCollectionState().compare( LORConstants::PLANE_STRING ) == 0 )
     {
       currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), LORConstants::PLANE_DOF );
     }
-    if ( lorNode->GetCollectionState().compare( "Collect" ) == 0 )
+    if ( lorNode->GetCollectionState().compare( LORConstants::COLLECT_STRING ) == 0 )
     {
       currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), LORConstants::UNKNOWN_DOF );
     }
-    if ( lorNode->GetCollectionState().compare( "Automatic" ) == 0 )
+    if ( lorNode->GetCollectionState().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
     {
       positionBufferCopy->Trim( lorNode->GetTrimPositions() );
       currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), LORConstants::UNKNOWN_DOF );

@@ -126,7 +126,7 @@ void qSlicerLORManualSegmentationWidget
 
   if ( this->LORNode->GetCollectionState().compare( "" ) == 0 )
   {
-    this->LORNode->StartCollecting( "Collect" );
+    this->LORNode->StartCollecting( LORConstants::COLLECT_STRING );
   }
   else
   {
@@ -148,7 +148,7 @@ void qSlicerLORManualSegmentationWidget
 
   disconnect( d->CollectButton, SIGNAL( toggled( bool ) ), this, SLOT( onCollectButtonClicked() ) );
 
-  if ( this->LORNode->GetCollectionState().compare( "Collect" ) )
+  if ( this->LORNode->GetCollectionState().compare( LORConstants::COLLECT_STRING ) )
   {
     d->CollectButton->setChecked( true );
   }

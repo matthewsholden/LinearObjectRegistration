@@ -128,7 +128,7 @@ void qSlicerLORAutomaticWidget
 {
   if ( this->isHidden() )
   {
-    this->LORNode->StartCollecting( "Automatic" );
+    this->LORNode->StartCollecting( LORConstants::AUTOMATIC_STRING );
   }
 
   this->Superclass::show();

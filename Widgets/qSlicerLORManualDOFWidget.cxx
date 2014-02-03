@@ -128,7 +128,7 @@ void qSlicerLORManualDOFWidget
 
   if ( this->LORNode->GetCollectionState().compare( "" ) == 0 )
   {
-    this->LORNode->StartCollecting( "Reference" );
+    this->LORNode->StartCollecting( LORConstants::REFERENCE_STRING );
   }
   else
   {
@@ -144,7 +144,7 @@ void qSlicerLORManualDOFWidget
 
   if ( this->LORNode->GetCollectionState().compare( "" ) == 0 )
   {
-    this->LORNode->StartCollecting( "Point" );
+    this->LORNode->StartCollecting( LORConstants::POINT_STRING );
   }
   else
   {
@@ -160,7 +160,7 @@ void qSlicerLORManualDOFWidget
 
   if ( this->LORNode->GetCollectionState().compare( "" ) == 0 )
   {
-    this->LORNode->StartCollecting( "Line" );
+    this->LORNode->StartCollecting( LORConstants::LINE_STRING );
   }
   else
   {
@@ -176,7 +176,7 @@ void qSlicerLORManualDOFWidget
 
   if ( this->LORNode->GetCollectionState().compare( "" ) == 0 )
   {
-    this->LORNode->StartCollecting( "Plane" );
+    this->LORNode->StartCollecting( LORConstants::PLANE_STRING );
   }
   else
   {
@@ -201,7 +201,7 @@ void qSlicerLORManualDOFWidget
   disconnect( d->LineButton, SIGNAL( toggled( bool ) ), this, SLOT( onLineButtonClicked() ) );
   disconnect( d->PlaneButton, SIGNAL( toggled( bool ) ), this, SLOT( onPlaneButtonClicked() ) );
 
-  if ( this->LORNode->GetCollectionState().compare( "Reference" ) )
+  if ( this->LORNode->GetCollectionState().compare( LORConstants::REFERENCE_STRING ) )
   {
     d->ReferenceButton->setChecked( true );
   }
@@ -210,7 +210,7 @@ void qSlicerLORManualDOFWidget
     d->ReferenceButton->setChecked( false );
   }
 
-  if ( this->LORNode->GetCollectionState().compare( "Point" ) )
+  if ( this->LORNode->GetCollectionState().compare( LORConstants::POINT_STRING ) )
   {
     d->PointButton->setChecked( true );
   }
@@ -219,7 +219,7 @@ void qSlicerLORManualDOFWidget
     d->PointButton->setChecked( false );
   }
 
-  if ( this->LORNode->GetCollectionState().compare( "Line" ) )
+  if ( this->LORNode->GetCollectionState().compare( LORConstants::LINE_STRING ) )
   {
     d->LineButton->setChecked( true );
   }
@@ -228,7 +228,7 @@ void qSlicerLORManualDOFWidget
     d->LineButton->setChecked( false );
   }
 
-  if ( this->LORNode->GetCollectionState().compare( "Plane" ) )
+  if ( this->LORNode->GetCollectionState().compare( LORConstants::PLANE_STRING ) )
   {
     d->PlaneButton->setChecked( true );
   }

@@ -323,24 +323,24 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   if ( d->ManualDOFRadioButton->isChecked() )
   {
-    linearObjectRegistrationNode->SetCollectionMode( "ManualDOF", vtkMRMLLinearObjectRegistrationNode::NeverModify );
+    linearObjectRegistrationNode->SetCollectionMode( LORConstants::MANUAL_DOF_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
   if ( d->ManualSegmentationRadioButton->isChecked() )
   {
-    linearObjectRegistrationNode->SetCollectionMode( "ManualSegmentation", vtkMRMLLinearObjectRegistrationNode::NeverModify );
+    linearObjectRegistrationNode->SetCollectionMode( LORConstants::MANUAL_SEGMENTATION_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
   if ( d->AutomaticRadioButton->isChecked() )
   {
-    linearObjectRegistrationNode->SetCollectionMode( "Automatic", vtkMRMLLinearObjectRegistrationNode::NeverModify );
+    linearObjectRegistrationNode->SetCollectionMode( LORConstants::AUTOMATIC_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
 
   if ( d->AutomaticMatchCheckBox->isChecked() )
   {
-    linearObjectRegistrationNode->SetAutomaticMatch( "True", vtkMRMLLinearObjectRegistrationNode::NeverModify );
+    linearObjectRegistrationNode->SetAutomaticMatch( true, vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
   else
   {
-    linearObjectRegistrationNode->SetAutomaticMatch( "False", vtkMRMLLinearObjectRegistrationNode::NeverModify );
+    linearObjectRegistrationNode->SetAutomaticMatch( false, vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
 
   linearObjectRegistrationNode->SetNoiseThreshold( d->NoiseThresholdSpinBox->value(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
@@ -417,7 +417,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->FromCollectionWidget->SetLORNode( linearObjectRegistrationNode );
   d->ToCollectionWidget->SetLORNode( linearObjectRegistrationNode );
   
-  if ( linearObjectRegistrationNode->GetCollectionMode().compare( "ManualDOF" ) == 0 )
+  if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::MANUAL_DOF_STRING ) == 0 )
   {
     d->ManualDOFRadioButton->setChecked( Qt::Checked );
     d->ManualSegmentationRadioButton->setChecked( Qt::Unchecked );
@@ -427,7 +427,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
     d->ManualSegmentationWidget->hide();
     d->AutomaticWidget->hide();
   }
-  if ( linearObjectRegistrationNode->GetCollectionMode().compare( "ManualSegmentation" ) == 0 )
+  if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::MANUAL_SEGMENTATION_STRING ) == 0 )
   {
     d->ManualDOFRadioButton->setChecked( Qt::Unchecked );
     d->ManualSegmentationRadioButton->setChecked( Qt::Checked );
@@ -437,7 +437,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
     d->ManualSegmentationWidget->show();
     d->AutomaticWidget->hide();
   }
-  if ( linearObjectRegistrationNode->GetCollectionMode().compare( "Automatic" ) == 0 )
+  if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
   {
     d->ManualDOFRadioButton->setChecked( Qt::Unchecked );
     d->ManualSegmentationRadioButton->setChecked( Qt::Unchecked );
@@ -448,7 +448,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
     d->AutomaticWidget->show();
   }
 
-  if ( linearObjectRegistrationNode->GetAutomaticMatch().compare( "True" ) == 0 )
+  if ( linearObjectRegistrationNode->GetAutomaticMatch() )
   {
     d->AutomaticMatchCheckBox->setChecked( Qt::Checked );
   }

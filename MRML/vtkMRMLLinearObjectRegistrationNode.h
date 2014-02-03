@@ -83,7 +83,8 @@ public:
   void SetToCollectionID( std::string newToCollectionID, int modifyType = DefaultModify );
   void SetOutputTransformID( std::string newOutputTransformID, int modifyType = DefaultModify );
   void SetCollectionMode( std::string newCollectionMode, int modifyType = DefaultModify );
-  void SetAutomaticMatch( std::string newAutomaticMatch, int modifyType = DefaultModify );
+
+  void SetAutomaticMatch( bool newAutomaticMatch, int modifyType = DefaultModify );
   void SetNoiseThreshold( double newNoiseThreshold, int modifyType = DefaultModify );
   void SetMatchingThreshold( double newMatchingThreshold, int modifyType = DefaultModify );
   void SetMinimumCollectionPositions( int newMinimumCollectionPositions, int modifyType = DefaultModify );
@@ -94,7 +95,8 @@ public:
   std::string GetToCollectionID();
   std::string GetOutputTransformID();
   std::string GetCollectionMode();
-  std::string GetAutomaticMatch();
+
+  bool GetAutomaticMatch();
   double GetNoiseThreshold();
   double GetMatchingThreshold();
   int GetMinimumCollectionPositions();
@@ -115,7 +117,7 @@ public:
 private:
 
   std::string CollectionMode;
-  std::string AutomaticMatch;
+  bool AutomaticMatch;
 
   std::string CollectionState;
   vtkSmartPointer< vtkLORRealTimePositionBuffer > ActivePositionBuffer;

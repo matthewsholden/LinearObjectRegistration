@@ -17,11 +17,11 @@ const std::string LORConstants::POINT_STRING = "Point";
 const std::string LORConstants::LINE_STRING = "Line";
 const std::string LORConstants::PLANE_STRING = "Plane";
 
-const int LORConstants::MINIMUM_COLLECTION_POSITIONS = 100;
-const int LORConstants::TRIM_POSITIONS = 10;
+const std::string LORConstants::COLLECT_STRING = "Collect";
+const std::string LORConstants::MANUAL_DOF_STRING = "ManualDOF";
+const std::string LORConstants::MANUAL_SEGMENTATION_STRING = "ManualSegmentation";
+const std::string LORConstants::AUTOMATIC_STRING = "Automatic";
 
-const double LORConstants::NOISE_THRESHOLD = 0.5;
-const double LORConstants::MATCHING_THRESHOLD = 10.0;
 const double LORConstants::DIRECTION_SCALE = 100.0;
 
 

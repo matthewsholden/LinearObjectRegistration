@@ -382,7 +382,7 @@ std::vector<double> vtkMRMLLinearObjectCollectionNode
   {
     int row = vtkLORLinearObject::DIMENSION * i; 
     // A = I for point, B = coordinates
-    if ( strcmp( this->GetLinearObject(i)->GetType().c_str(), "Point" ) == 0 )
+    if ( this->GetLinearObject(i)->GetType().compare( LORConstants::POINT_STRING ) == 0 )
 	{
       vtkSmartPointer< vtkLORPoint > PointObject = vtkLORPoint::SafeDownCast( this->GetLinearObject(i) );
       A->put( row + 0, 0, 1.0 ); 
@@ -394,7 +394,7 @@ std::vector<double> vtkMRMLLinearObjectCollectionNode
 	}
 
 	// A = Normal 1, Normal 2, B = Dot( Normal 1, BasePoint ), Dot( Normal 2, BasePoint )
-	if ( strcmp( this->GetLinearObject(i)->GetType().c_str(), "Line" ) == 0 )
+	if ( this->GetLinearObject(i)->GetType().compare( LORConstants::LINE_STRING ) == 0 )
 	{
       vtkSmartPointer< vtkLORLine > LineObject = vtkLORLine::SafeDownCast( this->GetLinearObject(i) );
       A->put( row + 0, 0, LineObject->GetOrthogonalNormal1().at(0) );
@@ -408,7 +408,7 @@ std::vector<double> vtkMRMLLinearObjectCollectionNode
 	}
 
 	// A = Normal, B = Dot( Normal, BasePoint )
-	if ( strcmp( this->GetLinearObject(i)->GetType().c_str(), "Plane" ) == 0 )
+	if ( this->GetLinearObject(i)->GetType().compare( LORConstants::PLANE_STRING ) == 0 )
 	{
       vtkSmartPointer< vtkLORPlane > PlaneObject = vtkLORPlane::SafeDownCast( this->GetLinearObject(i) );
       A->put( row + 0, 0, PlaneObject->GetNormal().at(0) );
@@ -497,7 +497,7 @@ void vtkMRMLLinearObjectCollectionNode
 	  newObject->FromXMLElement( noteElement );
 	  this->AddLinearObject( newObject );
 	}
-	if ( strcmp( noteElement->GetName(), "Line" ) == 0 )
+    if ( strcmp( noteElement->GetName(), "Line" ) == 0 )
 	{
       vtkSmartPointer< vtkLORLine > newObject = vtkSmartPointer< vtkLORLine >::New();
 	  newObject->FromXMLElement( noteElement );
