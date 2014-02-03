@@ -256,7 +256,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     vtkMRMLLORLinearObjectNode* currentObject0 = collection0->GetLinearObject( i );
     vtkMRMLLORLinearObjectNode* currentObject1 = collection1->GetLinearObject( i );
-    if ( currentObject0 != NULL && currentObject1 != NULL && currentObject0->GetType().compare( currentObject1->GetType() ) == 0 && currentObject0->GetType().compare( "Reference" ) != 0 )
+    if ( currentObject0 != NULL && currentObject1 != NULL && currentObject0->GetType().compare( currentObject1->GetType() ) == 0 )
     {
       pairedCollection0->AddLinearObject( currentObject0 );
       pairedCollection1->AddLinearObject( currentObject1 );
@@ -878,7 +878,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > TempToNonReferenceCollection = this->GetNonReferences( TempToCollection );
     vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > TempFromNonReferenceCollection = this->GetNonReferences( TempFromCollection );
     
-    if( TempToNonReferenceCollection->Size() > 0 && TempFromNonReferenceCollection->Size() > 0 )
+    if( TempToNonReferenceCollection->Size() > 0 && TempFromNonReferenceCollection->Size() > 0 && fromReferenceCollection->Size() > 0 && toReferenceCollection->Size() > 0 )
     {
       // subtract off the projection of the origin to get just the direction vector back
       std::vector<double> scaledToDirection = vtkMRMLLORVectorMath::Subtract( TempToNonReferenceCollection->GetLinearObject(0)->GetBasePoint(), CurrentToObject->ProjectVector( BlankVector ) );
@@ -920,7 +920,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > TempToNonReferenceCollection = this->GetNonReferences( TempToCollection );
     vtkSmartPointer< vtkMRMLLORLinearObjectCollectionNode > TempFromNonReferenceCollection = this->GetNonReferences( TempFromCollection );
     
-    if( TempToNonReferenceCollection->Size() > 0 && TempFromNonReferenceCollection->Size() > 0 )
+    if( TempToNonReferenceCollection->Size() > 0 && TempFromNonReferenceCollection->Size() > 0 && fromReferenceCollection->Size() > 0 && toReferenceCollection->Size() > 0 )
     {
       // subtract off the projection of the origin to get just the direction vector back
       std::vector<double> scaledToNormal = vtkMRMLLORVectorMath::Subtract( TempToNonReferenceCollection->GetLinearObject( 0 )->GetBasePoint(), CurrentToObject->ProjectVector( BlankVector ) );
@@ -1145,8 +1145,8 @@ void vtkSlicerLinearObjectRegistrationLogic
     for( int j = 0; j < currentPositionBuffer->Size(); j++ )
     {
       // Transform the point
-      vtkMRMLLORPositionNode* currentPosition = currentPositionBuffer->GetPosition( j );
-      vtkSmartPointer< vtkMRMLLORPositionNode > transformedPosition = currentPosition->DeepCopy();
+      vtkSmartPointer< vtkMRMLLORPositionNode > currentPosition = currentPositionBuffer->GetPosition( j )->DeepCopy();
+      vtkSmartPointer< vtkMRMLLORPositionNode > transformedPosition = currentPositionBuffer->GetPosition( j )->DeepCopy();
       transformedPosition->Transform( bufferfulToBufferlessTransform );
 
       std::vector<double> projectedVector = currentLinearObject->ProjectVector( transformedPosition->GetPositionVector() );

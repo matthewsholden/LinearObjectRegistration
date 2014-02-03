@@ -113,9 +113,6 @@ void qSlicerLinearObjectCollectionWidget
   connect( d->CollectionTableWidget, SIGNAL( cellChanged( int, int ) ), this, SLOT( onLinearObjectEdited( int, int ) ) );
   connect( d->CollectionTableWidget, SIGNAL( cellClicked( int, int ) ), this, SLOT( onCollectionTableClicked( int, int ) ) );
 
-  // Connect to the markups mrml events
-  this->qvtkConnect( this->GetCurrentNode(), vtkCommand::ModifiedEvent, this, SLOT( onCollectionNodeModified() ) );
-
   this->updateWidget();  
 }
 
@@ -191,10 +188,6 @@ void qSlicerLinearObjectCollectionWidget
   }
 
   this->SetCurrentActive();
-
-  // Disconnect and reconnect to new node
-  this->qvtkDisconnectAll();
-  this->qvtkConnect( this->GetCurrentNode(), vtkCommand::ModifiedEvent, this, SLOT( onCollectionNodeModified() ) );
 
   this->updateWidget();
 }

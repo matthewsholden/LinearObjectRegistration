@@ -12,7 +12,7 @@ vtkSmartPointer< vtkMRMLLORPositionBufferNode > vtkMRMLLORPositionBufferNode
 
   for ( int i = 0; i < this->Size(); i++ )
   {
-    positionBufferNodeCopy->AddPosition( this->GetPosition( i ) );
+    positionBufferNodeCopy->AddPosition( this->GetPosition( i )->DeepCopy() );
   }
   
   return positionBufferNodeCopy;
