@@ -47,6 +47,7 @@ public:
 
   // Slicer will handle logic
   vtkSlicerLinearObjectRegistrationLogic* LORLogic;
+  void SetLORNode( vtkMRMLNode* newNode );
 
   vtkMRMLNode* GetCurrentNode();
   void SetCurrentNode( vtkMRMLNode* currentNode );
@@ -83,6 +84,7 @@ private:
   Q_DECLARE_PRIVATE(qSlicerLinearObjectCollectionWidget);
   Q_DISABLE_COPY(qSlicerLinearObjectCollectionWidget);
 
+  vtkMRMLLinearObjectRegistrationNode* LORNode;
 };
 
 #endif

@@ -414,6 +414,8 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->ManualDOFWidget->SetLORNode( linearObjectRegistrationNode );
   d->ManualSegmentationWidget->SetLORNode( linearObjectRegistrationNode );
   d->AutomaticWidget->SetLORNode( linearObjectRegistrationNode );
+  d->FromCollectionWidget->SetLORNode( linearObjectRegistrationNode );
+  d->ToCollectionWidget->SetLORNode( linearObjectRegistrationNode );
   
   if ( linearObjectRegistrationNode->GetCollectionMode().compare( "ManualDOF" ) == 0 )
   {

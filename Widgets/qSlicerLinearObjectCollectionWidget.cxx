@@ -85,6 +85,7 @@ qSlicerLinearObjectCollectionWidget* qSlicerLinearObjectCollectionWidget
 {
   qSlicerLinearObjectCollectionWidget* newLinearObjectCollectionWidget = new qSlicerLinearObjectCollectionWidget();
   newLinearObjectCollectionWidget->LORLogic = newLORLogic;
+  newLinearObjectCollectionWidget->LORNode = NULL;
   newLinearObjectCollectionWidget->setup();
   return newLinearObjectCollectionWidget;
 }
@@ -120,6 +121,21 @@ void qSlicerLinearObjectCollectionWidget
 void qSlicerLinearObjectCollectionWidget
 ::enter()
 {
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::SetLORNode( vtkMRMLNode* newNode )
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  vtkMRMLLinearObjectRegistrationNode* newLORNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( newNode );
+  if ( newLORNode == NULL )
+  {
+    return;
+  }
+
+  this->LORNode = newLORNode;
 }
 
 
@@ -398,9 +414,9 @@ void qSlicerLinearObjectCollectionWidget
   if ( currentLinearObject->GetPositionBuffer() != NULL )
   {
     int dof = LORConstants::STRING_TO_DOF( LORConstants::INDEX_TO_STRING( typeIndex ) );
-    newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), dof );
+    newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), this->LORNode->GetNoiseThreshold(), dof );
   }
-  else if ( currentLinearObject->GetType().compare( "Point" ) == 0 && typeIndex == 0 )
+  else if ( currentLinearObject->GetType().compare( "Point" ) == 0 && typeIndex == LORConstants::REFERENCE_INDEX )
   {
     newLinearObject = vtkSmartPointer< vtkLORReference >::New();
     newLinearObject->SetBasePoint( currentLinearObject->GetBasePoint() );
