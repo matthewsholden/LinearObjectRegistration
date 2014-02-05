@@ -15,6 +15,7 @@
 #include "qSlicerLORManualDOFWidget.h"
 #include "qSlicerLORManualSegmentationWidget.h"
 #include "qSlicerLORAutomaticWidget.h"
+#include "qSlicerLORModelWidget.h"
 #include "qSlicerTransformPreviewWidget.h"
 
 #include "vtkMRMLModelNode.h"
@@ -47,6 +48,7 @@ public:
   qSlicerLORManualDOFWidget* ManualDOFWidget;
   qSlicerLORManualSegmentationWidget* ManualSegmentationWidget;
   qSlicerLORAutomaticWidget* AutomaticWidget;
+  qSlicerLORModelWidget* ModelWidget;
   qSlicerTransformPreviewWidget* TransformPreviewWidget;
 };
 
@@ -196,12 +198,19 @@ qSlicerLinearObjectRegistrationModuleWidget
 
   d->ManualDOFWidget = qSlicerLORManualDOFWidget::New();
   d->CollectionGroupBox->layout()->addWidget( d->ManualDOFWidget );
+  d->ManualDOFWidget->hide();
 
   d->ManualSegmentationWidget = qSlicerLORManualSegmentationWidget::New();
   d->CollectionGroupBox->layout()->addWidget( d->ManualSegmentationWidget );
+  d->ManualSegmentationWidget->hide();
 
   d->AutomaticWidget = qSlicerLORAutomaticWidget::New();
   d->CollectionGroupBox->layout()->addWidget( d->AutomaticWidget );
+  d->AutomaticWidget->hide();
+
+  d->ModelWidget = qSlicerLORModelWidget::New( d->logic() );
+  d->CollectionGroupBox->layout()->addWidget( d->ModelWidget );
+  d->ModelWidget->hide();
 
   d->TransformPreviewWidget = qSlicerTransformPreviewWidget::New( d->logic()->GetMRMLScene() );
   d->PreviewTransformGroupBox->layout()->addWidget( d->TransformPreviewWidget );
@@ -233,6 +242,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   connect( d->ManualDOFRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->ManualSegmentationRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->AutomaticRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->ModelRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->AutomaticMatchCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
 
   connect( d->TransformNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
@@ -256,6 +266,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   disconnect( d->ManualDOFRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->ManualSegmentationRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->AutomaticRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->ModelRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->AutomaticMatchCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
 
   disconnect( d->TransformNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
@@ -333,6 +344,10 @@ void qSlicerLinearObjectRegistrationModuleWidget
   {
     linearObjectRegistrationNode->SetCollectionMode( LORConstants::AUTOMATIC_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
+  if ( d->ModelRadioButton->isChecked() )
+  {
+    linearObjectRegistrationNode->SetCollectionMode( LORConstants::MODEL_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
+  }
 
   if ( d->AutomaticMatchCheckBox->isChecked() )
   {
@@ -370,10 +385,12 @@ void qSlicerLinearObjectRegistrationModuleWidget
     d->ManualDOFRadioButton->setEnabled( false );
     d->ManualSegmentationRadioButton->setEnabled( false );
     d->AutomaticRadioButton->setEnabled( false );
+    d->ModelRadioButton->setEnabled( false );
     d->AutomaticMatchCheckBox->setEnabled( false );
     d->ManualDOFWidget->setEnabled( false );
     d->ManualSegmentationWidget->setEnabled( false );
     d->AutomaticWidget->setEnabled( false );
+    d->ModelWidget->setEnabled( false );
     d->FromCollectionWidget->setEnabled( false );
     d->ToCollectionWidget->setEnabled( false );
     d->TransformPreviewWidget->setEnabled( false );
@@ -389,10 +406,12 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->ManualDOFRadioButton->setEnabled( true );
   d->ManualSegmentationRadioButton->setEnabled( true );
   d->AutomaticRadioButton->setEnabled( true );
+  d->ModelRadioButton->setEnabled( true );
   d->AutomaticMatchCheckBox->setEnabled( true );
   d->ManualDOFWidget->setEnabled( true );
   d->ManualSegmentationWidget->setEnabled( true );
   d->AutomaticWidget->setEnabled( true );
+  d->ModelWidget->setEnabled( true );
   d->FromCollectionWidget->setEnabled( true );
   d->ToCollectionWidget->setEnabled( true );
   d->TransformPreviewWidget->setEnabled( true );
@@ -414,6 +433,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->ManualDOFWidget->SetLORNode( linearObjectRegistrationNode );
   d->ManualSegmentationWidget->SetLORNode( linearObjectRegistrationNode );
   d->AutomaticWidget->SetLORNode( linearObjectRegistrationNode );
+  d->ModelWidget->SetLORNode( linearObjectRegistrationNode );
   d->FromCollectionWidget->SetLORNode( linearObjectRegistrationNode );
   d->ToCollectionWidget->SetLORNode( linearObjectRegistrationNode );
   
@@ -422,30 +442,52 @@ void qSlicerLinearObjectRegistrationModuleWidget
     d->ManualDOFRadioButton->setChecked( Qt::Checked );
     d->ManualSegmentationRadioButton->setChecked( Qt::Unchecked );
     d->AutomaticRadioButton->setChecked( Qt::Unchecked );
+    d->ModelRadioButton->setChecked( Qt::Unchecked );
 
+    d->TransformNodeComboBox->show();
     d->ManualDOFWidget->show();
     d->ManualSegmentationWidget->hide();
     d->AutomaticWidget->hide();
+    d->ModelWidget->hide();
   }
   if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::MANUAL_SEGMENTATION_STRING ) == 0 )
   {
     d->ManualDOFRadioButton->setChecked( Qt::Unchecked );
     d->ManualSegmentationRadioButton->setChecked( Qt::Checked );
     d->AutomaticRadioButton->setChecked( Qt::Unchecked );
+    d->ModelRadioButton->setChecked( Qt::Unchecked );
 
+    d->TransformNodeComboBox->show();
     d->ManualDOFWidget->hide();
     d->ManualSegmentationWidget->show();
     d->AutomaticWidget->hide();
+    d->ModelWidget->hide();
   }
   if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
   {
     d->ManualDOFRadioButton->setChecked( Qt::Unchecked );
     d->ManualSegmentationRadioButton->setChecked( Qt::Unchecked );
     d->AutomaticRadioButton->setChecked( Qt::Checked );
+    d->ModelRadioButton->setChecked( Qt::Unchecked );
 
+    d->TransformNodeComboBox->show();
     d->ManualDOFWidget->hide();
     d->ManualSegmentationWidget->hide();
     d->AutomaticWidget->show();
+    d->ModelWidget->hide();
+  }
+  if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::MODEL_STRING ) == 0 )
+  {
+    d->ManualDOFRadioButton->setChecked( Qt::Unchecked );
+    d->ManualSegmentationRadioButton->setChecked( Qt::Unchecked );
+    d->AutomaticRadioButton->setChecked( Qt::Unchecked );
+    d->ModelRadioButton->setChecked( Qt::Checked );
+
+    d->TransformNodeComboBox->hide();
+    d->ManualDOFWidget->hide();
+    d->ManualSegmentationWidget->hide();
+    d->AutomaticWidget->hide();
+    d->ModelWidget->show();
   }
 
   if ( linearObjectRegistrationNode->GetAutomaticMatch() )

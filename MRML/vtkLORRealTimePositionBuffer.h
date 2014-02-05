@@ -33,6 +33,10 @@ public:
 
   // Standard collection functionality
   void AddPosition( vtkLORPosition* newPosition );
+  void Clear();
+  void Trim( int trimSize ); // Very slow for real-time position buffers (not recommended)
+
+  void Translate( std::vector<double> translation ); // Very slow for real-time position buffers (not recommended)
 
   std::vector<double> CalculateCentroid();
   vnl_matrix<double>* CovarianceMatrix( std::vector<double> centroid );

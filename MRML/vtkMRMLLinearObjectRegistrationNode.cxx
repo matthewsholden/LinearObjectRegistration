@@ -485,11 +485,8 @@ void vtkMRMLLinearObjectRegistrationNode
 {
   this->GetActivePositionBuffer()->Clear();
 
-  // Don't collect if the collect transform is not specified
-  if ( this->GetNodeReferenceIDString( COLLECT_TRANSFORM_REFERENCE_ROLE ).compare( "" ) != 0 )
-  {
-    this->CollectionState = newCollectionState;
-  }
+  // If the transform is not specified then collection will not occur
+  this->CollectionState = newCollectionState;
 }
 
 

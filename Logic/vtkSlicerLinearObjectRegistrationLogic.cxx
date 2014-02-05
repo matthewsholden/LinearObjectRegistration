@@ -162,6 +162,22 @@ vtkMRMLLinearObjectCollectionNode* vtkSlicerLinearObjectRegistrationLogic
 }
 
 
+vtkMRMLMarkupsNode* vtkSlicerLinearObjectRegistrationLogic
+::GetActiveMarkupsNode()
+{
+  vtkMRMLApplicationLogic* appLogic = this->GetMRMLApplicationLogic();
+  vtkMRMLSelectionNode* selectionNode = appLogic->GetSelectionNode();
+
+  if ( selectionNode == NULL )
+  {
+    return NULL;
+  }
+
+  const char* activeMarkupsNodeID = selectionNode->GetActivePlaceNodeID();
+  return vtkMRMLMarkupsNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( activeMarkupsNodeID ) );
+}
+
+
 // Return smart pointer since we created the object in this function
 vtkSmartPointer< vtkLORLinearObject > vtkSlicerLinearObjectRegistrationLogic
 ::PositionBufferToLinearObject( vtkLORPositionBuffer* positionBuffer, double noiseThreshold, int dof )
@@ -232,6 +248,68 @@ vtkSmartPointer< vtkLORLinearObject > vtkSlicerLinearObjectRegistrationLogic
   }
 
   return NULL; // TODO: Do something more productive if the dof is unknown (ie determine the dof automatically)...
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
+::CreateModelPlane( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer )
+{
+  vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast( node );
+  if ( modelNode == NULL )
+  {
+    return;
+  }
+
+  vtkMRMLMarkupsFiducialNode* markupsNode = vtkMRMLMarkupsFiducialNode::SafeDownCast( this->GetActiveMarkupsNode() );
+  if ( markupsNode == NULL || markupsNode->GetNumberOfMarkups() < 1 )
+  {
+    return;
+  }
+  vtkPolyData* modelPolyData = modelNode->GetPolyData();
+
+  // Calculate the normal vector and the basePoint
+  double fiducialPosition[ 3 ] = { 0.0, 0.0, 0.0 };
+  markupsNode->GetNthFiducialPosition( markupsNode->GetNumberOfMarkups() - 1, fiducialPosition );
+  markupsNode->RemoveMarkup( markupsNode->GetNumberOfMarkups() - 1 ); // Remove the markup when done
+  double closestPosition[ 3 ] = { 0.0, 0.0, 0.0 };
+  vtkSmartPointer< vtkGenericCell > closestCell = vtkSmartPointer< vtkGenericCell >::New();
+  vtkIdType closestCellId = 0;
+  int subId = 0;
+  double squaredDistance = 0;
+
+  vtkSmartPointer< vtkCellLocator > locator = vtkSmartPointer< vtkCellLocator >::New();
+  locator->SetDataSet( modelPolyData );
+  locator->BuildLocator();
+  locator->FindClosestPoint( fiducialPosition, closestPosition, closestCell, closestCellId, subId, squaredDistance );
+
+  // This is already normalized for us
+  double normal[ 3 ] = { 0.0, 0.0, 0.0 };
+  vtkPolygon::ComputeNormal( closestCell->GetPoints(), normal );
+
+  // Caluclate the equation of the plane (point-normal form)
+  double D = closestPosition[0] * normal[0] + closestPosition[1] * normal[1] + closestPosition[2] * normal[2];
+
+  vtkPoints* modelPoints = modelPolyData->GetPoints();
+  for ( int i = 0; i < modelPoints->GetNumberOfPoints(); i++ )
+  {
+    double currentPoint[ 3 ] = { 0.0, 0.0, 0.0 };
+    modelPoints->GetPoint( i, currentPoint );
+    double currentD = currentPoint[0] * normal[0] + currentPoint[1] * normal[1] + currentPoint[2] * normal[2];
+
+    // We are on the plane
+    if ( abs( currentD - D ) < 1e-3 )
+    {
+      std::vector< double > currentVector( 3, 0.0 );
+      currentVector.at(0) = currentPoint[0];
+      currentVector.at(1) = currentPoint[1];
+      currentVector.at(2) = currentPoint[2];
+
+      vtkSmartPointer< vtkLORPosition > currentPosition = vtkSmartPointer< vtkLORPosition >::New();
+      currentPosition->SetPositionVector( currentVector );
+      positionBuffer->AddPosition( currentPosition );
+    }
+  }
+
 }
 
 

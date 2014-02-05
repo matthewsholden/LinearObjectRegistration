@@ -27,6 +27,9 @@
 #include "vtkNew.h"
 #include "vtkIntArray.h"
 #include "vtkMatrix4x4.h"
+#include "vtkCellLocator.h"
+#include "vtkPolygon.h"
+#include "vtkGenericCell.h"
 
 // VNL includes
 #include "vnl/vnl_matrix.h"
@@ -41,6 +44,8 @@
 #include "vtkMRMLSelectionNode.h"
 #include "vtkMRMLDisplayNode.h"
 #include "vtkMRMLModelDisplayNode.h"
+#include "vtkMRMLMarkupsNode.h"
+#include "vtkMRMLMarkupsFiducialNode.h"
 
 // LinearObjectRegistration includes
 #include "vtkMRMLLinearObjectRegistrationNode.h"
@@ -120,8 +125,11 @@ public:
 
   vtkSmartPointer< vtkLORLinearObject > PositionBufferToLinearObject( vtkLORPositionBuffer* positionBuffer, double noiseThreshold, int dof = -1 );
 
+  void CreateModelPlane( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
+
   vtkMRMLLinearObjectCollectionNode* GetActiveCollectionNode();
   void SetActiveCollectionNode( vtkMRMLLinearObjectCollectionNode* newActiveCollectionNode );
+  vtkMRMLMarkupsNode* GetActiveMarkupsNode();
 
   void MatchCollections( vtkMRMLLinearObjectCollectionNode* collection0, vtkMRMLLinearObjectCollectionNode* collection1, double matchingThreshold, bool removeUnmatched = false );
   void PairCollections( vtkMRMLLinearObjectCollectionNode* collection0, vtkMRMLLinearObjectCollectionNode* collection1 );

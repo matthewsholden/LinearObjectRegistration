@@ -46,10 +46,10 @@ public:
   int Size();
   vtkLORPosition* GetPosition( int index );
   virtual void AddPosition( vtkLORPosition* newPosition );
-  void Clear();
-  void Trim( int trimSize );
+  virtual void Clear();
+  virtual void Trim( int trimSize );
 
-  void Translate( std::vector<double> translation );
+  virtual void Translate( std::vector<double> translation );
 
   virtual std::vector<double> CalculateCentroid();
   virtual vnl_matrix<double>* CovarianceMatrix( std::vector<double> centroid );

@@ -42,6 +42,44 @@ void vtkLORRealTimePositionBuffer
 }
 
 
+void vtkLORRealTimePositionBuffer
+::Clear()
+{
+  this->CurrentOuterProductSum = new vnl_matrix<double>( vtkLORPosition::SIZE, vtkLORPosition::SIZE, 0.0 );
+  this->CurrentVectorSum = std::vector<double>( vtkLORPosition::SIZE, 0.0 );
+
+  this->vtkLORPositionBuffer::Clear();
+}
+
+
+void vtkLORRealTimePositionBuffer
+::Trim( int trimSize )
+{
+  vtkSmartPointer< vtkLORPositionBuffer > bufferCopy = this->DeepCopy();
+  bufferCopy->Trim( trimSize );
+  this->Clear();
+
+  for ( int i = 0; i < this->Size(); i++ )
+  {
+    this->AddPosition( bufferCopy->GetPosition( i )->DeepCopy() );
+  }
+}
+
+
+void vtkLORRealTimePositionBuffer
+::Translate( std::vector<double> translation )
+{
+  vtkSmartPointer< vtkLORPositionBuffer > bufferCopy = this->DeepCopy();
+  bufferCopy->Translate( translation );
+  this->Clear();
+
+  for ( int i = 0; i < this->Size(); i++ )
+  {
+    this->AddPosition( bufferCopy->GetPosition( i )->DeepCopy() );
+  }
+}
+
+
 vnl_matrix<double>* vtkLORRealTimePositionBuffer
 ::CovarianceMatrix( std::vector<double> centroid )
 {

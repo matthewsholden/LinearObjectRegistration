@@ -21,6 +21,7 @@ const std::string LORConstants::COLLECT_STRING = "Collect";
 const std::string LORConstants::MANUAL_DOF_STRING = "ManualDOF";
 const std::string LORConstants::MANUAL_SEGMENTATION_STRING = "ManualSegmentation";
 const std::string LORConstants::AUTOMATIC_STRING = "Automatic";
+const std::string LORConstants::MODEL_STRING = "Model";
 
 const double LORConstants::DIRECTION_SCALE = 100.0;
 

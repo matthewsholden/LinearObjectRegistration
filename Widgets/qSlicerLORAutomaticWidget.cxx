@@ -126,7 +126,7 @@ void qSlicerLORAutomaticWidget
 void qSlicerLORAutomaticWidget
 ::show()
 {
-  if ( this->isHidden() )
+  if ( this->LORNode != NULL && this->isHidden() )
   {
     this->LORNode->StartCollecting( LORConstants::AUTOMATIC_STRING );
   }
@@ -138,7 +138,7 @@ void qSlicerLORAutomaticWidget
 void qSlicerLORAutomaticWidget
 ::hide()
 {
-  if ( ! this->isHidden() )
+  if ( this->LORNode != NULL && ! this->isHidden() )
   {
     this->LORNode->StopCollecting();
   }
