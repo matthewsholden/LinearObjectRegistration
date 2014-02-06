@@ -314,6 +314,102 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
+::CreateModelLine( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer )
+{
+  vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast( node );
+  if ( modelNode == NULL )
+  {
+    return;
+  }
+
+  vtkMRMLMarkupsFiducialNode* markupsNode = vtkMRMLMarkupsFiducialNode::SafeDownCast( this->GetActiveMarkupsNode() );
+  if ( markupsNode == NULL || markupsNode->GetNumberOfMarkups() < 1 )
+  {
+    return;
+  }
+  vtkPolyData* modelPolyData = modelNode->GetPolyData();
+
+  vtkSmartPointer< vtkFeatureEdges > edgesFilter = vtkSmartPointer< vtkFeatureEdges >::New();
+  edgesFilter->FeatureEdgesOn();
+  edgesFilter->BoundaryEdgesOn(); // Shouldn't matter because the model should be closed
+  edgesFilter->NonManifoldEdgesOff();
+  edgesFilter->ManifoldEdgesOff();
+  edgesFilter->SetInput( modelPolyData );
+  edgesFilter->Update();
+  
+
+  // Calculate the closest position
+  double fiducialPosition[ 3 ] = { 0.0, 0.0, 0.0 };
+  markupsNode->GetNthFiducialPosition( markupsNode->GetNumberOfMarkups() - 1, fiducialPosition );
+  markupsNode->RemoveMarkup( markupsNode->GetNumberOfMarkups() - 1 ); // Remove the markup when done
+  double closestPosition[ 3 ] = { 0.0, 0.0, 0.0 };
+  vtkSmartPointer< vtkGenericCell > closestCell = vtkSmartPointer< vtkGenericCell >::New();
+  vtkIdType closestCellId = 0;
+  int subId = 0;
+  double squaredDistance = 0;
+
+  vtkSmartPointer< vtkCellLocator > locator = vtkSmartPointer< vtkCellLocator >::New();
+  locator->SetDataSet( edgesFilter->GetOutput() );
+  locator->BuildLocator();
+  locator->FindClosestPoint( fiducialPosition, closestPosition, closestCell, closestCellId, subId, squaredDistance );
+
+  // There should be two points in the current vtkLine cell
+  double closestEndPoint0[ 3 ] = { 0.0, 0.0, 0.0 };
+  double closestEndPoint1[ 3 ] = { 0.0, 0.0, 0.0 };
+
+  closestCell->GetPoints()->GetPoint( 0, closestEndPoint0 );
+  closestCell->GetPoints()->GetPoint( 1, closestEndPoint1 );
+
+  double direction[ 3 ] = { 0.0, 0.0, 0.0 };
+  direction[ 0 ] = closestEndPoint0[ 0 ] - closestEndPoint1[ 0 ];
+  direction[ 1 ] = closestEndPoint0[ 1 ] - closestEndPoint1[ 1 ];
+  direction[ 2 ] = closestEndPoint0[ 2 ] - closestEndPoint1[ 2 ];
+
+  double directionNorm = sqrt( direction[ 0 ] * direction[ 0 ] + direction[ 1 ] * direction[ 1 ] + direction[ 2 ] * direction[ 2 ] );
+  direction[ 0 ] = direction[ 0 ] / directionNorm;
+  direction[ 1 ] = direction[ 1 ] / directionNorm;
+  direction[ 2 ] = direction[ 2 ] / directionNorm;
+
+
+  vtkPoints* edgePoints = edgesFilter->GetOutput()->GetPoints();
+  for ( int i = 0; i < edgePoints->GetNumberOfPoints(); i++ )
+  {
+    double currentPoint[ 3 ] = { 0.0, 0.0, 0.0 };
+    edgePoints->GetPoint( i, currentPoint );
+
+    double relativePoint[ 3 ] = { 0.0, 0.0, 0.0 };
+    relativePoint[ 0 ] = currentPoint[ 0 ] - closestEndPoint0[ 0 ];
+    relativePoint[ 1 ] = currentPoint[ 1 ] - closestEndPoint0[ 1 ];
+    relativePoint[ 2 ] = currentPoint[ 2 ] - closestEndPoint0[ 2 ];
+
+    double dot = direction[ 0 ] * relativePoint[ 0 ] + direction[ 1 ] * relativePoint[ 1 ] + direction[ 2 ] * relativePoint[ 2 ];
+
+    double nonProjection[ 3 ] = { 0.0, 0.0, 0.0 };
+    nonProjection[ 0 ] = relativePoint[ 0 ] - dot * direction[ 0 ];
+    nonProjection[ 1 ] = relativePoint[ 1 ] - dot * direction[ 1 ];
+    nonProjection[ 2 ] = relativePoint[ 2 ] - dot * direction[ 2 ];
+
+    double dist = nonProjection[ 0 ] * nonProjection[ 0 ] + nonProjection[ 1 ] * nonProjection[ 1 ] + nonProjection[ 2 ] * nonProjection[ 2 ];
+    
+
+    // We are on the plane
+    if ( abs( dist ) <  1e-3 )
+    {
+      std::vector< double > currentVector( 3, 0.0 );
+      currentVector.at(0) = currentPoint[0];
+      currentVector.at(1) = currentPoint[1];
+      currentVector.at(2) = currentPoint[2];
+
+      vtkSmartPointer< vtkLORPosition > currentPosition = vtkSmartPointer< vtkLORPosition >::New();
+      currentPosition->SetPositionVector( currentVector );
+      positionBuffer->AddPosition( currentPosition );
+    }
+  }
+
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
 ::PairCollections( vtkMRMLLinearObjectCollectionNode* collection0, vtkMRMLLinearObjectCollectionNode* collection1 )
 {
   // Find the smaller size

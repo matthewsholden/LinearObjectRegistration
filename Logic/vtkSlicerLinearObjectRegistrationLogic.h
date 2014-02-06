@@ -30,6 +30,7 @@
 #include "vtkCellLocator.h"
 #include "vtkPolygon.h"
 #include "vtkGenericCell.h"
+#include "vtkFeatureEdges.h"
 
 // VNL includes
 #include "vnl/vnl_matrix.h"
@@ -126,6 +127,7 @@ public:
   vtkSmartPointer< vtkLORLinearObject > PositionBufferToLinearObject( vtkLORPositionBuffer* positionBuffer, double noiseThreshold, int dof = -1 );
 
   void CreateModelPlane( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
+  void CreateModelLine( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
 
   vtkMRMLLinearObjectCollectionNode* GetActiveCollectionNode();
   void SetActiveCollectionNode( vtkMRMLLinearObjectCollectionNode* newActiveCollectionNode );

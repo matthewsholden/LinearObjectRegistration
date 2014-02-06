@@ -145,6 +145,14 @@ void qSlicerLORModelWidget
 {
   Q_D(qSlicerLORModelWidget);
 
+  // Start collecting
+  this->LORNode->StartCollecting( LORConstants::LINE_STRING );
+
+  // Add the positions to the active position buffer (based on selected model)
+  this->LORLogic->CreateModelLine( d->ModelNodeComboBox->currentNode(), this->LORNode->GetActivePositionBuffer() );
+
+  // Stop collecting
+  this->LORNode->StopCollecting();
 }
 
 
