@@ -129,6 +129,14 @@ void qSlicerLORModelWidget
 {
   Q_D(qSlicerLORModelWidget);
 
+  // Start collecting
+  this->LORNode->StartCollecting( LORConstants::REFERENCE_STRING );
+
+  // Add the positions to the active position buffer (based on selected model)
+  this->LORLogic->CreateModelReference( d->ModelNodeComboBox->currentNode(), this->LORNode->GetActivePositionBuffer() );
+
+  // Stop collecting
+  this->LORNode->StopCollecting();
 }
 
 
@@ -137,6 +145,14 @@ void qSlicerLORModelWidget
 {
   Q_D(qSlicerLORModelWidget);
 
+  // Start collecting
+  this->LORNode->StartCollecting( LORConstants::POINT_STRING );
+
+  // Add the positions to the active position buffer (based on selected model)
+  this->LORLogic->CreateModelPoint( d->ModelNodeComboBox->currentNode(), this->LORNode->GetActivePositionBuffer() );
+
+  // Stop collecting
+  this->LORNode->StopCollecting();
 }
 
 
@@ -183,50 +199,6 @@ void qSlicerLORModelWidget
     return;
   }
 
-  disconnect( d->ReferenceButton, SIGNAL( toggled( bool ) ), this, SLOT( onReferenceButtonClicked() ) );
-  disconnect( d->PointButton, SIGNAL( toggled( bool ) ), this, SLOT( onPointButtonClicked() ) );
-  disconnect( d->LineButton, SIGNAL( toggled( bool ) ), this, SLOT( onLineButtonClicked() ) );
-  disconnect( d->PlaneButton, SIGNAL( toggled( bool ) ), this, SLOT( onPlaneButtonClicked() ) );
-
-  if ( this->LORNode->GetCollectionState().compare( LORConstants::REFERENCE_STRING ) )
-  {
-    d->ReferenceButton->setChecked( true );
-  }
-  else
-  {
-    d->ReferenceButton->setChecked( false );
-  }
-
-  if ( this->LORNode->GetCollectionState().compare( LORConstants::POINT_STRING ) )
-  {
-    d->PointButton->setChecked( true );
-  }
-  else
-  {
-    d->PointButton->setChecked( false );
-  }
-
-  if ( this->LORNode->GetCollectionState().compare( LORConstants::LINE_STRING ) )
-  {
-    d->LineButton->setChecked( true );
-  }
-  else
-  {
-    d->LineButton->setChecked( false );
-  }
-
-  if ( this->LORNode->GetCollectionState().compare( LORConstants::PLANE_STRING ) )
-  {
-    d->PlaneButton->setChecked( true );
-  }
-  else
-  {
-    d->PlaneButton->setChecked( false );
-  }
-
-  connect( d->ReferenceButton, SIGNAL( toggled( bool ) ), this, SLOT( onReferenceButtonClicked() ) );
-  connect( d->PointButton, SIGNAL( toggled( bool ) ), this, SLOT( onPointButtonClicked() ) );
-  connect( d->LineButton, SIGNAL( toggled( bool ) ), this, SLOT( onLineButtonClicked() ) );
-  connect( d->PlaneButton, SIGNAL( toggled( bool ) ), this, SLOT( onPlaneButtonClicked() ) );
+  // Nothing to do
 
 }

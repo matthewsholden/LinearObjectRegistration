@@ -28,6 +28,7 @@
 #include "vtkIntArray.h"
 #include "vtkMatrix4x4.h"
 #include "vtkCellLocator.h"
+#include "vtkPointLocator.h"
 #include "vtkPolygon.h"
 #include "vtkGenericCell.h"
 #include "vtkFeatureEdges.h"
@@ -128,6 +129,8 @@ public:
 
   void CreateModelPlane( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
   void CreateModelLine( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
+  void CreateModelPoint( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
+  void CreateModelReference( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
 
   vtkMRMLLinearObjectCollectionNode* GetActiveCollectionNode();
   void SetActiveCollectionNode( vtkMRMLLinearObjectCollectionNode* newActiveCollectionNode );

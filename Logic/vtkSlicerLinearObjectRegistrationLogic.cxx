@@ -410,6 +410,90 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
+::CreateModelPoint( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer )
+{
+  vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast( node );
+  if ( modelNode == NULL )
+  {
+    return;
+  }
+
+  vtkMRMLMarkupsFiducialNode* markupsNode = vtkMRMLMarkupsFiducialNode::SafeDownCast( this->GetActiveMarkupsNode() );
+  if ( markupsNode == NULL || markupsNode->GetNumberOfMarkups() < 1 )
+  {
+    return;
+  }
+  vtkPolyData* modelPolyData = modelNode->GetPolyData();
+
+  // Calculate the closest position
+  double fiducialPosition[ 3 ] = { 0.0, 0.0, 0.0 };
+  markupsNode->GetNthFiducialPosition( markupsNode->GetNumberOfMarkups() - 1, fiducialPosition );
+  markupsNode->RemoveMarkup( markupsNode->GetNumberOfMarkups() - 1 ); // Remove the markup when done
+  double closestPoint[ 3 ] = { 0.0, 0.0, 0.0 };
+  vtkIdType closestPointId = 0;
+
+  vtkSmartPointer< vtkPointLocator > locator = vtkSmartPointer< vtkPointLocator >::New();
+  locator->SetDataSet( modelPolyData );
+  locator->BuildLocator();
+  closestPointId = locator->FindClosestPoint( fiducialPosition );
+  modelPolyData->GetPoint( closestPointId, closestPoint );
+
+  std::vector< double > currentVector( 3, 0.0 );
+  currentVector.at(0) = closestPoint[0];
+  currentVector.at(1) = closestPoint[1];
+  currentVector.at(2) = closestPoint[2];
+
+  vtkSmartPointer< vtkLORPosition > currentPosition = vtkSmartPointer< vtkLORPosition >::New();
+  currentPosition->SetPositionVector( currentVector );
+  positionBuffer->AddPosition( currentPosition );
+
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
+::CreateModelReference( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer )
+{
+  vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast( node );
+  if ( modelNode == NULL )
+  {
+    return;
+  }
+
+  vtkMRMLMarkupsFiducialNode* markupsNode = vtkMRMLMarkupsFiducialNode::SafeDownCast( this->GetActiveMarkupsNode() );
+  if ( markupsNode == NULL || markupsNode->GetNumberOfMarkups() < 1 )
+  {
+    return;
+  }
+  vtkPolyData* modelPolyData = modelNode->GetPolyData();
+
+  // Calculate the normal vector and the basePoint
+  double fiducialPosition[ 3 ] = { 0.0, 0.0, 0.0 };
+  markupsNode->GetNthFiducialPosition( markupsNode->GetNumberOfMarkups() - 1, fiducialPosition );
+  markupsNode->RemoveMarkup( markupsNode->GetNumberOfMarkups() - 1 ); // Remove the markup when done
+  double closestPosition[ 3 ] = { 0.0, 0.0, 0.0 };
+  vtkSmartPointer< vtkGenericCell > closestCell = vtkSmartPointer< vtkGenericCell >::New();
+  vtkIdType closestCellId = 0;
+  int subId = 0;
+  double squaredDistance = 0;
+
+  vtkSmartPointer< vtkCellLocator > locator = vtkSmartPointer< vtkCellLocator >::New();
+  locator->SetDataSet( modelPolyData );
+  locator->BuildLocator();
+  locator->FindClosestPoint( fiducialPosition, closestPosition, closestCell, closestCellId, subId, squaredDistance );
+
+  std::vector< double > currentVector( 3, 0.0 );
+  currentVector.at(0) = closestPosition[0];
+  currentVector.at(1) = closestPosition[1];
+  currentVector.at(2) = closestPosition[2];
+
+  vtkSmartPointer< vtkLORPosition > currentPosition = vtkSmartPointer< vtkLORPosition >::New();
+  currentPosition->SetPositionVector( currentVector );
+  positionBuffer->AddPosition( currentPosition );
+
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
 ::PairCollections( vtkMRMLLinearObjectCollectionNode* collection0, vtkMRMLLinearObjectCollectionNode* collection1 )
 {
   // Find the smaller size
