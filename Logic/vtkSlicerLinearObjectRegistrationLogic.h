@@ -135,6 +135,7 @@ public:
   vtkMRMLLinearObjectCollectionNode* GetActiveCollectionNode();
   void SetActiveCollectionNode( vtkMRMLLinearObjectCollectionNode* newActiveCollectionNode );
   vtkMRMLMarkupsNode* GetActiveMarkupsNode();
+  void SetActiveMarkupsNode( vtkMRMLMarkupsNode* newActiveMarkupsNode );
 
   void MatchCollections( vtkMRMLLinearObjectCollectionNode* collection0, vtkMRMLLinearObjectCollectionNode* collection1, double matchingThreshold, bool removeUnmatched = false );
   void PairCollections( vtkMRMLLinearObjectCollectionNode* collection0, vtkMRMLLinearObjectCollectionNode* collection1 );

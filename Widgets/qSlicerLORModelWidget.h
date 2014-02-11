@@ -30,6 +30,18 @@
 
 #include "vtkSlicerLinearObjectRegistrationLogic.h"
 
+#include "vtkMRMLInteractionNode.h"
+#include "vtkMRMLSelectionNode.h"
+
+#include "vtkMRMLModelDisplayableManager.h"
+#include "vtkInteractorObserver.h"
+#include "vtkRenderWindowInteractor.h"
+
+#include "qSlicerApplication.h"
+#include "qSlicerLayoutManager.h"
+#include "qMRMLThreeDWidget.h"
+
+
 
 class qSlicerLORModelWidgetPrivate;
 
@@ -49,10 +61,14 @@ public:
 
 protected slots:
 
-  void onReferenceButtonClicked();
-  void onPointButtonClicked();
-  void onLineButtonClicked();
-  void onPlaneButtonClicked();
+  void onReferenceButtonToggled();
+  void onReferenceFiducialDropped();
+  void onPointButtonToggled();
+  void onPointFiducialDropped();
+  void onLineButtonToggled();
+  void onLineFiducialDropped();
+  void onPlaneButtonToggled();
+  void onPlaneFiducialDropped();
 
   void updateWidget();
 
@@ -62,12 +78,16 @@ protected:
   virtual void setup();
   virtual void enter();
 
+  void GetCurrentWorldCoordinates( double* worldCoordinates );
+
 private:
   Q_DECLARE_PRIVATE(qSlicerLORModelWidget);
   Q_DISABLE_COPY(qSlicerLORModelWidget);
 
   vtkMRMLLinearObjectRegistrationNode* LORNode;
   vtkSlicerLinearObjectRegistrationLogic* LORLogic;
+
+  vtkMRMLMarkupsFiducialNode* FiducialNode;
 };
 
 #endif

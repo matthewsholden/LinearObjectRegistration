@@ -174,7 +174,42 @@ vtkMRMLMarkupsNode* vtkSlicerLinearObjectRegistrationLogic
   }
 
   const char* activeMarkupsNodeID = selectionNode->GetActivePlaceNodeID();
-  return vtkMRMLMarkupsNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( activeMarkupsNodeID ) );
+  vtkMRMLMarkupsNode* activeMarkupsNode = vtkMRMLMarkupsNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( activeMarkupsNodeID ) );
+
+  // Create a new markups node to be active if none is active
+  if ( activeMarkupsNode != NULL )
+  {
+    return activeMarkupsNode;
+  }
+
+  activeMarkupsNode = vtkMRMLMarkupsFiducialNode::New();
+  activeMarkupsNode->SetName( "F" );
+
+  vtkMRMLMarkupsDisplayNode* displayNode = vtkMRMLMarkupsDisplayNode::New();
+  this->GetMRMLScene()->AddNode( displayNode );
+  displayNode->InvokeEvent( vtkMRMLMarkupsDisplayNode::ResetToDefaultsEvent ); // set to defaults
+
+  activeMarkupsNode->AddAndObserveDisplayNodeID( displayNode->GetID() );
+  this->GetMRMLScene()->AddNode( activeMarkupsNode );
+
+  selectionNode->SetActivePlaceNodeID( activeMarkupsNode->GetID() );
+
+  return activeMarkupsNode;
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
+::SetActiveMarkupsNode( vtkMRMLMarkupsNode* newActiveMarkupsNode )
+{
+  vtkMRMLApplicationLogic* appLogic = this->GetMRMLApplicationLogic();
+  vtkMRMLSelectionNode* selectionNode = appLogic->GetSelectionNode();
+
+  if ( selectionNode == NULL )
+  {
+    return;
+  }
+
+  selectionNode->SetActivePlaceNodeID( newActiveMarkupsNode->GetID() );
 }
 
 
