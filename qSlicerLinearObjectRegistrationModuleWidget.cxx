@@ -234,6 +234,25 @@ qSlicerLinearObjectRegistrationModuleWidget
 
 
 void qSlicerLinearObjectRegistrationModuleWidget
+::enter()
+{
+  // Nothing to do
+  this->Superclass::enter();
+}
+
+
+void qSlicerLinearObjectRegistrationModuleWidget
+::exit()
+{
+  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
+
+  d->ModelWidget->disconnectMarkupsObservers();
+
+  this->Superclass::exit();
+}
+
+
+void qSlicerLinearObjectRegistrationModuleWidget
 ::ConnectWidgets()
 {
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );

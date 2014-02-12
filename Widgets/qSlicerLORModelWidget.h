@@ -59,6 +59,13 @@ public:
 
   void SetLORNode( vtkMRMLNode* newNode );
 
+public slots:
+
+  void show();
+  void hide();
+
+  void disconnectMarkupsObservers( std::string checkString = "" );
+
 protected slots:
 
   void onReferenceButtonToggled();

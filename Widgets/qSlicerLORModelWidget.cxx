@@ -109,6 +109,22 @@ void qSlicerLORModelWidget
 }
 
 
+void qSlicerLORModelWidget
+::show()
+{
+  // No need to start any connections
+  this->Superclass::show();
+}
+
+
+void qSlicerLORModelWidget
+::hide()
+{
+  this->disconnectMarkupsObservers();
+  this->Superclass::hide();
+}
+
+
 
 void qSlicerLORModelWidget
 ::SetLORNode( vtkMRMLNode* newNode )
@@ -125,6 +141,49 @@ void qSlicerLORModelWidget
 }
 
 
+void qSlicerLORModelWidget
+::disconnectMarkupsObservers( std::string checkString )
+{
+  Q_D(qSlicerLORModelWidget);
+
+  this->qvtkDisconnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onReferenceFiducialDropped() ) );
+  this->qvtkDisconnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onPointFiducialDropped() ) );
+  this->qvtkDisconnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onLineFiducialDropped() ) );
+  this->qvtkDisconnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onPlaneFiducialDropped() ) );
+
+  vtkMRMLInteractionNode* interactionNode = vtkMRMLInteractionNode::SafeDownCast( this->mrmlScene()->GetNodeByID( "vtkMRMLInteractionNodeSingleton" ) );
+  this->qvtkDisconnect( interactionNode, vtkMRMLInteractionNode::InteractionModeChangedEvent, this, SLOT( disconnectMarkupsObservers() ) );
+  interactionNode->SetCurrentInteractionMode( vtkMRMLInteractionNode::ViewTransform );
+
+  disconnect( d->ReferenceButton, SIGNAL( toggled( bool ) ), this, SLOT( onReferenceButtonToggled() ) );
+  disconnect( d->PointButton, SIGNAL( toggled( bool ) ), this, SLOT( onPointButtonToggled() ) );
+  disconnect( d->LineButton, SIGNAL( toggled( bool ) ), this, SLOT( onLineButtonToggled() ) );
+  disconnect( d->PlaneButton, SIGNAL( toggled( bool ) ), this, SLOT( onPlaneButtonToggled() ) );
+
+  if ( checkString.compare( LORConstants::REFERENCE_STRING ) != 0 )
+  {
+    d->ReferenceButton->setChecked( Qt::Unchecked );
+  }
+  if ( checkString.compare( LORConstants::POINT_STRING ) != 0 )
+  {
+    d->PointButton->setChecked( Qt::Unchecked );
+  }
+  if ( checkString.compare( LORConstants::LINE_STRING ) != 0 )
+  {
+    d->LineButton->setChecked( Qt::Unchecked );
+  }
+  if ( checkString.compare( LORConstants::PLANE_STRING ) != 0 )
+  {
+    d->PlaneButton->setChecked( Qt::Unchecked );
+  }
+
+  connect( d->ReferenceButton, SIGNAL( toggled( bool ) ), this, SLOT( onReferenceButtonToggled() ) );
+  connect( d->PointButton, SIGNAL( toggled( bool ) ), this, SLOT( onPointButtonToggled() ) );
+  connect( d->LineButton, SIGNAL( toggled( bool ) ), this, SLOT( onLineButtonToggled() ) );
+  connect( d->PlaneButton, SIGNAL( toggled( bool ) ), this, SLOT( onPlaneButtonToggled() ) );
+}
+
+
 // Note: Observe the markups PointModifiedEvent - this is when the markups value is changed to the correct coordinates
 
 void qSlicerLORModelWidget
@@ -137,12 +196,14 @@ void qSlicerLORModelWidget
 
   if ( interactionNode == NULL || ! d->ReferenceButton->isChecked() )
   {
-    this->qvtkDisconnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onReferenceFiducialDropped() ) );
+    this->disconnectMarkupsObservers();
     return;
   }
 
-  this->qvtkConnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onReferenceFiducialDropped() ) );
+  this->disconnectMarkupsObservers( LORConstants::REFERENCE_STRING );
   interactionNode->SetCurrentInteractionMode( vtkMRMLInteractionNode::Place );
+  this->qvtkConnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onReferenceFiducialDropped() ) );
+  this->qvtkConnect( interactionNode, vtkMRMLInteractionNode::InteractionModeChangedEvent, this, SLOT( disconnectMarkupsObservers() ) );
 }
 
 
@@ -161,7 +222,7 @@ void qSlicerLORModelWidget
   // Stop collecting
   this->LORNode->StopCollecting();
 
-  d->ReferenceButton->setChecked( Qt::Unchecked );
+  this->disconnectMarkupsObservers();
 }
 
 
@@ -175,12 +236,14 @@ void qSlicerLORModelWidget
 
   if ( interactionNode == NULL || ! d->PointButton->isChecked() )
   {
-    this->qvtkDisconnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onPointFiducialDropped() ) );
+    this->disconnectMarkupsObservers();
     return;
   }
 
-  this->qvtkConnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onPointFiducialDropped() ) );
+  this->disconnectMarkupsObservers( LORConstants::POINT_STRING );
   interactionNode->SetCurrentInteractionMode( vtkMRMLInteractionNode::Place );
+  this->qvtkConnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onPointFiducialDropped() ) );
+  this->qvtkConnect( interactionNode, vtkMRMLInteractionNode::InteractionModeChangedEvent, this, SLOT( disconnectMarkupsObservers() ) );
 }
 
 
@@ -198,7 +261,7 @@ void qSlicerLORModelWidget
   // Stop collecting
   this->LORNode->StopCollecting();
 
-  d->PointButton->setChecked( Qt::Unchecked );
+  this->disconnectMarkupsObservers();
 }
 
 
@@ -212,12 +275,14 @@ void qSlicerLORModelWidget
 
   if ( interactionNode == NULL || ! d->LineButton->isChecked() )
   {
-    this->qvtkDisconnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onLineFiducialDropped() ) );
+    this->disconnectMarkupsObservers();
     return;
   }
 
-  this->qvtkConnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onLineFiducialDropped() ) );
+  this->disconnectMarkupsObservers( LORConstants::LINE_STRING );
   interactionNode->SetCurrentInteractionMode( vtkMRMLInteractionNode::Place );
+  this->qvtkConnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onLineFiducialDropped() ) );
+  this->qvtkConnect( interactionNode, vtkMRMLInteractionNode::InteractionModeChangedEvent, this, SLOT( disconnectMarkupsObservers() ) );
 }
 
 
@@ -235,7 +300,7 @@ void qSlicerLORModelWidget
   // Stop collecting
   this->LORNode->StopCollecting();
 
-  d->LineButton->setChecked( Qt::Unchecked );
+  this->disconnectMarkupsObservers();
 }
 
 
@@ -249,12 +314,14 @@ void qSlicerLORModelWidget
 
   if ( interactionNode == NULL || ! d->PlaneButton->isChecked() )
   {
-    this->qvtkDisconnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onPlaneFiducialDropped() ) );
+    this->disconnectMarkupsObservers();
     return;
   }
 
+  this->disconnectMarkupsObservers( LORConstants::PLANE_STRING );
+  interactionNode->SetCurrentInteractionMode( vtkMRMLInteractionNode::Place );
   this->qvtkConnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onPlaneFiducialDropped() ) );
-  interactionNode->SwitchToSinglePlaceMode();
+  this->qvtkConnect( interactionNode, vtkMRMLInteractionNode::InteractionModeChangedEvent, this, SLOT( disconnectMarkupsObservers() ) );
 }
 
 
@@ -272,7 +339,7 @@ void qSlicerLORModelWidget
   // Stop collecting
   this->LORNode->StopCollecting();
 
-  d->PlaneButton->setChecked( Qt::Unchecked );
+  this->disconnectMarkupsObservers();
 }
 
 

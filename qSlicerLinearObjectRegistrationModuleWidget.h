@@ -34,6 +34,8 @@ protected:
   QScopedPointer<qSlicerLinearObjectRegistrationModuleWidgetPrivate> d_ptr;
   
   virtual void setup();
+  virtual void enter();
+  virtual void exit();
 
 private:
   Q_DECLARE_PRIVATE(qSlicerLinearObjectRegistrationModuleWidget);
