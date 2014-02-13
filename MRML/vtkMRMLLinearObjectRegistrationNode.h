@@ -109,6 +109,8 @@ public:
   std::string GetCollectionState();
   vtkLORPositionBuffer* GetActivePositionBuffer();
 
+  bool DifferentFromPrevious( vtkMatrix4x4* newMatrix );
+
   void StartCollecting( std::string newCollectionState );
   void StopCollecting();
 
@@ -121,6 +123,7 @@ private:
 
   std::string CollectionState;
   vtkSmartPointer< vtkLORRealTimePositionBuffer > ActivePositionBuffer;
+  vtkSmartPointer< vtkMatrix4x4 > PreviousMatrix;
 
   double NoiseThreshold;
   double MatchingThreshold;

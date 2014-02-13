@@ -68,6 +68,7 @@ vtkMRMLLinearObjectRegistrationNode
 
   this->CollectionState = "";
   this->ActivePositionBuffer = vtkSmartPointer< vtkLORRealTimePositionBuffer >::New();
+  this->PreviousMatrix = vtkSmartPointer< vtkMatrix4x4 >::New();
 
   //TODO: Should these be zero or "default" values
   this->NoiseThreshold = 0.5;
@@ -479,6 +480,55 @@ std::string vtkMRMLLinearObjectRegistrationNode
 }
 
 
+bool vtkMRMLLinearObjectRegistrationNode
+::DifferentFromPrevious( vtkMatrix4x4* newMatrix )
+{
+  std::vector< double > newRotation( 9, 0.0 );
+  newRotation.at( 0 ) = newMatrix->GetElement( 0, 0 );
+  newRotation.at( 1 ) = newMatrix->GetElement( 0, 1 );
+  newRotation.at( 2 ) = newMatrix->GetElement( 0, 2 );
+  newRotation.at( 3 ) = newMatrix->GetElement( 1, 0 );
+  newRotation.at( 4 ) = newMatrix->GetElement( 1, 1 );
+  newRotation.at( 5 ) = newMatrix->GetElement( 1, 2 );
+  newRotation.at( 6 ) = newMatrix->GetElement( 2, 0 );
+  newRotation.at( 7 ) = newMatrix->GetElement( 2, 1 );
+  newRotation.at( 8 ) = newMatrix->GetElement( 2, 2 );
+
+  std::vector< double > newTranslation( 3, 0.0 );
+  newTranslation.at( 0 ) = newMatrix->GetElement( 0, 3 );
+  newTranslation.at( 1 ) = newMatrix->GetElement( 1, 3 );
+  newTranslation.at( 2 ) = newMatrix->GetElement( 2, 3 );
+
+  std::vector< double > previousRotation( 9, 0.0 );
+  previousRotation.at( 0 ) = this->PreviousMatrix->GetElement( 0, 0 );
+  previousRotation.at( 1 ) = this->PreviousMatrix->GetElement( 0, 1 );
+  previousRotation.at( 2 ) = this->PreviousMatrix->GetElement( 0, 2 );
+  previousRotation.at( 3 ) = this->PreviousMatrix->GetElement( 1, 0 );
+  previousRotation.at( 4 ) = this->PreviousMatrix->GetElement( 1, 1 );
+  previousRotation.at( 5 ) = this->PreviousMatrix->GetElement( 1, 2 );
+  previousRotation.at( 6 ) = this->PreviousMatrix->GetElement( 2, 0 );
+  previousRotation.at( 7 ) = this->PreviousMatrix->GetElement( 2, 1 );
+  previousRotation.at( 8 ) = this->PreviousMatrix->GetElement( 2, 2 );
+
+  std::vector< double > previousTranslation( 3, 0.0 );
+  previousTranslation.at( 0 ) = this->PreviousMatrix->GetElement( 0, 3 );
+  previousTranslation.at( 1 ) = this->PreviousMatrix->GetElement( 1, 3 );
+  previousTranslation.at( 2 ) = this->PreviousMatrix->GetElement( 2, 3 );
+
+  double rotationDifference = LORMath::Norm( LORMath::Subtract( newRotation, previousRotation ) );
+  double translationDifference = LORMath::Norm( LORMath::Subtract( newTranslation, previousTranslation ) );
+
+  if ( rotationDifference > LORConstants::ROTATION_THRESHOLD )
+  {
+    return true;
+  }
+  if ( translationDifference > LORConstants::TRANSLATION_THRESHOLD )
+  {
+    return true;
+  }
+  return false;
+}
+
 
 void vtkMRMLLinearObjectRegistrationNode
 ::StartCollecting( std::string newCollectionState )
@@ -520,6 +570,13 @@ void vtkMRMLLinearObjectRegistrationNode
   {
     return;
   }
+
+  // Prevent adding if the current transform is the same as the previous transform
+  if ( ! this->DifferentFromPrevious( transformNode->GetMatrixTransformToParent() ) )
+  {
+    return;
+  }
+  this->PreviousMatrix->DeepCopy( transformNode->GetMatrixTransformToParent() );
 
   vtkLORPosition* tempPosition = vtkLORPosition::New( transformNode->GetMatrixTransformToParent() );
   vtkSmartPointer< vtkLORPosition > newPosition = vtkSmartPointer< vtkLORPosition >::Take( tempPosition );

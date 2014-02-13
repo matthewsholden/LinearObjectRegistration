@@ -24,6 +24,8 @@ const std::string LORConstants::AUTOMATIC_STRING = "Automatic";
 const std::string LORConstants::MODEL_STRING = "Model";
 
 const double LORConstants::DIRECTION_SCALE = 100.0;
+const double LORConstants::ROTATION_THRESHOLD = 0.005;
+const double LORConstants::TRANSLATION_THRESHOLD = 0.5;
 
 
 
