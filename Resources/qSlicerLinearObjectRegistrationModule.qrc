@@ -4,5 +4,6 @@
     <file>Icons/LinearObjectUp.png</file>
     <file>Icons/LinearObjectDown.png</file>
     <file>Icons/LinearObjectDelete.png</file>
+    <file>Icons/LinearObjectRemoveBuffer.png</file>
   </qresource>
 </RCC>

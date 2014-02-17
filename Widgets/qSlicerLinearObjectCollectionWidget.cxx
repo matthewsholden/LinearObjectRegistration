@@ -276,10 +276,13 @@ void qSlicerLinearObjectCollectionWidget
   upAction->setIcon( QIcon( ":/Icons/LinearObjectUp.png" ) );
   QAction* downAction = new QAction( "Move linear object down", collectionMenu );
   downAction->setIcon( QIcon( ":/Icons/LinearObjectDown.png" ) );
+  QAction* removeBufferAction = new QAction( "Remove position buffer", collectionMenu );
+  removeBufferAction->setIcon( QIcon( ":/Icons/LinearObjectRemoveBuffer.png" ) );
 
   collectionMenu->addAction( deleteAction );
   collectionMenu->addAction( upAction );
   collectionMenu->addAction( downAction );
+  collectionMenu->addAction( removeBufferAction );
 
   QAction* selectedAction = collectionMenu->exec( globalPosition );
 
@@ -310,6 +313,14 @@ void qSlicerLinearObjectCollectionWidget
     if ( currentIndex < currentCollection->Size() - 1 )
     {
       currentCollection->Swap( currentIndex, currentIndex + 1 );
+    }
+  }
+
+  if ( selectedAction == removeBufferAction )
+  {
+	if ( currentCollection->GetLinearObject( currentIndex ) != NULL )
+    {
+      currentCollection->GetLinearObject( currentIndex )->SetPositionBuffer( NULL );
     }
   }
   
@@ -385,11 +396,6 @@ void qSlicerLinearObjectCollectionWidget
     this->updateWidget();
     d->CollectionTableWidget->setCellWidget( row, col, typeComboBox );
     d->CollectionTableWidget->setCurrentCell( row, col );
-  }
-
-  if ( col == LINEAROBJECT_BUFFER_COLUMN )
-  {
-    this->updateWidget();
   }
 
   emit linearObjectSelected();
