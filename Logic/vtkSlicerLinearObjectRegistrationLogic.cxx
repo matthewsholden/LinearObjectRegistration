@@ -1399,48 +1399,28 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     return;
   }
-
-  // Note: The != serves as an XOR for booleans
-  vtkMRMLLinearObjectCollectionNode* bufferfulLinearObjects = NULL;
-  vtkMRMLLinearObjectCollectionNode* bufferlessLinearObjects = NULL;
-  vtkLORPositionBuffer* bufferfulPositions = NULL;
-  vtkLORPositionBuffer* bufferlessPositions = NULL;
-  vtkSmartPointer< vtkMatrix4x4 > bufferfulToBufferlessTransform = vtkSmartPointer< vtkMatrix4x4 >::New();
-  bufferfulToBufferlessTransform->DeepCopy( currentFromToToTransform );
-  if ( fromLinearObjects->AllHavePositionBuffers() && ! toLinearObjects->AllHavePositionBuffers() )
-  {
-    bufferfulLinearObjects = fromLinearObjects;
-    bufferlessLinearObjects = toLinearObjects;
-    bufferfulPositions = fromPositions;
-    bufferlessPositions = toPositions;
-  }
-  if ( ! fromLinearObjects->AllHavePositionBuffers() && toLinearObjects->AllHavePositionBuffers() )
-  {
-    bufferfulLinearObjects = toLinearObjects;
-    bufferlessLinearObjects = fromLinearObjects;
-    bufferfulPositions = toPositions;
-    bufferlessPositions = fromPositions;
-    bufferfulToBufferlessTransform->Invert();
-  }
-  if ( fromLinearObjects->AllHavePositionBuffers() == toLinearObjects->AllHavePositionBuffers() )
+  if ( ! fromLinearObjects->AllHavePositionBuffers() && ! toLinearObjects->AllHavePositionBuffers() )
   {
     return;
   }
 
+  vtkSmartPointer< vtkMatrix4x4 > currentToToFromTransform = vtkSmartPointer< vtkMatrix4x4 >::New();
+  currentToToFromTransform->DeepCopy( currentFromToToTransform );
+  currentToToFromTransform->Invert();
 
-  // Here is the work
-  for ( int i = 0; i < bufferlessLinearObjects->Size(); i++ )
+  // Project the from linear objects onto the to linear objects
+  for ( int i = 0; i < toLinearObjects->Size(); i++ )
   {
 
-    vtkLORPositionBuffer* currentPositionBuffer = bufferfulLinearObjects->GetLinearObject( i )->GetPositionBuffer();
-    vtkLORLinearObject* currentLinearObject = bufferlessLinearObjects->GetLinearObject( i );
+    vtkLORPositionBuffer* currentPositionBuffer = fromLinearObjects->GetLinearObject( i )->GetPositionBuffer();
+    vtkLORLinearObject* currentLinearObject = toLinearObjects->GetLinearObject( i );
 
     for( int j = 0; j < currentPositionBuffer->Size(); j++ )
     {
       // Transform the point
       vtkSmartPointer< vtkLORPosition > currentPosition = currentPositionBuffer->GetPosition( j )->DeepCopy();
       vtkSmartPointer< vtkLORPosition > transformedPosition = currentPositionBuffer->GetPosition( j )->DeepCopy();
-      transformedPosition->Transform( bufferfulToBufferlessTransform );
+      transformedPosition->Transform( currentFromToToTransform );
 
       std::vector<double> projectedVector = currentLinearObject->ProjectVector( transformedPosition->GetPositionVector() );
 
@@ -1448,8 +1428,33 @@ void vtkSlicerLinearObjectRegistrationLogic
       closestPosition->SetPositionVector( projectedVector );
 
       // Add the points to the position buffers for registration
-      bufferfulPositions->AddPosition( currentPosition );
-      bufferlessPositions->AddPosition( closestPosition );
+      fromPositions->AddPosition( currentPosition );
+      toPositions->AddPosition( closestPosition );
+    }
+  }
+
+  // Project the to linear objects onto the from linear objects
+  for ( int i = 0; i < fromLinearObjects->Size(); i++ )
+  {
+
+    vtkLORPositionBuffer* currentPositionBuffer = toLinearObjects->GetLinearObject( i )->GetPositionBuffer();
+    vtkLORLinearObject* currentLinearObject = fromLinearObjects->GetLinearObject( i );
+
+    for( int j = 0; j < currentPositionBuffer->Size(); j++ )
+    {
+      // Transform the point
+      vtkSmartPointer< vtkLORPosition > currentPosition = currentPositionBuffer->GetPosition( j )->DeepCopy();
+      vtkSmartPointer< vtkLORPosition > transformedPosition = currentPositionBuffer->GetPosition( j )->DeepCopy();
+      transformedPosition->Transform( currentToToFromTransform );
+
+      std::vector<double> projectedVector = currentLinearObject->ProjectVector( transformedPosition->GetPositionVector() );
+
+      vtkSmartPointer< vtkLORPosition > closestPosition = vtkSmartPointer< vtkLORPosition >::New();
+      closestPosition->SetPositionVector( projectedVector );
+
+      // Add the points to the position buffers for registration
+      toPositions->AddPosition( currentPosition );
+      fromPositions->AddPosition( closestPosition );
     }
   }
 
