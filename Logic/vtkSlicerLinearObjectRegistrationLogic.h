@@ -127,6 +127,8 @@ public:
 
   vtkSmartPointer< vtkLORLinearObject > PositionBufferToLinearObject( vtkLORPositionBuffer* positionBuffer, double noiseThreshold, int dof = -1 );
 
+  vtkSmartPointer< vtkLORLinearObject > CorrespondPointToReference( vtkLORLinearObject* linearObject, vtkMRMLLinearObjectRegistrationNode* lorNode );
+
   void CreateModelPlane( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
   void CreateModelLine( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
   void CreateModelPoint( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );

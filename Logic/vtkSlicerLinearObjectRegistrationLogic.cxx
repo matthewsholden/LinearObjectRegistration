@@ -286,6 +286,49 @@ vtkSmartPointer< vtkLORLinearObject > vtkSlicerLinearObjectRegistrationLogic
 }
 
 
+// Check if the point should be automatically converted to reference
+vtkSmartPointer< vtkLORLinearObject > vtkSlicerLinearObjectRegistrationLogic
+::CorrespondPointToReference( vtkLORLinearObject* linearObject, vtkMRMLLinearObjectRegistrationNode* lorNode )
+{
+  vtkSmartPointer< vtkLORPoint > point = NULL;
+  point.TakeReference( vtkLORPoint::SafeDownCast( linearObject ) );
+
+  vtkMRMLLinearObjectCollectionNode* fromCollection = vtkMRMLLinearObjectCollectionNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( lorNode->GetFromCollectionID() ) );
+  vtkMRMLLinearObjectCollectionNode* toCollection = vtkMRMLLinearObjectCollectionNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( lorNode->GetToCollectionID() ) );
+
+  vtkMRMLLinearObjectCollectionNode* currentCollection = NULL;
+  vtkMRMLLinearObjectCollectionNode* otherCollection = NULL;
+
+  if ( this->GetActiveCollectionNode() == fromCollection )
+  {
+    currentCollection = fromCollection;
+    otherCollection = toCollection;
+  }
+  if ( this->GetActiveCollectionNode() == toCollection )
+  {
+    currentCollection = toCollection;
+    otherCollection = fromCollection;
+  }
+
+  // Don't do anything if there is no other collection or it is not a point
+  if ( point == NULL || currentCollection == NULL || otherCollection == NULL || point->GetPositionBuffer() == NULL )
+  {
+    return linearObject;
+  }
+
+  vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > currentReferences = this->GetReferences( currentCollection );
+  vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > otherReferences = this->GetReferences( otherCollection );
+  if ( currentReferences->Size() >= otherReferences->Size() )
+  {
+    return linearObject;
+  }
+
+  vtkSmartPointer< vtkLORLinearObject > reference = this->PositionBufferToLinearObject( point->GetPositionBuffer(), lorNode->GetNoiseThreshold(), LORConstants::REFERENCE_DOF );
+  reference->SetPositionBuffer( point->GetPositionBuffer()->DeepCopy() );
+  return reference;
+}
+
+
 void vtkSlicerLinearObjectRegistrationLogic
 ::CreateModelPlane( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer )
 {
@@ -1675,8 +1718,10 @@ void vtkSlicerLinearObjectRegistrationLogic
 
     if ( currentLinearObject != NULL && this->GetActiveCollectionNode() != NULL )
     {
+      // Add a reference rather than a point if the other linear object
       currentLinearObject->SetPositionBuffer( positionBufferCopy );
-      this->GetActiveCollectionNode()->AddLinearObject( currentLinearObject );
+      vtkSmartPointer< vtkLORLinearObject > convertedLinearObject = this->CorrespondPointToReference( currentLinearObject, lorNode );
+      this->GetActiveCollectionNode()->AddLinearObject( convertedLinearObject );
     }
 
   }
