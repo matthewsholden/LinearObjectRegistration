@@ -96,7 +96,7 @@
          <string>Collect Linear Objects</string>
         </property>
         <property name="collapsed">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
@@ -365,7 +365,7 @@
       <string>Advanced</string>
      </property>
      <property name="collapsed">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="contentsFrameShape">
       <enum>QFrame::NoFrame</enum>

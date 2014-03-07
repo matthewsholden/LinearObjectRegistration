@@ -46,6 +46,7 @@ public:
   int Size();
   vtkLORPosition* GetPosition( int index );
   virtual void AddPosition( vtkLORPosition* newPosition );
+  void Concatenate( vtkLORPositionBuffer* catBuffer );
   virtual void Clear();
   virtual void Trim( int trimSize );
 

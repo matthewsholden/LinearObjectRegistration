@@ -278,11 +278,14 @@ void qSlicerLinearObjectCollectionWidget
   downAction->setIcon( QIcon( ":/Icons/LinearObjectDown.png" ) );
   QAction* removeBufferAction = new QAction( "Remove position buffer", collectionMenu );
   removeBufferAction->setIcon( QIcon( ":/Icons/LinearObjectRemoveBuffer.png" ) );
+  QAction* mergeAction = new QAction( "Merge linear objects", collectionMenu );
+  mergeAction->setIcon( QIcon( ":/Icons/LinearObjectMerge.png" ) );
 
   collectionMenu->addAction( deleteAction );
   collectionMenu->addAction( upAction );
   collectionMenu->addAction( downAction );
   collectionMenu->addAction( removeBufferAction );
+  collectionMenu->addAction( mergeAction );
 
   QAction* selectedAction = collectionMenu->exec( globalPosition );
 
@@ -321,6 +324,27 @@ void qSlicerLinearObjectCollectionWidget
 	if ( currentCollection->GetLinearObject( currentIndex ) != NULL )
     {
       currentCollection->GetLinearObject( currentIndex )->SetPositionBuffer( NULL );
+    }
+  }
+
+  if ( selectedAction == mergeAction )
+  {
+    QItemSelectionModel* selectionModel = d->CollectionTableWidget->selectionModel();
+    std::vector<int> mergeRows;
+    for ( int i = 0; i < d->CollectionTableWidget->rowCount(); i++ )
+    {
+      if ( selectionModel->rowIntersectsSelection( i, d->CollectionTableWidget->rootIndex() ) )
+      {
+        mergeRows.push_back( i );
+      }
+    }
+
+    vtkSmartPointer< vtkLORLinearObject > mergedLinearObject = this->LORLogic->MergeLinearObjects( currentCollection, mergeRows, this->LORNode->GetNoiseThreshold() );
+    currentCollection->AddLinearObject( mergedLinearObject );
+
+    for ( int i = 0; i < mergeRows.size(); i++ )
+    {
+      currentCollection->RemoveLinearObject( mergeRows.at( i ) );
     }
   }
   

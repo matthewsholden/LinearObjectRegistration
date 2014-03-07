@@ -724,6 +724,34 @@ void vtkSlicerLinearObjectRegistrationLogic
 }
 
 
+vtkSmartPointer< vtkLORLinearObject> vtkSlicerLinearObjectRegistrationLogic
+::MergeLinearObjects( vtkMRMLLinearObjectCollectionNode* collection, std::vector<int> indices, double noiseThreshold )
+{
+  if ( collection == NULL || collection->Size() == 0 || indices.size() == 0  )
+  {
+    return NULL;
+  }
+
+  vtkSmartPointer< vtkLORPositionBuffer > mergedPositionBuffer = vtkSmartPointer< vtkLORPositionBuffer >::New();
+
+  for ( int i = 0; i < indices.size(); i++ )
+  {
+    vtkLORLinearObject* currentLinearObject = collection->GetLinearObject( indices.at( i ) );
+    if ( currentLinearObject == NULL || currentLinearObject->GetPositionBuffer() == NULL )
+    {
+      continue;
+    }
+    
+    mergedPositionBuffer->Concatenate( currentLinearObject->GetPositionBuffer()->DeepCopy() );
+  }
+
+  vtkSmartPointer< vtkLORLinearObject > mergedLinearObject = this->PositionBufferToLinearObject( mergedPositionBuffer, noiseThreshold, LORConstants::UNKNOWN_DOF );
+  mergedLinearObject->SetPositionBuffer( mergedPositionBuffer );
+
+  return mergedLinearObject;
+}
+
+
 // Return smart pointer since we created the object in this function
 vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > vtkSlicerLinearObjectRegistrationLogic
 ::GetReferences( vtkMRMLLinearObjectCollectionNode* collection )

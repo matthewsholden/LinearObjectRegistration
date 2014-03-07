@@ -141,6 +141,9 @@ public:
 
   void MatchCollections( vtkMRMLLinearObjectCollectionNode* collection0, vtkMRMLLinearObjectCollectionNode* collection1, double matchingThreshold, bool removeUnmatched = false );
   void PairCollections( vtkMRMLLinearObjectCollectionNode* collection0, vtkMRMLLinearObjectCollectionNode* collection1 );
+
+  vtkSmartPointer< vtkLORLinearObject> MergeLinearObjects( vtkMRMLLinearObjectCollectionNode* collection, std::vector<int> indices, double noiseThreshold );
+
   vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > GetReferences( vtkMRMLLinearObjectCollectionNode* collection );
   vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > GetNonReferences( vtkMRMLLinearObjectCollectionNode* collection );
 

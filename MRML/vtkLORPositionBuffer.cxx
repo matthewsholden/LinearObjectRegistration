@@ -55,6 +55,16 @@ void vtkLORPositionBuffer
 
 
 void vtkLORPositionBuffer
+::Concatenate( vtkLORPositionBuffer* catBuffer )
+{
+  for ( int i = 0; i < catBuffer->Size(); i++ )
+  {
+    this->AddPosition( catBuffer->GetPosition(i) );
+  }
+}
+
+
+void vtkLORPositionBuffer
 ::Clear()
 {
   this->Positions.clear();
