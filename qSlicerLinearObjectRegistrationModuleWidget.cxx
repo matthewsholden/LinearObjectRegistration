@@ -269,6 +269,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   connect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
 
+  connect( d->ModelThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->NoiseThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->MatchingThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->MinimumCollectionPositionsSpinBox, SIGNAL( valueChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
@@ -293,6 +294,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   disconnect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
 
+  disconnect( d->ModelThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->NoiseThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->MatchingThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->MinimumCollectionPositionsSpinBox, SIGNAL( valueChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
@@ -377,6 +379,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
     linearObjectRegistrationNode->SetAutomaticMatch( false, vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
 
+  linearObjectRegistrationNode->SetModelThreshold( pow( 10, d->ModelThresholdSpinBox->value() ), vtkMRMLLinearObjectRegistrationNode::NeverModify );
   linearObjectRegistrationNode->SetNoiseThreshold( d->NoiseThresholdSpinBox->value(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
   linearObjectRegistrationNode->SetMatchingThreshold( d->MatchingThresholdSpinBox->value(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
   linearObjectRegistrationNode->SetMinimumCollectionPositions( d->MinimumCollectionPositionsSpinBox->value(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
@@ -413,6 +416,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
     d->FromCollectionWidget->setEnabled( false );
     d->ToCollectionWidget->setEnabled( false );
     d->TransformPreviewWidget->setEnabled( false );
+    d->ModelThresholdSpinBox->setEnabled( false );
     d->NoiseThresholdSpinBox->setEnabled( false );
     d->MatchingThresholdSpinBox->setEnabled( false );
     d->MinimumCollectionPositionsSpinBox->setEnabled( false );
@@ -434,6 +438,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->FromCollectionWidget->setEnabled( true );
   d->ToCollectionWidget->setEnabled( true );
   d->TransformPreviewWidget->setEnabled( true );
+  d->ModelThresholdSpinBox->setEnabled( true );
   d->NoiseThresholdSpinBox->setEnabled( true );
   d->MatchingThresholdSpinBox->setEnabled( true );
   d->MinimumCollectionPositionsSpinBox->setEnabled( true );
@@ -518,6 +523,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
     d->AutomaticMatchCheckBox->setChecked( Qt::Unchecked );
   }
 
+  d->ModelThresholdSpinBox->setValue( log10( linearObjectRegistrationNode->GetModelThreshold() ) );
   d->NoiseThresholdSpinBox->setValue( linearObjectRegistrationNode->GetNoiseThreshold() );
   d->MatchingThresholdSpinBox->setValue( linearObjectRegistrationNode->GetMatchingThreshold() );
   d->MinimumCollectionPositionsSpinBox->setValue( linearObjectRegistrationNode->GetMinimumCollectionPositions() );

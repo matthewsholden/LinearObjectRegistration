@@ -129,10 +129,10 @@ public:
 
   vtkSmartPointer< vtkLORLinearObject > CorrespondPointToReference( vtkLORLinearObject* linearObject, vtkMRMLLinearObjectRegistrationNode* lorNode );
 
-  void CreateModelPlane( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
-  void CreateModelLine( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
-  void CreateModelPoint( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
-  void CreateModelReference( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer );
+  void CreateModelPlane( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode );
+  void CreateModelLine( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode );
+  void CreateModelPoint( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode );
+  void CreateModelReference( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode );
 
   vtkMRMLLinearObjectCollectionNode* GetActiveCollectionNode();
   void SetActiveCollectionNode( vtkMRMLLinearObjectCollectionNode* newActiveCollectionNode );

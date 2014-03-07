@@ -71,6 +71,7 @@ vtkMRMLLinearObjectRegistrationNode
   this->PreviousMatrix = vtkSmartPointer< vtkMatrix4x4 >::New();
 
   //TODO: Should these be zero or "default" values
+  this->ModelThreshold = 1e-3;
   this->NoiseThreshold = 0.5;
   this->MatchingThreshold = 10.0;
   this->MinimumCollectionPositions = 100;
@@ -117,6 +118,7 @@ void vtkMRMLLinearObjectRegistrationNode
   
   of << indent << " CollectionMode=\"" << this->CollectionMode << "\"";
   of << indent << " AutomaticMatch=\"" << this->AutomaticMatch << "\"";
+  of << indent << "ModelThreshold=\"" << this->ModelThreshold << "\"";
   of << indent << "NoiseThreshold=\"" << this->NoiseThreshold << "\"";
   of << indent << "MatchingThreshold=\"" << this->MatchingThreshold << "\"";
   of << indent << "MinimumCollectionPositions=\"" << this->MinimumCollectionPositions << "\"";
@@ -152,6 +154,10 @@ void vtkMRMLLinearObjectRegistrationNode::ReadXMLAttributes( const char** atts )
       {
         this->AutomaticMatch = true;
       }
+    }
+    if ( ! strcmp( attName, "ModelThreshold" ) )
+    {
+      this->ModelThreshold = atof( attValue );
     }
     if ( ! strcmp( attName, "NoiseThreshold" ) )
     {
@@ -190,6 +196,7 @@ void vtkMRMLLinearObjectRegistrationNode
   // So, anything we want in the MRML file we must copy here (I don't think we need to copy other things)
   this->CollectionMode = node->CollectionMode;
   this->AutomaticMatch = node->AutomaticMatch;
+  this->ModelThreshold = node->ModelThreshold;
   this->NoiseThreshold = node->NoiseThreshold;
   this->MatchingThreshold = node->MatchingThreshold;
   this->MinimumCollectionPositions = node->MinimumCollectionPositions;
@@ -205,6 +212,7 @@ void vtkMRMLLinearObjectRegistrationNode
   vtkMRMLNode::PrintSelf(os,indent); // This will take care of referenced nodes
   os << indent << "CollectionMode: " << this->CollectionMode << "\n";
   os << indent << "AutomaticMatch: " << this->AutomaticMatch << "\n";
+  os << indent << "ModelThreshold: " << this->ModelThreshold << "\n";
   os << indent << "NoiseThreshold: " << this->NoiseThreshold << "\n";
   os << indent << "MatchingThreshold: " << this->MatchingThreshold << "\n";
   os << indent << "MinimumCollectionPositions: " << this->MinimumCollectionPositions << "\n";
@@ -353,6 +361,27 @@ void vtkMRMLLinearObjectRegistrationNode
     this->AutomaticMatch = newAutomaticMatch;
   }
   if ( this->GetAutomaticMatch() != newAutomaticMatch && modifyType == DefaultModify || modifyType == AlwaysModify ) 
+  {
+    this->Modified();
+  }
+}
+
+
+double vtkMRMLLinearObjectRegistrationNode
+::GetModelThreshold()
+{
+  return this->ModelThreshold;
+}
+
+
+void vtkMRMLLinearObjectRegistrationNode
+::SetModelThreshold( double newModelThreshold, int modifyType )
+{
+  if ( this->GetModelThreshold() != newModelThreshold && newModelThreshold > 0 )
+  {
+    this->ModelThreshold = newModelThreshold;
+  }
+  if ( this->GetModelThreshold() != newModelThreshold && newModelThreshold > 0 && modifyType == DefaultModify || modifyType == AlwaysModify ) 
   {
     this->Modified();
   }

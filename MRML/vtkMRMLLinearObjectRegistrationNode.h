@@ -85,6 +85,7 @@ public:
 
   void SetCollectionMode( std::string newCollectionMode, int modifyType = DefaultModify );
   void SetAutomaticMatch( bool newAutomaticMatch, int modifyType = DefaultModify );
+  void SetModelThreshold( double newModelThreshold, int modifyType = DefaultModify );
   void SetNoiseThreshold( double newNoiseThreshold, int modifyType = DefaultModify );
   void SetMatchingThreshold( double newMatchingThreshold, int modifyType = DefaultModify );
   void SetMinimumCollectionPositions( int newMinimumCollectionPositions, int modifyType = DefaultModify );
@@ -97,6 +98,7 @@ public:
 
   std::string GetCollectionMode();
   bool GetAutomaticMatch();
+  double GetModelThreshold();
   double GetNoiseThreshold();
   double GetMatchingThreshold();
   int GetMinimumCollectionPositions();
@@ -127,6 +129,7 @@ private:
 
   double NoiseThreshold;
   double MatchingThreshold;
+  double ModelThreshold;
   int MinimumCollectionPositions;
   int TrimPositions;
 

@@ -330,7 +330,7 @@ vtkSmartPointer< vtkLORLinearObject > vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::CreateModelPlane( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer )
+::CreateModelPlane( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode )
 {
   vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast( node );
   if ( modelNode == NULL )
@@ -375,7 +375,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     double currentD = currentPoint[0] * normal[0] + currentPoint[1] * normal[1] + currentPoint[2] * normal[2];
 
     // We are on the plane
-    if ( abs( currentD - D ) < 1e-3 )
+    if ( abs( currentD - D ) < lorNode->GetModelThreshold() )
     {
       std::vector< double > currentVector( 3, 0.0 );
       currentVector.at(0) = currentPoint[0];
@@ -392,7 +392,7 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::CreateModelLine( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer )
+::CreateModelLine( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode )
 {
   vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast( node );
   if ( modelNode == NULL )
@@ -471,7 +471,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     
 
     // We are on the plane
-    if ( abs( dist ) <  1e-3 )
+    if ( abs( dist ) <  lorNode->GetModelThreshold() )
     {
       std::vector< double > currentVector( 3, 0.0 );
       currentVector.at(0) = currentPoint[0];
@@ -488,7 +488,7 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::CreateModelPoint( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer )
+::CreateModelPoint( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode )
 {
   vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast( node );
   if ( modelNode == NULL )
@@ -529,7 +529,7 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
-::CreateModelReference( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer )
+::CreateModelReference( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode )
 {
   vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast( node );
   if ( modelNode == NULL )
