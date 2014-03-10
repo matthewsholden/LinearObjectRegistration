@@ -85,6 +85,7 @@ public:
 
   void SetCollectionMode( std::string newCollectionMode, int modifyType = DefaultModify );
   void SetAutomaticMatch( bool newAutomaticMatch, int modifyType = DefaultModify );
+  void SetAutomaticMerge( bool newAutomaticMerge, int modifyType = DefaultModify );
   void SetModelThreshold( double newModelThreshold, int modifyType = DefaultModify );
   void SetNoiseThreshold( double newNoiseThreshold, int modifyType = DefaultModify );
   void SetMatchingThreshold( double newMatchingThreshold, int modifyType = DefaultModify );
@@ -98,6 +99,7 @@ public:
 
   std::string GetCollectionMode();
   bool GetAutomaticMatch();
+  bool GetAutomaticMerge();
   double GetModelThreshold();
   double GetNoiseThreshold();
   double GetMatchingThreshold();
@@ -122,6 +124,7 @@ private:
 
   std::string CollectionMode;
   bool AutomaticMatch;
+  bool AutomaticMerge;
 
   std::string CollectionState;
   vtkSmartPointer< vtkLORRealTimePositionBuffer > ActivePositionBuffer;

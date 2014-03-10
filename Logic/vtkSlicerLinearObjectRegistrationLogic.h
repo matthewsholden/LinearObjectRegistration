@@ -143,6 +143,7 @@ public:
   void PairCollections( vtkMRMLLinearObjectCollectionNode* collection0, vtkMRMLLinearObjectCollectionNode* collection1 );
 
   vtkSmartPointer< vtkLORLinearObject> MergeLinearObjects( vtkMRMLLinearObjectCollectionNode* collection, std::vector<int> indices, double noiseThreshold );
+  void AddOrMergeIntoCollection( vtkMRMLLinearObjectCollectionNode* collection, vtkLORLinearObject* linearObject, double noiseThreshold, double mergeThreshold );
 
   vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > GetReferences( vtkMRMLLinearObjectCollectionNode* collection );
   vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > GetNonReferences( vtkMRMLLinearObjectCollectionNode* collection );

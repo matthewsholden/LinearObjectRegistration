@@ -47,6 +47,25 @@ vtkSmartPointer< vtkLORLinearObject > vtkLORReference
 }
 
 
+bool vtkLORReference
+::IsCoincident( vtkLORLinearObject* testLinearObject, double threshold )
+{
+  vtkLORReference* testReference = vtkLORReference::SafeDownCast( testLinearObject );
+  if ( testReference == NULL )
+  {
+    return false; 
+  }
+  
+  // Test the distance
+  if ( LORMath::Norm( LORMath::Subtract( this->GetBasePoint(), testReference->GetBasePoint() ) ) > threshold )
+  {
+    return false;
+  }
+
+  return true;
+}
+
+
 std::vector<double> vtkLORReference
 ::ProjectVector( std::vector<double> vector )
 {

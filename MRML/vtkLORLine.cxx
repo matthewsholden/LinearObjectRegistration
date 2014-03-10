@@ -58,6 +58,36 @@ std::vector<double> vtkLORLine
 }
 
 
+bool vtkLORLine
+::IsCoincident( vtkLORLinearObject* testLinearObject, double threshold )
+{
+  vtkLORLine* testLine = vtkLORLine::SafeDownCast( testLinearObject );
+  if ( testLine == NULL )
+  {
+    return false; 
+  }
+  
+  // Test the same direction vector
+  if ( 1 - abs( LORMath::Dot( this->GetDirection(), testLine->GetDirection() ) ) > threshold )
+  {
+    return false;
+  }
+
+  // Test the base points lie on each other
+  std::vector<double> baseVector = LORMath::Normalize( LORMath::Subtract( this->GetBasePoint(), testLine->GetBasePoint() ) );
+  if ( 1 - abs( LORMath::Dot( this->GetDirection(), baseVector ) ) > threshold )
+  {
+    return false;
+  }
+  if ( 1 - abs( LORMath::Dot( testLine->GetDirection(), baseVector ) ) > threshold )
+  {
+    return false;
+  }
+
+  return true;
+}
+
+
 std::vector<double> vtkLORLine
 ::ProjectVector( std::vector<double> vector )
 {

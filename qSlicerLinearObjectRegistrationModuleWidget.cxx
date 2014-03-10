@@ -263,6 +263,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   connect( d->AutomaticRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->ModelRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->AutomaticMatchCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->AutomaticMergeCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
 
   connect( d->TransformNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
 
@@ -288,6 +289,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   disconnect( d->AutomaticRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->ModelRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->AutomaticMatchCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->AutomaticMergeCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
 
   disconnect( d->TransformNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
 
@@ -378,6 +380,14 @@ void qSlicerLinearObjectRegistrationModuleWidget
   {
     linearObjectRegistrationNode->SetAutomaticMatch( false, vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
+  if ( d->AutomaticMergeCheckBox->isChecked() )
+  {
+    linearObjectRegistrationNode->SetAutomaticMerge( true, vtkMRMLLinearObjectRegistrationNode::NeverModify );
+  }
+  else
+  {
+    linearObjectRegistrationNode->SetAutomaticMerge( false, vtkMRMLLinearObjectRegistrationNode::NeverModify );
+  }
 
   linearObjectRegistrationNode->SetModelThreshold( pow( 10, d->ModelThresholdSpinBox->value() ), vtkMRMLLinearObjectRegistrationNode::NeverModify );
   linearObjectRegistrationNode->SetNoiseThreshold( d->NoiseThresholdSpinBox->value(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
@@ -409,6 +419,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
     d->AutomaticRadioButton->setEnabled( false );
     d->ModelRadioButton->setEnabled( false );
     d->AutomaticMatchCheckBox->setEnabled( false );
+    d->AutomaticMergeCheckBox->setEnabled( false );
     d->ManualDOFWidget->setEnabled( false );
     d->ManualSegmentationWidget->setEnabled( false );
     d->AutomaticWidget->setEnabled( false );
@@ -430,6 +441,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->ManualSegmentationRadioButton->setEnabled( true );
   d->AutomaticRadioButton->setEnabled( true );
   d->ModelRadioButton->setEnabled( true );
+  d->AutomaticMergeCheckBox->setEnabled( true );
   d->AutomaticMatchCheckBox->setEnabled( true );
   d->ManualDOFWidget->setEnabled( true );
   d->ManualSegmentationWidget->setEnabled( true );
@@ -521,6 +533,14 @@ void qSlicerLinearObjectRegistrationModuleWidget
   else
   {
     d->AutomaticMatchCheckBox->setChecked( Qt::Unchecked );
+  }
+  if ( linearObjectRegistrationNode->GetAutomaticMerge() )
+  {
+    d->AutomaticMergeCheckBox->setChecked( Qt::Checked );
+  }
+  else
+  {
+    d->AutomaticMergeCheckBox->setChecked( Qt::Unchecked );
   }
 
   d->ModelThresholdSpinBox->setValue( log10( linearObjectRegistrationNode->GetModelThreshold() ) );

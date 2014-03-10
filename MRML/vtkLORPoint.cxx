@@ -47,6 +47,25 @@ vtkSmartPointer< vtkLORLinearObject > vtkLORPoint
 }
 
 
+bool vtkLORPoint
+::IsCoincident( vtkLORLinearObject* testLinearObject, double threshold )
+{
+  vtkLORPoint* testPoint = vtkLORPoint::SafeDownCast( testLinearObject );
+  if ( testPoint == NULL )
+  {
+    return false; 
+  }
+  
+  // Test the distance
+  if ( LORMath::Norm( LORMath::Subtract( this->GetBasePoint(), testPoint->GetBasePoint() ) ) > threshold )
+  {
+    return false;
+  }
+
+  return true;
+}
+
+
 std::vector<double> vtkLORPoint
 ::ProjectVector( std::vector<double> vector )
 {

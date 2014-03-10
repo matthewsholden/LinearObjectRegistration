@@ -62,6 +62,36 @@ std::vector<double> vtkLORPlane
 }
 
 
+bool vtkLORPlane
+::IsCoincident( vtkLORLinearObject* testLinearObject, double threshold )
+{
+  vtkLORPlane* testPlane = vtkLORPlane::SafeDownCast( testLinearObject );
+  if ( testPlane == NULL )
+  {
+    return false; 
+  }
+  
+  // Test the same direction vector
+  if ( 1 - abs( LORMath::Dot( this->GetNormal(), testPlane->GetNormal() ) ) > threshold )
+  {
+    return false;
+  }
+
+  // Test the base points lie on each other
+  std::vector<double> baseVector = LORMath::Normalize( LORMath::Subtract( this->GetBasePoint(), testPlane->GetBasePoint() ) );
+  if ( abs( LORMath::Dot( this->GetNormal(), baseVector ) ) > threshold )
+  {
+    return false;
+  }
+  if ( abs( LORMath::Dot( testPlane->GetNormal(), baseVector ) ) > threshold )
+  {
+    return false;
+  }
+
+  return true;
+}
+
+
 std::vector<double> vtkLORPlane
 ::ProjectVector( std::vector<double> vector )
 {

@@ -65,6 +65,8 @@ public:
   // Abstract functions that must be implemented in subclasses
   virtual vtkSmartPointer< vtkLORLinearObject > DeepCopy() = 0;
 
+  virtual bool IsCoincident( vtkLORLinearObject* testLinearObject, double threshold ) = 0;
+
   virtual vtkPolyData* CreateModelPolyData() = 0;
 
   virtual std::vector<double> ProjectVector( std::vector<double> vector ) = 0;

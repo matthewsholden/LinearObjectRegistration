@@ -45,6 +45,8 @@ public:
   std::vector<double> GetDirection();
 
   // Implement inherited abstract methods
+  bool IsCoincident( vtkLORLinearObject *testLinearObject, double threshold );
+
   std::vector<double> ProjectVector( std::vector<double> vector );
   void Translate( std::vector<double> vector );
 

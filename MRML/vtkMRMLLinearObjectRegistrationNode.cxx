@@ -65,6 +65,7 @@ vtkMRMLLinearObjectRegistrationNode
 
   this->CollectionMode = LORConstants::MANUAL_DOF_STRING;
   this->AutomaticMatch = true;
+  this->AutomaticMerge = true;
 
   this->CollectionState = "";
   this->ActivePositionBuffer = vtkSmartPointer< vtkLORRealTimePositionBuffer >::New();
@@ -118,11 +119,12 @@ void vtkMRMLLinearObjectRegistrationNode
   
   of << indent << " CollectionMode=\"" << this->CollectionMode << "\"";
   of << indent << " AutomaticMatch=\"" << this->AutomaticMatch << "\"";
-  of << indent << "ModelThreshold=\"" << this->ModelThreshold << "\"";
-  of << indent << "NoiseThreshold=\"" << this->NoiseThreshold << "\"";
-  of << indent << "MatchingThreshold=\"" << this->MatchingThreshold << "\"";
-  of << indent << "MinimumCollectionPositions=\"" << this->MinimumCollectionPositions << "\"";
-  of << indent << "TrimPositions=\"" << this->TrimPositions << "\"";
+  of << indent << " AutomaticMerge=\"" << this->AutomaticMatch << "\"";
+  of << indent << " ModelThreshold=\"" << this->ModelThreshold << "\"";
+  of << indent << " NoiseThreshold=\"" << this->NoiseThreshold << "\"";
+  of << indent << " MatchingThreshold=\"" << this->MatchingThreshold << "\"";
+  of << indent << " MinimumCollectionPositions=\"" << this->MinimumCollectionPositions << "\"";
+  of << indent << " TrimPositions=\"" << this->TrimPositions << "\"";
 }
 
 
@@ -144,7 +146,7 @@ void vtkMRMLLinearObjectRegistrationNode::ReadXMLAttributes( const char** atts )
     {
       this->CollectionMode = std::string( attValue );
     }
-    if ( ! strcmp( attName, "AutomaticMath" ) )
+    if ( ! strcmp( attName, "AutomaticMatch" ) )
     {
       if ( std::string( attValue ).compare( "false" ) == 0 )
       {
@@ -153,6 +155,17 @@ void vtkMRMLLinearObjectRegistrationNode::ReadXMLAttributes( const char** atts )
       else
       {
         this->AutomaticMatch = true;
+      }
+    }
+    if ( ! strcmp( attName, "AutomaticMerge" ) )
+    {
+      if ( std::string( attValue ).compare( "false" ) == 0 )
+      {
+        this->AutomaticMerge = false;
+      }
+      else
+      {
+        this->AutomaticMerge = true;
       }
     }
     if ( ! strcmp( attName, "ModelThreshold" ) )
@@ -196,6 +209,7 @@ void vtkMRMLLinearObjectRegistrationNode
   // So, anything we want in the MRML file we must copy here (I don't think we need to copy other things)
   this->CollectionMode = node->CollectionMode;
   this->AutomaticMatch = node->AutomaticMatch;
+  this->AutomaticMerge = node->AutomaticMerge;
   this->ModelThreshold = node->ModelThreshold;
   this->NoiseThreshold = node->NoiseThreshold;
   this->MatchingThreshold = node->MatchingThreshold;
@@ -212,6 +226,7 @@ void vtkMRMLLinearObjectRegistrationNode
   vtkMRMLNode::PrintSelf(os,indent); // This will take care of referenced nodes
   os << indent << "CollectionMode: " << this->CollectionMode << "\n";
   os << indent << "AutomaticMatch: " << this->AutomaticMatch << "\n";
+  os << indent << "AutomaticMerge: " << this->AutomaticMerge << "\n";
   os << indent << "ModelThreshold: " << this->ModelThreshold << "\n";
   os << indent << "NoiseThreshold: " << this->NoiseThreshold << "\n";
   os << indent << "MatchingThreshold: " << this->MatchingThreshold << "\n";
@@ -361,6 +376,27 @@ void vtkMRMLLinearObjectRegistrationNode
     this->AutomaticMatch = newAutomaticMatch;
   }
   if ( this->GetAutomaticMatch() != newAutomaticMatch && modifyType == DefaultModify || modifyType == AlwaysModify ) 
+  {
+    this->Modified();
+  }
+}
+
+
+bool vtkMRMLLinearObjectRegistrationNode
+::GetAutomaticMerge()
+{
+  return this->AutomaticMerge;
+}
+
+
+void vtkMRMLLinearObjectRegistrationNode
+::SetAutomaticMerge( bool newAutomaticMerge, int modifyType )
+{
+  if ( this->GetAutomaticMerge() != newAutomaticMerge )
+  {
+    this->AutomaticMerge = newAutomaticMerge;
+  }
+  if ( this->GetAutomaticMerge() != newAutomaticMerge && modifyType == DefaultModify || modifyType == AlwaysModify ) 
   {
     this->Modified();
   }

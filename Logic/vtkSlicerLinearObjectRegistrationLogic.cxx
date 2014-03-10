@@ -752,6 +752,40 @@ vtkSmartPointer< vtkLORLinearObject> vtkSlicerLinearObjectRegistrationLogic
 }
 
 
+void vtkSlicerLinearObjectRegistrationLogic
+::AddOrMergeIntoCollection( vtkMRMLLinearObjectCollectionNode* collection, vtkLORLinearObject* linearObject, double noiseThreshold, double mergeThreshold )
+{
+  if ( collection == NULL || linearObject == NULL )
+  {
+    return;
+  }
+
+  for ( int i = 0; i < collection->Size(); i++ )
+  {
+    if ( collection->GetLinearObject( i ) == NULL || ! collection->GetLinearObject( i )->IsCoincident( linearObject, mergeThreshold ) )
+    {
+      continue;
+    }
+
+    // Create a "fake" collection
+    vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > tempCollection = vtkSmartPointer< vtkMRMLLinearObjectCollectionNode >::New();
+    tempCollection->AddLinearObject( collection->GetLinearObject( i )->DeepCopy() );
+    tempCollection->AddLinearObject( linearObject );
+    std::vector<int> tempIndices( 2, 0 );
+    tempIndices.at( 0 ) = 0;
+    tempIndices.at( 1 ) = 1;
+
+    vtkSmartPointer< vtkLORLinearObject > mergedLinearObject = this->MergeLinearObjects( tempCollection, tempIndices, noiseThreshold );
+    collection->SetLinearObject( i, mergedLinearObject );
+    return;   
+  }
+
+  // If we get here, then we could not merge, so add
+  collection->AddLinearObject( linearObject );
+
+}
+
+
 // Return smart pointer since we created the object in this function
 vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > vtkSlicerLinearObjectRegistrationLogic
 ::GetReferences( vtkMRMLLinearObjectCollectionNode* collection )
@@ -1749,7 +1783,15 @@ void vtkSlicerLinearObjectRegistrationLogic
       // Add a reference rather than a point if the other linear object
       currentLinearObject->SetPositionBuffer( positionBufferCopy );
       vtkSmartPointer< vtkLORLinearObject > convertedLinearObject = this->CorrespondPointToReference( currentLinearObject, lorNode );
-      this->GetActiveCollectionNode()->AddLinearObject( convertedLinearObject );
+
+      if ( lorNode->GetAutomaticMerge() )
+      {
+        this->AddOrMergeIntoCollection( this->GetActiveCollectionNode(), convertedLinearObject, lorNode->GetNoiseThreshold(), lorNode->GetModelThreshold() );
+      }
+      else
+      {
+        this->GetActiveCollectionNode()->AddLinearObject( convertedLinearObject );
+      }
     }
 
   }
