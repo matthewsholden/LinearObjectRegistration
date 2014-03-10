@@ -86,7 +86,7 @@ public:
   void SetCollectionMode( std::string newCollectionMode, int modifyType = DefaultModify );
   void SetAutomaticMatch( bool newAutomaticMatch, int modifyType = DefaultModify );
   void SetAutomaticMerge( bool newAutomaticMerge, int modifyType = DefaultModify );
-  void SetModelThreshold( double newModelThreshold, int modifyType = DefaultModify );
+  void SetMergeThreshold( double newMergeThreshold, int modifyType = DefaultModify );
   void SetNoiseThreshold( double newNoiseThreshold, int modifyType = DefaultModify );
   void SetMatchingThreshold( double newMatchingThreshold, int modifyType = DefaultModify );
   void SetMinimumCollectionPositions( int newMinimumCollectionPositions, int modifyType = DefaultModify );
@@ -100,7 +100,7 @@ public:
   std::string GetCollectionMode();
   bool GetAutomaticMatch();
   bool GetAutomaticMerge();
-  double GetModelThreshold();
+  double GetMergeThreshold();
   double GetNoiseThreshold();
   double GetMatchingThreshold();
   int GetMinimumCollectionPositions();
@@ -132,7 +132,7 @@ private:
 
   double NoiseThreshold;
   double MatchingThreshold;
-  double ModelThreshold;
+  double MergeThreshold;
   int MinimumCollectionPositions;
   int TrimPositions;
 

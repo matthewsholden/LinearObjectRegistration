@@ -375,7 +375,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     double currentD = currentPoint[0] * normal[0] + currentPoint[1] * normal[1] + currentPoint[2] * normal[2];
 
     // We are on the plane
-    if ( abs( currentD - D ) < lorNode->GetModelThreshold() )
+    if ( abs( currentD - D ) < lorNode->GetMergeThreshold() )
     {
       std::vector< double > currentVector( 3, 0.0 );
       currentVector.at(0) = currentPoint[0];
@@ -471,7 +471,7 @@ void vtkSlicerLinearObjectRegistrationLogic
     
 
     // We are on the plane
-    if ( abs( dist ) <  lorNode->GetModelThreshold() )
+    if ( abs( dist ) <  lorNode->GetMergeThreshold() )
     {
       std::vector< double > currentVector( 3, 0.0 );
       currentVector.at(0) = currentPoint[0];
@@ -1786,7 +1786,7 @@ void vtkSlicerLinearObjectRegistrationLogic
 
       if ( lorNode->GetAutomaticMerge() )
       {
-        this->AddOrMergeIntoCollection( this->GetActiveCollectionNode(), convertedLinearObject, lorNode->GetNoiseThreshold(), lorNode->GetModelThreshold() );
+        this->AddOrMergeIntoCollection( this->GetActiveCollectionNode(), convertedLinearObject, lorNode->GetNoiseThreshold(), lorNode->GetMergeThreshold() );
       }
       else
       {
