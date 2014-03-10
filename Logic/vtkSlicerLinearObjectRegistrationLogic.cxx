@@ -329,6 +329,37 @@ vtkSmartPointer< vtkLORLinearObject > vtkSlicerLinearObjectRegistrationLogic
 }
 
 
+vtkSmartPointer< vtkPolyData > vtkSlicerLinearObjectRegistrationLogic
+::GetTransformedModelPolyData( vtkMRMLNode* node )
+{
+  vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast( node );
+  if ( modelNode == NULL )
+  {
+    return NULL;
+  }
+
+  // Get the transformed poly data (the parents transforms are not applied to the poly data)
+  vtkSmartPointer< vtkTransformPolyDataFilter > polyDataTransformer = vtkSmartPointer< vtkTransformPolyDataFilter >::New();
+  polyDataTransformer->SetInput( modelNode->GetPolyData() );
+
+  vtkSmartPointer< vtkGeneralTransform > modelNodeTransform = vtkSmartPointer< vtkGeneralTransform >::New();
+  if ( modelNode->GetParentTransformNode() != NULL )
+  {
+    modelNode->GetParentTransformNode()->GetTransformToWorld( modelNodeTransform );
+    polyDataTransformer->SetTransform( modelNodeTransform );
+  }
+  else
+  {
+    vtkSmartPointer< vtkGeneralTransform > identity = vtkSmartPointer< vtkGeneralTransform >::New();
+    identity->Identity();
+    polyDataTransformer->SetTransform( identity );
+  }
+  
+  polyDataTransformer->Update();
+  return polyDataTransformer->GetOutput();
+}
+
+
 void vtkSlicerLinearObjectRegistrationLogic
 ::CreateModelPlane( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode )
 {
@@ -343,7 +374,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     return;
   }
-  vtkPolyData* modelPolyData = modelNode->GetPolyData();
+  vtkSmartPointer< vtkPolyData > modelPolyData = this->GetTransformedModelPolyData( modelNode );
 
   // Calculate the normal vector and the basePoint
   double fiducialPosition[ 3 ] = { 0.0, 0.0, 0.0 };
@@ -405,7 +436,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     return;
   }
-  vtkPolyData* modelPolyData = modelNode->GetPolyData();
+  vtkSmartPointer< vtkPolyData > modelPolyData = this->GetTransformedModelPolyData( modelNode );
 
   vtkSmartPointer< vtkFeatureEdges > edgesFilter = vtkSmartPointer< vtkFeatureEdges >::New();
   edgesFilter->FeatureEdgesOn();
@@ -501,7 +532,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     return;
   }
-  vtkPolyData* modelPolyData = modelNode->GetPolyData();
+  vtkSmartPointer< vtkPolyData > modelPolyData = this->GetTransformedModelPolyData( modelNode );
 
   // Calculate the closest position
   double fiducialPosition[ 3 ] = { 0.0, 0.0, 0.0 };
@@ -542,7 +573,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     return;
   }
-  vtkPolyData* modelPolyData = modelNode->GetPolyData();
+  vtkSmartPointer< vtkPolyData > modelPolyData = this->GetTransformedModelPolyData( modelNode );
 
   // Calculate the normal vector and the basePoint
   double fiducialPosition[ 3 ] = { 0.0, 0.0, 0.0 };

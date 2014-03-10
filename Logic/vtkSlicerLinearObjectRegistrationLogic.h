@@ -32,6 +32,8 @@
 #include "vtkPolygon.h"
 #include "vtkGenericCell.h"
 #include "vtkFeatureEdges.h"
+#include "vtkTransformPolyDataFilter.h"
+#include "vtkGeneralTransform.h"
 
 // VNL includes
 #include "vnl/vnl_matrix.h"
@@ -129,6 +131,7 @@ public:
 
   vtkSmartPointer< vtkLORLinearObject > CorrespondPointToReference( vtkLORLinearObject* linearObject, vtkMRMLLinearObjectRegistrationNode* lorNode );
 
+  vtkSmartPointer< vtkPolyData > GetTransformedModelPolyData( vtkMRMLNode* node );
   void CreateModelPlane( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode );
   void CreateModelLine( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode );
   void CreateModelPoint( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode );
