@@ -106,7 +106,6 @@ private:
 public:
 
   void CalculateTransform( vtkMRMLNode* node );
-  void UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vtkMatrix4x4* newTransformMatrix );
 
   vtkSmartPointer< vtkMatrix4x4 > SphericalRegistration( vtkLORPositionBuffer* fromPoints, vtkLORPositionBuffer* toPoints, vtkMatrix4x4* currentFromToToTransform );
   std::vector<double> TranslationalRegistration( std::vector<double> toCentroid, std::vector<double> fromCentroid, vtkMatrix4x4* rotation );

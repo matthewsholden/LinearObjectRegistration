@@ -1393,21 +1393,12 @@ void vtkSlicerLinearObjectRegistrationLogic
   FromToToTranslation = this->TranslationalRegistration( fromCentroid, LORMath::Add( toCentroid, FromToToTranslation ), FromToToRotation ); 
   this->RotationTranslationToMatrix( FromToToRotation, FromToToTranslation, FromToToTransform );
 
-  this->UpdateOutputTransform( outputTransform, FromToToTransform );
+  outputTransform->SetAndObserveMatrixTransformToParent( FromToToTransform );
 
   linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
   std::stringstream successMessage;
   successMessage << "Success! RMS Error: " << rmsError;
   this->SetOutputMessage( linearObjectRegistrationNode->GetID(), successMessage.str() );
-}
-
-
-void vtkSlicerLinearObjectRegistrationLogic
-::UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vtkMatrix4x4* newTransformMatrix )
-{
-  vtkSmartPointer< vtkMatrix4x4 > outputMatrix;
-  outputTransform->GetMatrixTransformToParent( outputMatrix );
-  outputMatrix->DeepCopy( newTransformMatrix );
 }
 
 
