@@ -22,6 +22,11 @@
 #include "vtkMRMLNode.h"
 
 
+int COLLECTION_MANUAL_DOF_TAB = 0;
+int COLLECTION_MANUAL_SEGMENTATION_TAB = 1;
+int COLLECTION_AUTOMATIC_TAB = 2;
+int COLLECTION_MODEL_TAB = 3;
+int COLLECTION_TABS = 4;
 
 int LINEAROBJECT_VISIBILITY_COLUMN = 0;
 int LINEAROBJECT_NAME_COLUMN = 1;
@@ -45,10 +50,13 @@ public:
   // Add embedded widgets here
   qSlicerLinearObjectCollectionWidget* FromCollectionWidget;
   qSlicerLinearObjectCollectionWidget* ToCollectionWidget;
+
+  QTabBar* CollectionTabs;
   qSlicerLORManualDOFWidget* ManualDOFWidget;
   qSlicerLORManualSegmentationWidget* ManualSegmentationWidget;
   qSlicerLORAutomaticWidget* AutomaticWidget;
   qSlicerLORModelWidget* ModelWidget;
+
   qSlicerTransformPreviewWidget* TransformPreviewWidget;
 };
 
@@ -188,6 +196,14 @@ qSlicerLinearObjectRegistrationModuleWidget
   this->Superclass::setup();
 
   // Embed widgets here
+  d->CollectionTabs = new QTabBar( d->CollectionGroupBox );
+  d->CollectionTabsLayout->addWidget( d->CollectionTabs );
+  d->CollectionTabs->insertTab( COLLECTION_MANUAL_DOF_TAB, QString( "Manual DOF" ) );
+  d->CollectionTabs->insertTab( COLLECTION_MANUAL_SEGMENTATION_TAB, QString( "Manual Segmentation" ) );
+  d->CollectionTabs->insertTab( COLLECTION_AUTOMATIC_TAB, QString( "Automatic" ) );
+  d->CollectionTabs->insertTab( COLLECTION_MODEL_TAB, QString( "Model" ) );
+
+
   d->FromCollectionWidget = qSlicerLinearObjectCollectionWidget::New( d->logic() );
   d->FromCollectionWidget->SetNodeBaseName( "FromLinearObjects" );
   d->FromGroupBox->layout()->addWidget( d->FromCollectionWidget );
@@ -197,19 +213,19 @@ qSlicerLinearObjectRegistrationModuleWidget
   d->ToGroupBox->layout()->addWidget( d->ToCollectionWidget );
 
   d->ManualDOFWidget = qSlicerLORManualDOFWidget::New();
-  d->CollectionGroupBox->layout()->addWidget( d->ManualDOFWidget );
+  d->CollectionTabsLayout->addWidget( d->ManualDOFWidget );
   d->ManualDOFWidget->hide();
 
   d->ManualSegmentationWidget = qSlicerLORManualSegmentationWidget::New();
-  d->CollectionGroupBox->layout()->addWidget( d->ManualSegmentationWidget );
+  d->CollectionTabsLayout->addWidget( d->ManualSegmentationWidget );
   d->ManualSegmentationWidget->hide();
 
   d->AutomaticWidget = qSlicerLORAutomaticWidget::New();
-  d->CollectionGroupBox->layout()->addWidget( d->AutomaticWidget );
+  d->CollectionTabsLayout->addWidget( d->AutomaticWidget );
   d->AutomaticWidget->hide();
 
   d->ModelWidget = qSlicerLORModelWidget::New( d->logic() );
-  d->CollectionGroupBox->layout()->addWidget( d->ModelWidget );
+  d->CollectionTabsLayout->addWidget( d->ModelWidget );
   d->ModelWidget->hide();
 
   d->TransformPreviewWidget = qSlicerTransformPreviewWidget::New( d->logic()->GetMRMLScene() );
@@ -258,10 +274,9 @@ void qSlicerLinearObjectRegistrationModuleWidget
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );
 
   connect( d->OutputNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->ManualDOFRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->ManualSegmentationRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->AutomaticRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  connect( d->ModelRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+
+  connect( d->CollectionTabs, SIGNAL( currentChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
+
   connect( d->AutomaticMatchCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->AutomaticMergeCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
 
@@ -284,10 +299,9 @@ void qSlicerLinearObjectRegistrationModuleWidget
   Q_D( qSlicerLinearObjectRegistrationModuleWidget );
 
   disconnect( d->OutputNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
-  disconnect( d->ManualDOFRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  disconnect( d->ManualSegmentationRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  disconnect( d->AutomaticRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-  disconnect( d->ModelRadioButton, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
+  
+  disconnect( d->CollectionTabs, SIGNAL( currentChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
+  
   disconnect( d->AutomaticMatchCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->AutomaticMergeCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
 
@@ -355,19 +369,19 @@ void qSlicerLinearObjectRegistrationModuleWidget
     linearObjectRegistrationNode->SetToCollectionID( d->ToCollectionWidget->GetCurrentNode()->GetID(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
 
-  if ( d->ManualDOFRadioButton->isChecked() )
+  if ( d->CollectionTabs->currentIndex() == COLLECTION_MANUAL_DOF_TAB )
   {
     linearObjectRegistrationNode->SetCollectionMode( LORConstants::MANUAL_DOF_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
-  if ( d->ManualSegmentationRadioButton->isChecked() )
+  if ( d->CollectionTabs->currentIndex() == COLLECTION_MANUAL_SEGMENTATION_TAB  )
   {
     linearObjectRegistrationNode->SetCollectionMode( LORConstants::MANUAL_SEGMENTATION_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
-  if ( d->AutomaticRadioButton->isChecked() )
+  if ( d->CollectionTabs->currentIndex() == COLLECTION_AUTOMATIC_TAB  )
   {
     linearObjectRegistrationNode->SetCollectionMode( LORConstants::AUTOMATIC_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
-  if ( d->ModelRadioButton->isChecked() )
+  if ( d->CollectionTabs->currentIndex() == COLLECTION_MODEL_TAB )
   {
     linearObjectRegistrationNode->SetCollectionMode( LORConstants::MODEL_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
@@ -414,10 +428,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   if ( linearObjectRegistrationNode == NULL )
   {
     d->OutputNodeComboBox->setEnabled( false );
-    d->ManualDOFRadioButton->setEnabled( false );
-    d->ManualSegmentationRadioButton->setEnabled( false );
-    d->AutomaticRadioButton->setEnabled( false );
-    d->ModelRadioButton->setEnabled( false );
+    d->CollectionTabs->setEnabled( false );
     d->AutomaticMatchCheckBox->setEnabled( false );
     d->AutomaticMergeCheckBox->setEnabled( false );
     d->ManualDOFWidget->setEnabled( false );
@@ -437,10 +448,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   }
 
   d->OutputNodeComboBox->setEnabled( true );
-  d->ManualDOFRadioButton->setEnabled( true );
-  d->ManualSegmentationRadioButton->setEnabled( true );
-  d->AutomaticRadioButton->setEnabled( true );
-  d->ModelRadioButton->setEnabled( true );
+  d->CollectionTabs->setEnabled( true );
   d->AutomaticMergeCheckBox->setEnabled( true );
   d->AutomaticMatchCheckBox->setEnabled( true );
   d->ManualDOFWidget->setEnabled( true );
@@ -475,10 +483,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   
   if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::MANUAL_DOF_STRING ) == 0 )
   {
-    d->ManualDOFRadioButton->setChecked( Qt::Checked );
-    d->ManualSegmentationRadioButton->setChecked( Qt::Unchecked );
-    d->AutomaticRadioButton->setChecked( Qt::Unchecked );
-    d->ModelRadioButton->setChecked( Qt::Unchecked );
+    d->CollectionTabs->setCurrentIndex( COLLECTION_MANUAL_DOF_TAB );
 
     d->TransformNodeComboBox->show();
     d->ManualDOFWidget->show();
@@ -488,10 +493,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   }
   if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::MANUAL_SEGMENTATION_STRING ) == 0 )
   {
-    d->ManualDOFRadioButton->setChecked( Qt::Unchecked );
-    d->ManualSegmentationRadioButton->setChecked( Qt::Checked );
-    d->AutomaticRadioButton->setChecked( Qt::Unchecked );
-    d->ModelRadioButton->setChecked( Qt::Unchecked );
+    d->CollectionTabs->setCurrentIndex( COLLECTION_MANUAL_SEGMENTATION_TAB );
 
     d->TransformNodeComboBox->show();
     d->ManualDOFWidget->hide();
@@ -501,10 +503,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   }
   if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
   {
-    d->ManualDOFRadioButton->setChecked( Qt::Unchecked );
-    d->ManualSegmentationRadioButton->setChecked( Qt::Unchecked );
-    d->AutomaticRadioButton->setChecked( Qt::Checked );
-    d->ModelRadioButton->setChecked( Qt::Unchecked );
+    d->CollectionTabs->setCurrentIndex( COLLECTION_AUTOMATIC_TAB );
 
     d->TransformNodeComboBox->show();
     d->ManualDOFWidget->hide();
@@ -514,10 +513,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   }
   if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::MODEL_STRING ) == 0 )
   {
-    d->ManualDOFRadioButton->setChecked( Qt::Unchecked );
-    d->ManualSegmentationRadioButton->setChecked( Qt::Unchecked );
-    d->AutomaticRadioButton->setChecked( Qt::Unchecked );
-    d->ModelRadioButton->setChecked( Qt::Checked );
+    d->CollectionTabs->setCurrentIndex( COLLECTION_MODEL_TAB );
 
     d->TransformNodeComboBox->hide();
     d->ManualDOFWidget->hide();
