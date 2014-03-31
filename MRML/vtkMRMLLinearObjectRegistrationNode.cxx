@@ -637,13 +637,21 @@ void vtkMRMLLinearObjectRegistrationNode
   }
 
   // Prevent adding if the current transform is the same as the previous transform
-  if ( ! this->DifferentFromPrevious( transformNode->GetMatrixTransformToParent() ) )
+  vtkSmartPointer< vtkMatrix4x4 > transformMatrix = vtkSmartPointer< vtkMatrix4x4 >::New();
+
+#ifdef TRANSFORM_NODE_MATRIX_COPY_REQUIRED
+  transformNode->GetMatrixTransformToParent( transformMatrix );
+#else
+  transformMatrix->DeepCopy( transformNode->GetMatrixTransformToParent() );
+#endif
+
+  if ( ! this->DifferentFromPrevious( transformMatrix ) )
   {
     return;
   }
-  this->PreviousMatrix->DeepCopy( transformNode->GetMatrixTransformToParent() );
+  this->PreviousMatrix->DeepCopy( transformMatrix );
 
-  vtkLORPosition* tempPosition = vtkLORPosition::New( transformNode->GetMatrixTransformToParent() );
+  vtkLORPosition* tempPosition = vtkLORPosition::New( transformMatrix );
   vtkSmartPointer< vtkLORPosition > newPosition = vtkSmartPointer< vtkLORPosition >::Take( tempPosition );
 
   this->GetActivePositionBuffer()->AddPosition( newPosition );

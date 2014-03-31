@@ -290,8 +290,7 @@ vtkSmartPointer< vtkLORLinearObject > vtkSlicerLinearObjectRegistrationLogic
 vtkSmartPointer< vtkLORLinearObject > vtkSlicerLinearObjectRegistrationLogic
 ::CorrespondPointToReference( vtkLORLinearObject* linearObject, vtkMRMLLinearObjectRegistrationNode* lorNode )
 {
-  vtkSmartPointer< vtkLORPoint > point = NULL;
-  point.TakeReference( vtkLORPoint::SafeDownCast( linearObject ) );
+  vtkSmartPointer< vtkLORPoint > point = vtkLORPoint::SafeDownCast( linearObject );
 
   vtkMRMLLinearObjectCollectionNode* fromCollection = vtkMRMLLinearObjectCollectionNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( lorNode->GetFromCollectionID() ) );
   vtkMRMLLinearObjectCollectionNode* toCollection = vtkMRMLLinearObjectCollectionNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( lorNode->GetToCollectionID() ) );
@@ -323,7 +322,7 @@ vtkSmartPointer< vtkLORLinearObject > vtkSlicerLinearObjectRegistrationLogic
     return linearObject;
   }
 
-  vtkSmartPointer< vtkLORLinearObject > reference = this->PositionBufferToLinearObject( point->GetPositionBuffer(), lorNode->GetNoiseThreshold(), LORConstants::REFERENCE_DOF );
+  vtkSmartPointer< vtkLORLinearObject > reference = this->PositionBufferToLinearObject( point->GetPositionBuffer()->DeepCopy(), lorNode->GetNoiseThreshold(), LORConstants::REFERENCE_DOF );
   reference->SetPositionBuffer( point->GetPositionBuffer()->DeepCopy() );
   return reference;
 }
@@ -1406,7 +1405,8 @@ void vtkSlicerLinearObjectRegistrationLogic
 void vtkSlicerLinearObjectRegistrationLogic
 ::UpdateOutputTransform( vtkMRMLLinearTransformNode* outputTransform, vtkMatrix4x4* newTransformMatrix )
 {
-  vtkMatrix4x4* outputMatrix = outputTransform->GetMatrixTransformToParent();
+  vtkSmartPointer< vtkMatrix4x4 > outputMatrix;
+  outputTransform->GetMatrixTransformToParent( outputMatrix );
   outputMatrix->DeepCopy( newTransformMatrix );
 }
 
