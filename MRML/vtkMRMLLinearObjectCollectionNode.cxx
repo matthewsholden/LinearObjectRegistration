@@ -459,7 +459,10 @@ std::string vtkMRMLLinearObjectCollectionNode
   xmlstring << "<LinearObjectCollection>" << std::endl;
   for ( int i = 0; i < this->Size(); i++ )
   {
-    xmlstring << this->GetLinearObject( i )->ToXMLString();
+    if ( this->GetLinearObject( i ) != NULL )
+    {
+      xmlstring << this->GetLinearObject( i )->ToXMLString();
+    }
   }
   xmlstring << "</LinearObjectCollection>";
 
