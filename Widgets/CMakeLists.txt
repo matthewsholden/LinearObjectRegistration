@@ -12,6 +12,10 @@ set(${KIT}_INCLUDE_DIRECTORIES
 set(${KIT}_SRCS
   qSlicerLinearObjectCollectionWidget.cxx
   qSlicerLinearObjectCollectionWidget.h
+  qSlicerLORCollectWidget.cxx
+  qSlicerLORCollectWidget.h
+  qSlicerLORCollectControlsWidget.cxx
+  qSlicerLORCollectControlsWidget.h
   qSlicerLORManualDOFWidget.cxx
   qSlicerLORManualDOFWidget.h
   qSlicerLORManualSegmentationWidget.cxx
@@ -26,6 +30,8 @@ set(${KIT}_SRCS
 
 set(${KIT}_MOC_SRCS
   qSlicerLinearObjectCollectionWidget.h
+  qSlicerLORCollectWidget.h
+  qSlicerLORCollectControlsWidget.h  
   qSlicerLORManualDOFWidget.h
   qSlicerLORManualSegmentationWidget.h
   qSlicerLORAutomaticWidget.h
@@ -35,6 +41,8 @@ set(${KIT}_MOC_SRCS
 
 set(${KIT}_UI_SRCS
   ./Resources/UI/qSlicerLinearObjectCollectionWidget.ui
+  ./Resources/UI/qSlicerLORCollectControlsWidget.ui
+  ./Resources/UI/qSlicerLORCollectWidget.ui
   ./Resources/UI/qSlicerLORManualDOFWidget.ui
   ./Resources/UI/qSlicerLORManualSegmentationWidget.ui
   ./Resources/UI/qSlicerLORAutomaticWidget.ui
@@ -44,6 +52,8 @@ set(${KIT}_UI_SRCS
 
 set(${KIT}_RESOURCES
   ./Resources/UI/qSlicerLinearObjectCollectionWidget.ui
+  ./Resources/UI/qSlicerLORCollectControlsWidget.ui
+  ./Resources/UI/qSlicerLORCollectWidget.ui
   ./Resources/UI/qSlicerLORManualDOFWidget.ui
   ./Resources/UI/qSlicerLORManualSegmentationWidget.ui
   ./Resources/UI/qSlicerLORAutomaticWidget.ui

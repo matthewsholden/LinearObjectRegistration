@@ -96,7 +96,7 @@
          <string>Collect Linear Objects</string>
         </property>
         <property name="collapsed">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
@@ -532,22 +532,6 @@
     <hint type="destinationlabel">
      <x>195</x>
      <y>166</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>qSlicerLinearObjectRegistrationModule</sender>
-   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>ModuleNodeComboBox</receiver>
-   <slot>setMRMLScene(vtkMRMLScene*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>195</x>
-     <y>413</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>195</x>
-     <y>50</y>
     </hint>
    </hints>
   </connection>
