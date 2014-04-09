@@ -63,7 +63,7 @@ void qSlicerLORModelWidgetPrivate
 
 //-----------------------------------------------------------------------------
 qSlicerLORModelWidget
-::qSlicerLORModelWidget(QWidget* parentWidget) : Superclass( parentWidget ) , d_ptr( new qSlicerLORModelWidgetPrivate(*this) )
+::qSlicerLORModelWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget* parentWidget) : Superclass( newLORLogic, parentWidget ) , d_ptr( new qSlicerLORModelWidgetPrivate(*this) )
 {
 }
 
@@ -77,11 +77,7 @@ qSlicerLORModelWidget
 qSlicerLORModelWidget* qSlicerLORModelWidget
 ::New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic )
 {
-  qSlicerLORModelWidget* newLORModelWidget = new qSlicerLORModelWidget();
-  newLORModelWidget->LORLogic = newLORLogic;
-  newLORModelWidget->LORNode = NULL;
-  newLORModelWidget->setup();
-  return newLORModelWidget;
+  return new qSlicerLORModelWidget( newLORLogic );
 }
 
 
@@ -93,13 +89,41 @@ void qSlicerLORModelWidget
   d->setupUi(this);
   this->setMRMLScene( this->LORLogic->GetMRMLScene() );
   
-  // Use the pressed signal (otherwise we can unpress buttons without clicking them)
+  this->ConnectAllButtons();
+
+  this->updateWidget();  
+}
+
+
+void qSlicerLORModelWidget
+::ConnectAllButtons()
+{
+  Q_D(qSlicerLORModelWidget);
+  
   connect( d->ReferenceButton, SIGNAL( toggled( bool ) ), this, SLOT( onReferenceButtonToggled() ) );
   connect( d->PointButton, SIGNAL( toggled( bool ) ), this, SLOT( onPointButtonToggled() ) );
   connect( d->LineButton, SIGNAL( toggled( bool ) ), this, SLOT( onLineButtonToggled() ) );
   connect( d->PlaneButton, SIGNAL( toggled( bool ) ), this, SLOT( onPlaneButtonToggled() ) );
+}
 
-  this->updateWidget();  
+void qSlicerLORModelWidget
+::DisconnectAllButtons()
+{
+  Q_D(qSlicerLORModelWidget);
+  
+  disconnect( d->ReferenceButton, SIGNAL( toggled( bool ) ), this, SLOT( onReferenceButtonToggled() ) );
+  disconnect( d->PointButton, SIGNAL( toggled( bool ) ), this, SLOT( onPointButtonToggled() ) );
+  disconnect( d->LineButton, SIGNAL( toggled( bool ) ), this, SLOT( onLineButtonToggled() ) );
+  disconnect( d->PlaneButton, SIGNAL( toggled( bool ) ), this, SLOT( onPlaneButtonToggled() ) );
+}
+
+
+std::string qSlicerLORModelWidget
+::GetCollectNodeType()
+{
+  Q_D(qSlicerLORModelWidget);
+  
+  return "vtkMRMLModelNode";
 }
 
 
@@ -110,34 +134,15 @@ void qSlicerLORModelWidget
 
 
 void qSlicerLORModelWidget
-::show()
+::widgetActivated()
 {
-  // No need to start any connections
-  this->Superclass::show();
 }
 
 
 void qSlicerLORModelWidget
-::hide()
+::widgetDeactivated()
 {
   this->disconnectMarkupsObservers();
-  this->Superclass::hide();
-}
-
-
-
-void qSlicerLORModelWidget
-::SetLORNode( vtkMRMLNode* newNode )
-{
-  Q_D(qSlicerLORModelWidget);
-
-  vtkMRMLLinearObjectRegistrationNode* newLORNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( newNode );
-  if ( newLORNode == NULL )
-  {
-    return;
-  }
-
-  this->LORNode = newLORNode;
 }
 
 
@@ -155,10 +160,7 @@ void qSlicerLORModelWidget
   this->qvtkDisconnect( interactionNode, vtkMRMLInteractionNode::InteractionModeChangedEvent, this, SLOT( disconnectMarkupsObservers() ) );
   interactionNode->SetCurrentInteractionMode( vtkMRMLInteractionNode::ViewTransform );
 
-  disconnect( d->ReferenceButton, SIGNAL( toggled( bool ) ), this, SLOT( onReferenceButtonToggled() ) );
-  disconnect( d->PointButton, SIGNAL( toggled( bool ) ), this, SLOT( onPointButtonToggled() ) );
-  disconnect( d->LineButton, SIGNAL( toggled( bool ) ), this, SLOT( onLineButtonToggled() ) );
-  disconnect( d->PlaneButton, SIGNAL( toggled( bool ) ), this, SLOT( onPlaneButtonToggled() ) );
+  this->DisconnectAllButtons();
 
   if ( checkString.compare( LORConstants::REFERENCE_STRING ) != 0 )
   {
@@ -177,10 +179,7 @@ void qSlicerLORModelWidget
     d->PlaneButton->setChecked( Qt::Unchecked );
   }
 
-  connect( d->ReferenceButton, SIGNAL( toggled( bool ) ), this, SLOT( onReferenceButtonToggled() ) );
-  connect( d->PointButton, SIGNAL( toggled( bool ) ), this, SLOT( onPointButtonToggled() ) );
-  connect( d->LineButton, SIGNAL( toggled( bool ) ), this, SLOT( onLineButtonToggled() ) );
-  connect( d->PlaneButton, SIGNAL( toggled( bool ) ), this, SLOT( onPlaneButtonToggled() ) );
+  this->ConnectAllButtons();
 }
 
 

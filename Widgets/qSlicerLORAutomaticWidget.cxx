@@ -63,7 +63,7 @@ void qSlicerLORAutomaticWidgetPrivate
 
 //-----------------------------------------------------------------------------
 qSlicerLORAutomaticWidget
-::qSlicerLORAutomaticWidget(QWidget* parentWidget) : Superclass( parentWidget ) , d_ptr( new qSlicerLORAutomaticWidgetPrivate(*this) )
+::qSlicerLORAutomaticWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget* parentWidget ) : Superclass( newLORLogic, parentWidget ) , d_ptr( new qSlicerLORAutomaticWidgetPrivate(*this) )
 {
 }
 
@@ -75,12 +75,9 @@ qSlicerLORAutomaticWidget
 
 
 qSlicerLORAutomaticWidget* qSlicerLORAutomaticWidget
-::New()
+::New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic )
 {
-  qSlicerLORAutomaticWidget* newLORAutomaticWidget = new qSlicerLORAutomaticWidget();
-  newLORAutomaticWidget->LORNode = NULL;
-  newLORAutomaticWidget->setup();
-  return newLORAutomaticWidget;
+  return new qSlicerLORAutomaticWidget( newLORLogic );
 }
 
 
@@ -90,8 +87,18 @@ void qSlicerLORAutomaticWidget
   Q_D(qSlicerLORAutomaticWidget);
 
   d->setupUi(this);
+  this->setMRMLScene( this->LORLogic->GetMRMLScene() );
   
   this->updateWidget();  
+}
+
+
+std::string qSlicerLORAutomaticWidget
+::GetCollectNodeType()
+{
+  Q_D(qSlicerLORAutomaticWidget);
+  
+  return "vtkMRMLLinearTransformNode";
 }
 
 
@@ -100,51 +107,30 @@ void qSlicerLORAutomaticWidget
 {
 }
 
+
 void qSlicerLORAutomaticWidget
-::SetLORNode( vtkMRMLNode* newNode )
+::widgetActivated()
 {
   Q_D(qSlicerLORAutomaticWidget);
 
-  if ( this->LORNode != NULL )
-  {
-    this->qvtkDisconnect( this->LORNode->GetActivePositionBuffer(), vtkCommand::ModifiedEvent, this, SLOT( updateWidget() ) );
-  }
-
-  vtkMRMLLinearObjectRegistrationNode* newLORNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( newNode );
-  if ( newLORNode == NULL )
-  {
-    return;
-  }
-
-  this->LORNode = newLORNode;
-
-  this->qvtkConnect( this->LORNode->GetActivePositionBuffer(), vtkCommand::ModifiedEvent, this, SLOT( updateWidget() ) );
-}
-
-
-
-void qSlicerLORAutomaticWidget
-::show()
-{
-  if ( this->LORNode != NULL && this->isHidden() )
+  if ( this->LORNode != NULL && this->LORNode->GetCollectionState().compare( "" ) == 0 )
   {
     this->LORNode->StartCollecting( LORConstants::AUTOMATIC_STRING );
-  }
-
-  this->Superclass::show();
+  }  
 }
 
 
 void qSlicerLORAutomaticWidget
-::hide()
+::widgetDeactivated()
 {
-  if ( this->LORNode != NULL && ! this->isHidden() )
+  Q_D(qSlicerLORAutomaticWidget);
+
+  if ( this->LORNode != NULL && this->LORNode->GetCollectionState().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
   {
     this->LORNode->StopCollecting();
-  }
-
-  this->Superclass::hide();
+  }  
 }
+
 
 
 void qSlicerLORAutomaticWidget

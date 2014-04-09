@@ -58,8 +58,8 @@ public slots:
   void show();
   void hide();
   
-  virtual void widgetActivated();
-  virtual void widgetDeactivated();
+  void widgetActivated();
+  void widgetDeactivated();
   
 signals:
 
@@ -68,8 +68,8 @@ signals:
 
 protected slots:
 
-  virtual void updateWidget();
-  
+  void updateWidget();
+  void collectNodeChanged();
 
 protected:
   QScopedPointer<qSlicerLORCollectWidgetPrivate> d_ptr;

@@ -23,6 +23,7 @@
 
 // Qt includes
 #include "qSlicerWidget.h"
+#include "qSlicerLORCollectControlsWidget.h"
 
 // FooBar Widgets includes
 #include "qSlicerLinearObjectRegistrationModuleWidgetsExport.h"
@@ -35,23 +36,22 @@ class qSlicerLORAutomaticWidgetPrivate;
 
 /// \ingroup Slicer_QtModules_CreateModels
 class Q_SLICER_MODULE_LINEAROBJECTREGISTRATION_WIDGETS_EXPORT 
-qSlicerLORAutomaticWidget : public qSlicerWidget
+qSlicerLORAutomaticWidget : public qSlicerLORCollectControlsWidget
 {
   Q_OBJECT
 public:
-  typedef qSlicerWidget Superclass;
-  qSlicerLORAutomaticWidget(QWidget *parent=0);
+  typedef qSlicerLORCollectControlsWidget Superclass;
+  qSlicerLORAutomaticWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget *parent = 0 );
   virtual ~qSlicerLORAutomaticWidget();
 
-  static qSlicerLORAutomaticWidget* New();
+  static qSlicerLORAutomaticWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
 
-  // Slicer will delete logic
-  void SetLORNode( vtkMRMLNode* newNode );
+  virtual std::string GetCollectNodeType();
 
 public slots:
 
-  void show();
-  void hide();
+  virtual void widgetActivated();
+  virtual void widgetDeactivated();
 
 protected slots:
 
@@ -66,8 +66,6 @@ protected:
 private:
   Q_DECLARE_PRIVATE(qSlicerLORAutomaticWidget);
   Q_DISABLE_COPY(qSlicerLORAutomaticWidget);
-
-  vtkMRMLLinearObjectRegistrationNode* LORNode;
 };
 
 #endif

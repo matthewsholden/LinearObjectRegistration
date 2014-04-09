@@ -63,7 +63,7 @@ void qSlicerLORManualSegmentationWidgetPrivate
 
 //-----------------------------------------------------------------------------
 qSlicerLORManualSegmentationWidget
-::qSlicerLORManualSegmentationWidget(QWidget* parentWidget) : Superclass( parentWidget ) , d_ptr( new qSlicerLORManualSegmentationWidgetPrivate(*this) )
+::qSlicerLORManualSegmentationWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget* parentWidget ) : Superclass( newLORLogic, parentWidget ) , d_ptr( new qSlicerLORManualSegmentationWidgetPrivate(*this) )
 {
 }
 
@@ -75,12 +75,9 @@ qSlicerLORManualSegmentationWidget
 
 
 qSlicerLORManualSegmentationWidget* qSlicerLORManualSegmentationWidget
-::New()
+::New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic )
 {
-  qSlicerLORManualSegmentationWidget* newLORManualSegmentationWidget = new qSlicerLORManualSegmentationWidget();
-  newLORManualSegmentationWidget->LORNode = NULL;
-  newLORManualSegmentationWidget->setup();
-  return newLORManualSegmentationWidget;
+  return new qSlicerLORManualSegmentationWidget( newLORLogic );
 }
 
 
@@ -90,11 +87,20 @@ void qSlicerLORManualSegmentationWidget
   Q_D(qSlicerLORManualSegmentationWidget);
 
   d->setupUi(this);
-  
-  // Use the pressed signal (otherwise we can unpress buttons without clicking them)
-  connect( d->CollectButton, SIGNAL( toggled( bool ) ), this, SLOT( onCollectButtonClicked() ) );
+  this->setMRMLScene( this->LORLogic->GetMRMLScene() );
+
+  connect( d->CollectButton, SIGNAL( toggled( bool ) ), this, SLOT( onCollectButtonToggled() ) );
   
   this->updateWidget();  
+}
+
+
+std::string qSlicerLORManualSegmentationWidget
+::GetCollectNodeType()
+{
+  Q_D(qSlicerLORManualSegmentationWidget);
+  
+  return "vtkMRMLLinearTransformNode";
 }
 
 
@@ -105,22 +111,26 @@ void qSlicerLORManualSegmentationWidget
 
 
 void qSlicerLORManualSegmentationWidget
-::SetLORNode( vtkMRMLNode* newNode )
+::widgetActivated()
 {
   Q_D(qSlicerLORManualSegmentationWidget);
-
-  vtkMRMLLinearObjectRegistrationNode* newLORNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( newNode );
-  if ( newLORNode == NULL )
-  {
-    return;
-  }
-
-  this->LORNode = newLORNode;
 }
 
 
 void qSlicerLORManualSegmentationWidget
-::onCollectButtonClicked()
+::widgetDeactivated()
+{
+  Q_D(qSlicerLORManualSegmentationWidget);
+
+  if ( this->LORNode != NULL )
+  {
+    this->LORNode->StopCollecting();
+  }
+}
+
+
+void qSlicerLORManualSegmentationWidget
+::onCollectButtonToggled()
 {
   Q_D(qSlicerLORManualSegmentationWidget);
 

@@ -40,10 +40,10 @@ qSlicerLORCollectControlsWidget : public qSlicerWidget
   Q_OBJECT
 public:
   typedef qSlicerWidget Superclass;
-  qSlicerLORCollectControlsWidget(QWidget *parent=0);
+  qSlicerLORCollectControlsWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget *parent = 0 );
   virtual ~qSlicerLORCollectControlsWidget();
 
-  static qSlicerLORCollectControlsWidget* New( vtkSlicerLinearObjectRegistrationLogic* LORLogic );
+  static qSlicerLORCollectControlsWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
 
   void SetLORNode( vtkMRMLNode* newNode );
   void SetAndObserveCollectNode( vtkMRMLNode* newCollectNode );
@@ -74,15 +74,14 @@ protected:
   virtual void setup();
   virtual void enter();
 
-
-private:
-  Q_DECLARE_PRIVATE(qSlicerLORCollectControlsWidget);
-  Q_DISABLE_COPY(qSlicerLORCollectControlsWidget);
-
   vtkMRMLLinearObjectRegistrationNode* LORNode;
   vtkSlicerLinearObjectRegistrationLogic* LORLogic;
   
   vtkMRMLNode* CollectNode;
+
+private:
+  Q_DECLARE_PRIVATE(qSlicerLORCollectControlsWidget);
+  Q_DISABLE_COPY(qSlicerLORCollectControlsWidget);
 };
 
 #endif

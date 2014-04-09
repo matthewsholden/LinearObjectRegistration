@@ -192,6 +192,15 @@ void qSlicerLORCollectWidget
 
 
 void qSlicerLORCollectWidget
+::collectNodeChanged()
+{
+  Q_D(qSlicerLORCollectWidget);
+
+  this->ControlsWidget->SetAndObserveCollectNode( d->CollectNodeComboBox->currentNode() );
+}
+
+
+void qSlicerLORCollectWidget
 ::updateWidget()
 {
   Q_D(qSlicerLORCollectWidget);

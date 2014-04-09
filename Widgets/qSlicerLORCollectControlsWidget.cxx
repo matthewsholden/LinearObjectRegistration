@@ -63,9 +63,12 @@ void qSlicerLORCollectControlsWidgetPrivate
 
 //-----------------------------------------------------------------------------
 qSlicerLORCollectControlsWidget
-::qSlicerLORCollectControlsWidget(QWidget* parentWidget) : Superclass( parentWidget ) , d_ptr( new qSlicerLORCollectControlsWidgetPrivate(*this) )
+::qSlicerLORCollectControlsWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget* parentWidget ) : Superclass( parentWidget ) , d_ptr( new qSlicerLORCollectControlsWidgetPrivate(*this) )
 {
-
+  this->LORLogic = newLORLogic;
+  this->LORNode = NULL;
+  this->CollectNode = NULL;
+  this->setup();
 }
 
 
@@ -78,12 +81,7 @@ qSlicerLORCollectControlsWidget
 qSlicerLORCollectControlsWidget* qSlicerLORCollectControlsWidget
 ::New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic )
 {
-  qSlicerLORCollectControlsWidget* newLORModelWidget = new qSlicerLORCollectControlsWidget();
-  newLORModelWidget->LORLogic = newLORLogic;
-  newLORModelWidget->LORNode = NULL;
-  newLORModelWidget->CollectNode = NULL;
-  newLORModelWidget->setup();
-  return newLORModelWidget;
+  return new qSlicerLORCollectControlsWidget( newLORLogic );
 }
 
 
@@ -94,8 +92,6 @@ void qSlicerLORCollectControlsWidget
 
   d->setupUi(this);
   this->setMRMLScene( this->LORLogic->GetMRMLScene() );
-  
-  // Use the pressed signal (otherwise we can unpress buttons without clicking them)
 
   this->updateWidget();  
 }

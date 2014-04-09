@@ -23,6 +23,7 @@
 
 // Qt includes
 #include "qSlicerWidget.h"
+#include "qSlicerLORCollectControlsWidget.h"
 
 // FooBar Widgets includes
 #include "qSlicerLinearObjectRegistrationModuleWidgetsExport.h"
@@ -47,24 +48,22 @@ class qSlicerLORModelWidgetPrivate;
 
 /// \ingroup Slicer_QtModules_CreateModels
 class Q_SLICER_MODULE_LINEAROBJECTREGISTRATION_WIDGETS_EXPORT 
-qSlicerLORModelWidget : public qSlicerWidget
+qSlicerLORModelWidget : public qSlicerLORCollectControlsWidget
 {
   Q_OBJECT
 public:
-  typedef qSlicerWidget Superclass;
-  qSlicerLORModelWidget(QWidget *parent=0);
+  typedef qSlicerLORCollectControlsWidget Superclass;
+  qSlicerLORModelWidget( vtkSlicerLinearObjectRegistrationLogic* LORLogic, QWidget *parent = 0 );
   virtual ~qSlicerLORModelWidget();
 
-  static qSlicerLORModelWidget* New( vtkSlicerLinearObjectRegistrationLogic* LORLogic );
+  static qSlicerLORModelWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
 
-  void SetLORNode( vtkMRMLNode* newNode );
+  virtual std::string GetCollectNodeType();
 
 public slots:
 
-  void show();
-  void hide();
-
-  void disconnectMarkupsObservers( std::string checkString = "" );
+  virtual void widgetActivated();
+  virtual void widgetDeactivated();
 
 protected slots:
 
@@ -77,6 +76,8 @@ protected slots:
   void onPlaneButtonToggled();
   void onPlaneFiducialDropped();
 
+  void disconnectMarkupsObservers( std::string checkString = "" );
+
   void updateWidget();
 
 protected:
@@ -85,16 +86,12 @@ protected:
   virtual void setup();
   virtual void enter();
 
-  void GetCurrentWorldCoordinates( double* worldCoordinates );
-
 private:
   Q_DECLARE_PRIVATE(qSlicerLORModelWidget);
   Q_DISABLE_COPY(qSlicerLORModelWidget);
 
-  vtkMRMLLinearObjectRegistrationNode* LORNode;
-  vtkSlicerLinearObjectRegistrationLogic* LORLogic;
-
-  vtkMRMLMarkupsFiducialNode* FiducialNode;
+  void ConnectAllButtons();
+  void DisconnectAllButtons();
 };
 
 #endif

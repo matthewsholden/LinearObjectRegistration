@@ -23,6 +23,7 @@
 
 // Qt includes
 #include "qSlicerWidget.h"
+#include "qSlicerLORCollectControlsWidget.h"
 
 // FooBar Widgets includes
 #include "qSlicerLinearObjectRegistrationModuleWidgetsExport.h"
@@ -35,24 +36,29 @@ class qSlicerLORManualDOFWidgetPrivate;
 
 /// \ingroup Slicer_QtModules_CreateModels
 class Q_SLICER_MODULE_LINEAROBJECTREGISTRATION_WIDGETS_EXPORT 
-qSlicerLORManualDOFWidget : public qSlicerWidget
+qSlicerLORManualDOFWidget : public qSlicerLORCollectControlsWidget
 {
   Q_OBJECT
 public:
-  typedef qSlicerWidget Superclass;
-  qSlicerLORManualDOFWidget(QWidget *parent=0);
+  typedef qSlicerLORCollectControlsWidget Superclass;
+  qSlicerLORManualDOFWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget *parent = 0 );
   virtual ~qSlicerLORManualDOFWidget();
 
-  static qSlicerLORManualDOFWidget* New();
+  static qSlicerLORManualDOFWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
 
-  void SetLORNode( vtkMRMLNode* newNode );
+  virtual std::string GetCollectNodeType();
+
+public slots:
+
+  virtual void widgetActivated();
+  virtual void widgetDeactivated();
 
 protected slots:
 
-  void onReferenceButtonClicked();
-  void onPointButtonClicked();
-  void onLineButtonClicked();
-  void onPlaneButtonClicked();
+  void onReferenceButtonToggled();
+  void onPointButtonToggled();
+  void onLineButtonToggled();
+  void onPlaneButtonToggled();
 
   void updateWidget();
 
@@ -66,7 +72,8 @@ private:
   Q_DECLARE_PRIVATE(qSlicerLORManualDOFWidget);
   Q_DISABLE_COPY(qSlicerLORManualDOFWidget);
 
-  vtkMRMLLinearObjectRegistrationNode* LORNode;
+  void ConnectAllButtons();
+  void DisconnectAllButtons();
 };
 
 #endif
