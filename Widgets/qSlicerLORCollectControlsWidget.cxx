@@ -124,36 +124,16 @@ void qSlicerLORCollectControlsWidget
 
 
 void qSlicerLORCollectControlsWidget
-::show()
-{
-  if ( this->isHidden() )
-  {
-    this->Superclass::show();
-    this->widgetActivated();
-  }
-}
-
-
-void qSlicerLORCollectControlsWidget
-::hide()
-{
-  if ( ! this->isHidden() )
-  {
-    this->widgetDeactivated();
-    this->Superclass::hide();
-  }
-}
-
-
-void qSlicerLORCollectControlsWidget
 ::widgetActivated()
 {
+  this->updateWidget();
 }
 
 
 void qSlicerLORCollectControlsWidget
 ::widgetDeactivated()
 {
+  this->updateWidget();
 }
 
 

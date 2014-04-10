@@ -78,12 +78,13 @@ public:
   };
 
   // Use default setters and getters - vtk set macro will cause modified event
-  void SetCollectTransformID( std::string newCollectTransformID, int modifyType = DefaultModify );
+  //void SetCollectTransformID( std::string newCollectTransformID, int modifyType = DefaultModify );
   void SetFromCollectionID( std::string newFromCollectionID, int modifyType = DefaultModify );
   void SetToCollectionID( std::string newToCollectionID, int modifyType = DefaultModify );
   void SetOutputTransformID( std::string newOutputTransformID, int modifyType = DefaultModify );
 
-  void SetCollectionMode( std::string newCollectionMode, int modifyType = DefaultModify );
+  void SetCollectMode( std::string newCollectMode, int modifyType = DefaultModify );
+
   void SetAutomaticMatch( bool newAutomaticMatch, int modifyType = DefaultModify );
   void SetAutomaticMerge( bool newAutomaticMerge, int modifyType = DefaultModify );
   void SetMergeThreshold( double newMergeThreshold, int modifyType = DefaultModify );
@@ -92,12 +93,13 @@ public:
   void SetMinimumCollectionPositions( int newMinimumCollectionPositions, int modifyType = DefaultModify );
   void SetTrimPositions( int newTrimPositions, int modifyType = DefaultModify );
 
-  std::string GetCollectTransformID();
+  //std::string GetCollectTransformID();
   std::string GetFromCollectionID();
   std::string GetToCollectionID();
   std::string GetOutputTransformID();
 
-  std::string GetCollectionMode();
+  std::string GetCollectMode();
+
   bool GetAutomaticMatch();
   bool GetAutomaticMerge();
   double GetMergeThreshold();
@@ -110,23 +112,27 @@ public:
 
   void ObserveAllReferenceNodes();
 
-  std::string GetCollectionState();
+  std::string GetCollectState();
   vtkLORPositionBuffer* GetActivePositionBuffer();
 
   bool DifferentFromPrevious( vtkMatrix4x4* newMatrix );
 
-  void StartCollecting( std::string newCollectionState );
+  void StartCollecting( vtkMRMLNode* newCollectNode, std::string newCollectState );
   void StopCollecting();
 
   void ProcessMRMLEvents( vtkObject *caller, unsigned long event, void *callData );
 
 private:
 
-  std::string CollectionMode;
+  vtkNew< vtkIntArray > ObserveEvents;
+
+  void ProcessTransformCollectNodeUpdate( vtkMRMLLinearTransformNode* transformNode );
+
+  std::string CollectMode;
   bool AutomaticMatch;
   bool AutomaticMerge;
 
-  std::string CollectionState;
+  std::string CollectState;
   vtkSmartPointer< vtkLORRealTimePositionBuffer > ActivePositionBuffer;
   vtkSmartPointer< vtkMatrix4x4 > PreviousMatrix;
 

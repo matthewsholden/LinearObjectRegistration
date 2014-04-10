@@ -55,6 +55,9 @@ public:
 
 
 public slots:
+
+  void show();
+  void hide();
   
   void widgetActivated();
   void widgetDeactivated();

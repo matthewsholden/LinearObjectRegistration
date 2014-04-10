@@ -50,6 +50,8 @@ public:
   virtual std::string GetCollectNodeType();
   virtual std::string GetCollectModeName();
 
+  virtual void SetAndObserveCollectNode( vtkMRMLNode* newCollectNode );
+
 public slots:
 
   virtual void widgetActivated();

@@ -47,16 +47,13 @@ public:
   static qSlicerLORCollectControlsWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
 
   void SetLORNode( vtkMRMLNode* newNode );
-  void SetAndObserveCollectNode( vtkMRMLNode* newCollectNode );
+  virtual void SetAndObserveCollectNode( vtkMRMLNode* newCollectNode );
 
   virtual std::string GetCollectNodeType();
   virtual std::string GetCollectModeName();
 
 public slots:
-
-  void show();
-  void hide();
-  
+ 
   virtual void widgetActivated();
   virtual void widgetDeactivated();
   

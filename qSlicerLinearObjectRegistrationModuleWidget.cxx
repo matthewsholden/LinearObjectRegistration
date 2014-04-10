@@ -325,19 +325,19 @@ void qSlicerLinearObjectRegistrationModuleWidget
       itr->second->setEnabled( enable );
     }
 
-    d->FromCollectionWidget->setEnabled( false );
-    d->ToCollectionWidget->setEnabled( false );
+    d->FromCollectionWidget->setEnabled( enable );
+    d->ToCollectionWidget->setEnabled( enable );
 
-    d->TransformPreviewWidget->setEnabled( false );
+    d->TransformPreviewWidget->setEnabled( enable );
 
     d->AutomaticMatchCheckBox->setEnabled( enable );
     d->AutomaticMergeCheckBox->setEnabled( enable );
 
-    d->MergeThresholdSpinBox->setEnabled( false );
-    d->NoiseThresholdSpinBox->setEnabled( false );
-    d->MatchingThresholdSpinBox->setEnabled( false );
-    d->MinimumCollectionPositionsSpinBox->setEnabled( false );
-    d->TrimPositionsSpinBox->setEnabled( false );
+    d->MergeThresholdSpinBox->setEnabled( enable );
+    d->NoiseThresholdSpinBox->setEnabled( enable );
+    d->MatchingThresholdSpinBox->setEnabled( enable );
+    d->MinimumCollectionPositionsSpinBox->setEnabled( enable );
+    d->TrimPositionsSpinBox->setEnabled( enable );
 }
 
 
@@ -396,7 +396,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   }
 
   // Add set collect mode function to linear object registration node
-  //linearObjectRegistrationNode->SetCollectMode( this->CollectWidgets[ d->CollectionTabs->currentIndex() ]->GetCollectModeName() );
+  linearObjectRegistrationNode->SetCollectMode( this->CollectWidgets[ d->CollectTabs->currentIndex() ]->GetControlsWidget()->GetCollectModeName() );
 
   if ( d->AutomaticMatchCheckBox->isChecked() )
   {
@@ -460,7 +460,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->ToCollectionWidget->SetLORNode( linearObjectRegistrationNode );
   
   // Find the tab with the label equal to the collect mode
-  std::string tabString = linearObjectRegistrationNode->GetCollectionMode();
+  std::string tabString = linearObjectRegistrationNode->GetCollectMode();
   int tabIndex;
   // Find the corresponding tab
   for ( int i = 0; i < d->CollectTabs->count(); i++ )

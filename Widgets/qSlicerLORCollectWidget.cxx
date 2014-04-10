@@ -115,6 +115,26 @@ void qSlicerLORCollectWidget
 {
 }
 
+void qSlicerLORCollectWidget
+::show()
+{
+  if ( this->isHidden() )
+  {
+    this->Superclass::show();
+    this->widgetActivated();
+  }
+}
+
+
+void qSlicerLORCollectWidget
+::hide()
+{
+  if ( ! this->isHidden() )
+  {
+    this->widgetDeactivated();
+    this->Superclass::hide();
+  }
+}
 
 void qSlicerLORCollectWidget
 ::widgetActivated()
@@ -133,7 +153,7 @@ void qSlicerLORCollectWidget
   // Deactivate the controls widget
   if ( this->ControlsWidget != NULL )
   {
-    this->ControlsWidget->widgetActivated();
+    this->ControlsWidget->widgetDeactivated();
   }
 }
 

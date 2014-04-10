@@ -4,7 +4,8 @@
 
 
 // Constants ------------------------------------------------------------------
-static const char* COLLECT_TRANSFORM_REFERENCE_ROLE = "CollectTransform";
+//static const char* COLLECT_TRANSFORM_REFERENCE_ROLE = "CollectTransform";
+static const char* COLLECT_NODE_REFERENCE_ROLE = "CollectNode";
 static const char* FROM_COLLECTION_REFERENCE_ROLE = "FromCollection";
 static const char* TO_COLLECTION_REFERENCE_ROLE = "ToCollection";
 static const char* OUTPUT_TRANSFORM_REFERENCE_ROLE = "OutputTransform";
@@ -58,25 +59,29 @@ vtkMRMLLinearObjectRegistrationNode
   this->SetSaveWithScene( true );
   // this->SetModifiedSinceRead( true );
 
-  this->AddNodeReferenceRole( COLLECT_TRANSFORM_REFERENCE_ROLE );
+  //this->AddNodeReferenceRole( COLLECT_TRANSFORM_REFERENCE_ROLE );
+  this->AddNodeReferenceRole( COLLECT_NODE_REFERENCE_ROLE );
   this->AddNodeReferenceRole( FROM_COLLECTION_REFERENCE_ROLE );
   this->AddNodeReferenceRole( TO_COLLECTION_REFERENCE_ROLE );
   this->AddNodeReferenceRole( OUTPUT_TRANSFORM_REFERENCE_ROLE );
 
-  this->CollectionMode = LORConstants::MANUAL_DOF_STRING;
+  this->CollectMode = LORConstants::MANUAL_DOF_STRING;
   this->AutomaticMatch = true;
   this->AutomaticMerge = true;
 
-  this->CollectionState = "";
+  this->CollectState = "";
   this->ActivePositionBuffer = vtkSmartPointer< vtkLORRealTimePositionBuffer >::New();
   this->PreviousMatrix = vtkSmartPointer< vtkMatrix4x4 >::New();
 
-  //TODO: Should these be zero or "default" values
+  //TODO: Should these be zero or "default" values?
   this->MergeThreshold = 1e-3;
   this->NoiseThreshold = 0.5;
   this->MatchingThreshold = 10.0;
   this->MinimumCollectionPositions = 100;
   this->TrimPositions = 10;
+
+  // Add any events that should be observed
+  this->ObserveEvents->InsertNextValue( vtkMRMLLinearTransformNode::TransformModifiedEvent );
 
   this->Modified();
 }
@@ -117,7 +122,7 @@ void vtkMRMLLinearObjectRegistrationNode
 
   vtkIndent indent(nIndent);
   
-  of << indent << " CollectionMode=\"" << this->CollectionMode << "\"";
+  of << indent << " CollectMode=\"" << this->CollectMode << "\"";
   of << indent << " AutomaticMatch=\"" << this->AutomaticMatch << "\"";
   of << indent << " AutomaticMerge=\"" << this->AutomaticMatch << "\"";
   of << indent << " MergeThreshold=\"" << this->MergeThreshold << "\"";
@@ -142,9 +147,9 @@ void vtkMRMLLinearObjectRegistrationNode::ReadXMLAttributes( const char** atts )
     attName  = *(atts++);
     attValue = *(atts++);
     
-    if ( ! strcmp( attName, "CollectionMode" ) )
+    if ( ! strcmp( attName, "CollectMode" ) )
     {
-      this->CollectionMode = std::string( attValue );
+      this->CollectMode = std::string( attValue );
     }
     if ( ! strcmp( attName, "AutomaticMatch" ) )
     {
@@ -207,7 +212,7 @@ void vtkMRMLLinearObjectRegistrationNode
   
   // Note: It seems that the WriteXML function copies the node then writes the copied node to file
   // So, anything we want in the MRML file we must copy here (I don't think we need to copy other things)
-  this->CollectionMode = node->CollectionMode;
+  this->CollectMode = node->CollectMode;
   this->AutomaticMatch = node->AutomaticMatch;
   this->AutomaticMerge = node->AutomaticMerge;
   this->MergeThreshold = node->MergeThreshold;
@@ -224,7 +229,7 @@ void vtkMRMLLinearObjectRegistrationNode
 ::PrintSelf( ostream& os, vtkIndent indent )
 {
   vtkMRMLNode::PrintSelf(os,indent); // This will take care of referenced nodes
-  os << indent << "CollectionMode: " << this->CollectionMode << "\n";
+  os << indent << "CollectMode: " << this->CollectMode << "\n";
   os << indent << "AutomaticMatch: " << this->AutomaticMatch << "\n";
   os << indent << "AutomaticMerge: " << this->AutomaticMerge << "\n";
   os << indent << "MergeThreshold: " << this->MergeThreshold << "\n";
@@ -238,7 +243,7 @@ void vtkMRMLLinearObjectRegistrationNode
 void vtkMRMLLinearObjectRegistrationNode
 ::ObserveAllReferenceNodes()
 {
-  this->SetCollectTransformID( this->GetCollectTransformID(), NeverModify );
+  //this->SetCollectTransformID( this->GetCollectTransformID(), NeverModify );
   this->SetFromCollectionID( this->GetFromCollectionID(), NeverModify );
   this->SetToCollectionID( this->GetToCollectionID(), NeverModify );
   this->SetOutputTransformID( this->GetOutputTransformID(), NeverModify );
@@ -250,6 +255,7 @@ void vtkMRMLLinearObjectRegistrationNode
 
 // Variable getters and setters -----------------------------------------------------
 
+/*
 std::string vtkMRMLLinearObjectRegistrationNode
 ::GetCollectTransformID()
 {
@@ -271,7 +277,7 @@ void vtkMRMLLinearObjectRegistrationNode
     this->Modified();
   }
 }
-
+*/
 
 std::string vtkMRMLLinearObjectRegistrationNode
 ::GetFromCollectionID()
@@ -341,20 +347,20 @@ void vtkMRMLLinearObjectRegistrationNode
 
 
 std::string vtkMRMLLinearObjectRegistrationNode
-::GetCollectionMode()
+::GetCollectMode()
 {
-  return this->CollectionMode;
+  return this->CollectMode;
 }
 
 
 void vtkMRMLLinearObjectRegistrationNode
-::SetCollectionMode( std::string newCollectionMode, int modifyType )
+::SetCollectMode( std::string newCollectMode, int modifyType )
 {
-  if ( this->GetCollectionMode().compare( newCollectionMode ) != 0 )
+  if ( this->GetCollectMode().compare( newCollectMode ) != 0 )
   {
-    this->CollectionMode = newCollectionMode;
+    this->CollectMode = newCollectMode;
   }
-  if ( this->GetCollectionMode().compare( newCollectionMode ) != 0 && modifyType == DefaultModify || modifyType == AlwaysModify ) 
+  if ( this->GetCollectMode().compare( newCollectMode ) != 0 && modifyType == DefaultModify || modifyType == AlwaysModify ) 
   {
     this->Modified();
   }
@@ -539,9 +545,9 @@ vtkLORPositionBuffer* vtkMRMLLinearObjectRegistrationNode
 
 
 std::string vtkMRMLLinearObjectRegistrationNode
-::GetCollectionState()
+::GetCollectState()
 {
-  return this->CollectionState;
+  return this->CollectState;
 }
 
 
@@ -596,12 +602,19 @@ bool vtkMRMLLinearObjectRegistrationNode
 
 
 void vtkMRMLLinearObjectRegistrationNode
-::StartCollecting( std::string newCollectionState )
+::StartCollecting( vtkMRMLNode* newCollectNode, std::string newCollectState )
 {
   this->GetActivePositionBuffer()->Clear();
 
+  if ( newCollectNode == NULL )
+  {
+    return;
+  }
+
+  this->SetAndObserveNodeReferenceID( COLLECT_NODE_REFERENCE_ROLE, newCollectNode->GetID(), this->ObserveEvents.GetPointer() );
+
   // If the transform is not specified then collection will not occur
-  this->CollectionState = newCollectionState;
+  this->CollectState = newCollectState;
 }
 
 
@@ -609,36 +622,51 @@ void vtkMRMLLinearObjectRegistrationNode
 ::StopCollecting()
 {
   // Emit an event indicating that the position buffer is ready to be converted to a linear object
-  if ( this->CollectionState.compare( LORConstants::AUTOMATIC_STRING ) != 0 || this->GetActivePositionBuffer()->Size() > this->GetMinimumCollectionPositions() )
+  if ( this->GetActivePositionBuffer()->Size() > this->GetMinimumCollectionPositions() )
   {
     this->InvokeEvent( PositionBufferReady );
   }
 
   this->GetActivePositionBuffer()->Clear(); // TODO: Should the clearing be done in the logic which catches the event
-  this->CollectionState = "";
+  this->CollectState = "";
 }
 
 
 void vtkMRMLLinearObjectRegistrationNode
 ::ProcessMRMLEvents( vtkObject *caller, unsigned long event, void *callData )
 {
-  // In case the observed transform node is updated
-  vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast( caller );
+  // Check if the current collect node was the one updated
+  vtkMRMLNode* callerNode = vtkMRMLNode::SafeDownCast( caller );
 
-  // If it wasn't the observed transform
-  if ( transformNode == NULL || this->GetNodeReferenceIDString( COLLECT_TRANSFORM_REFERENCE_ROLE ).compare( transformNode->GetID() ) != 0 || event != vtkMRMLLinearTransformNode::TransformModifiedEvent )
+  if ( ! this->GetNodeReferenceIDString( COLLECT_NODE_REFERENCE_ROLE ).compare( callerNode->GetID() ) == 0 )
   {
-    this->Modified(); // Recalculate the transform
+    this->Modified();
     return;
   }
-  if ( this->CollectionState.compare( "" ) == 0 )
+  // Do nothing if the collection state is nothing
+  if ( this->CollectState.compare( "" ) == 0 )
   {
     return;
   }
 
-  // Prevent adding if the current transform is the same as the previous transform
+
+  // If the collect node is a transform node
+  vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast( callerNode );
+  if ( transformNode != NULL )
+  {
+    this->ProcessTransformCollectNodeUpdate( transformNode );
+  }
+
+
+
+}
+
+
+void vtkMRMLLinearObjectRegistrationNode
+::ProcessTransformCollectNodeUpdate( vtkMRMLLinearTransformNode* transformNode )
+{
+  // Do nothing if the matrix hasn't changed from the previous matrix
   vtkSmartPointer< vtkMatrix4x4 > transformMatrix = vtkSmartPointer< vtkMatrix4x4 >::New();
-
 #ifdef TRANSFORM_NODE_MATRIX_COPY_REQUIRED
   transformNode->GetMatrixTransformToParent( transformMatrix );
 #else
@@ -651,31 +679,30 @@ void vtkMRMLLinearObjectRegistrationNode
   }
   this->PreviousMatrix->DeepCopy( transformMatrix );
 
+  // Add the position to the position buffer
   vtkLORPosition* tempPosition = vtkLORPosition::New( transformMatrix );
   vtkSmartPointer< vtkLORPosition > newPosition = vtkSmartPointer< vtkLORPosition >::Take( tempPosition );
-
   this->GetActivePositionBuffer()->AddPosition( newPosition );
 
-  if ( this->CollectionState.compare( LORConstants::AUTOMATIC_STRING ) != 0 )
+  // If it is not automatic collection, then adding to the position buffer is all that is required
+  if ( this->CollectMode.compare( LORConstants::AUTOMATIC_STRING ) != 0 || this->CollectState.compare( LORConstants::AUTOMATIC_STRING ) != 0 )
   {
     return;
   }
 
-  // Check if the position buffer is still linear
-  int positionBufferDOF = this->GetActivePositionBuffer()->GetDOF( this->GetNoiseThreshold() );
 
-  // If it is, then keep going
+  // If it is automatic, check if the position buffer is still linear
+  int positionBufferDOF = this->GetActivePositionBuffer()->GetDOF( this->GetNoiseThreshold() );
   if ( positionBufferDOF <= LORConstants::PLANE_DOF )
   {
     return;
   }
 
-  // If it is not, then emit a ready event if we have the required number of collected frames
+  // If it is not linear, then emit a ready event if we have the required number of collected frames
   if ( this->GetActivePositionBuffer()->Size() > this->GetMinimumCollectionPositions() )
   {
     this->InvokeEvent( PositionBufferReady );
     this->Modified(); // TODO: For some reason, the collection node modified event is never caught when it is called from the processmrmlevents method
   }
   this->GetActivePositionBuffer()->Clear(); // TODO: Should the clearing be done in the logic which catches the event
-
 }

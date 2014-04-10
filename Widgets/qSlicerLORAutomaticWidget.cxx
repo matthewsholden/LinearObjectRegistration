@@ -129,10 +129,11 @@ void qSlicerLORAutomaticWidget
 {
   Q_D(qSlicerLORAutomaticWidget);
 
-  if ( this->LORNode != NULL && this->LORNode->GetCollectionState().compare( "" ) == 0 )
+  if ( this->LORNode != NULL && this->LORNode->GetCollectState().compare( "" ) == 0 )
   {
-    this->LORNode->StartCollecting( LORConstants::AUTOMATIC_STRING );
-  }  
+    this->LORNode->StartCollecting( this->CollectNode, LORConstants::AUTOMATIC_STRING );
+  }
+  this->updateWidget();
 }
 
 
@@ -141,10 +142,33 @@ void qSlicerLORAutomaticWidget
 {
   Q_D(qSlicerLORAutomaticWidget);
 
-  if ( this->LORNode != NULL && this->LORNode->GetCollectionState().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
+  if ( this->LORNode != NULL && this->LORNode->GetCollectState().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
   {
     this->LORNode->StopCollecting();
+  }
+  this->updateWidget();
+}
+
+
+void qSlicerLORAutomaticWidget
+::SetAndObserveCollectNode( vtkMRMLNode* newCollectNode )
+{
+  Q_D(qSlicerLORAutomaticWidget);
+
+  if ( this->LORNode != NULL && this->LORNode->GetCollectState().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
+  {
+    this->LORNode->StopCollecting();
+  }
+
+  this->Superclass::SetAndObserveCollectNode( newCollectNode );
+
+  this->qvtkConnect( this->CollectNode, vtkMRMLLinearTransformNode::TransformModifiedEvent, this, SLOT( updateWidget() ) );
+
+  if ( this->LORNode != NULL && this->LORNode->GetCollectState().compare( "" ) == 0 )
+  {
+    this->LORNode->StartCollecting( this->CollectNode, LORConstants::AUTOMATIC_STRING );
   }  
+  this->updateWidget();
 }
 
 

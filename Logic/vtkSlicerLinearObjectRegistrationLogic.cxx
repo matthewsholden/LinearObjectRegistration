@@ -1774,27 +1774,27 @@ void vtkSlicerLinearObjectRegistrationLogic
     vtkSmartPointer< vtkLORPositionBuffer > positionBufferCopy = lorNode->GetActivePositionBuffer()->DeepCopy(); // Note: This produces a non-real-time buffer (which is what we want)
     lorNode->GetActivePositionBuffer()->Clear();
 
-    if ( lorNode->GetCollectionState().compare( LORConstants::REFERENCE_STRING ) == 0 )
+    if ( lorNode->GetCollectState().compare( LORConstants::REFERENCE_STRING ) == 0 )
     {
       currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), LORConstants::REFERENCE_DOF );
     }
-    if ( lorNode->GetCollectionState().compare( LORConstants::POINT_STRING ) == 0 )
+    if ( lorNode->GetCollectState().compare( LORConstants::POINT_STRING ) == 0 )
     {
       currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), LORConstants::POINT_DOF );
     }
-    if ( lorNode->GetCollectionState().compare( LORConstants::LINE_STRING ) == 0 )
+    if ( lorNode->GetCollectState().compare( LORConstants::LINE_STRING ) == 0 )
     {
       currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), LORConstants::LINE_DOF );
     }
-    if ( lorNode->GetCollectionState().compare( LORConstants::PLANE_STRING ) == 0 )
+    if ( lorNode->GetCollectState().compare( LORConstants::PLANE_STRING ) == 0 )
     {
       currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), LORConstants::PLANE_DOF );
     }
-    if ( lorNode->GetCollectionState().compare( LORConstants::COLLECT_STRING ) == 0 )
+    if ( lorNode->GetCollectState().compare( LORConstants::COLLECT_STRING ) == 0 )
     {
       currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), LORConstants::UNKNOWN_DOF );
     }
-    if ( lorNode->GetCollectionState().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
+    if ( lorNode->GetCollectState().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
     {
       positionBufferCopy->Trim( lorNode->GetTrimPositions() );
       currentLinearObject = this->PositionBufferToLinearObject( positionBufferCopy, lorNode->GetNoiseThreshold(), LORConstants::UNKNOWN_DOF );
