@@ -5,6 +5,13 @@
 // SlicerQt includes
 #include "qSlicerAbstractModuleWidget.h"
 
+#include "qSlicerLORCollectWidget.h"
+#include "qSlicerLORCollectControlsWidget.h"
+#include "qSlicerLORManualDOFWidget.h"
+#include "qSlicerLORManualSegmentationWidget.h"
+#include "qSlicerLORAutomaticWidget.h"
+#include "qSlicerLORModelWidget.h"
+
 #include "qSlicerLinearObjectRegistrationModuleExport.h"
 
 class qSlicerLinearObjectRegistrationModuleWidgetPrivate;
@@ -37,13 +44,18 @@ protected:
   virtual void enter();
   virtual void exit();
 
+  void EnableAllWidgets( bool enable );
+
 private:
   Q_DECLARE_PRIVATE(qSlicerLinearObjectRegistrationModuleWidget);
   Q_DISABLE_COPY(qSlicerLinearObjectRegistrationModuleWidget);
   
   void ConnectWidgets();
   void DisconnectWidgets();
-  
+
+  void AddCollectWidget( qSlicerLORCollectControlsWidget* newControlsWidget );
+
+  std::map< int, qSlicerLORCollectWidget* > CollectWidgets;  
 };
 
 #endif

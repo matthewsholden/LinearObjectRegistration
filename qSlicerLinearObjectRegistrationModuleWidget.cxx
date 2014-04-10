@@ -51,11 +51,7 @@ public:
   qSlicerLinearObjectCollectionWidget* FromCollectionWidget;
   qSlicerLinearObjectCollectionWidget* ToCollectionWidget;
 
-  QTabBar* CollectionTabs;
-  qSlicerLORManualDOFWidget* ManualDOFWidget;
-  qSlicerLORManualSegmentationWidget* ManualSegmentationWidget;
-  qSlicerLORAutomaticWidget* AutomaticWidget;
-  qSlicerLORModelWidget* ModelWidget;
+  QTabBar* CollectTabs;
 
   qSlicerTransformPreviewWidget* TransformPreviewWidget;
 };
@@ -196,14 +192,6 @@ qSlicerLinearObjectRegistrationModuleWidget
   this->Superclass::setup();
 
   // Embed widgets here
-  d->CollectionTabs = new QTabBar( d->CollectionGroupBox );
-  d->CollectionTabsLayout->addWidget( d->CollectionTabs );
-  d->CollectionTabs->insertTab( COLLECTION_MANUAL_DOF_TAB, QString( "Manual DOF" ) );
-  d->CollectionTabs->insertTab( COLLECTION_MANUAL_SEGMENTATION_TAB, QString( "Manual Segmentation" ) );
-  d->CollectionTabs->insertTab( COLLECTION_AUTOMATIC_TAB, QString( "Automatic" ) );
-  d->CollectionTabs->insertTab( COLLECTION_MODEL_TAB, QString( "Model" ) );
-
-
   d->FromCollectionWidget = qSlicerLinearObjectCollectionWidget::New( d->logic() );
   d->FromCollectionWidget->SetNodeBaseName( "FromLinearObjects" );
   d->FromGroupBox->layout()->addWidget( d->FromCollectionWidget );
@@ -212,21 +200,14 @@ qSlicerLinearObjectRegistrationModuleWidget
   d->ToCollectionWidget->SetNodeBaseName( "ToLinearObjects" );
   d->ToGroupBox->layout()->addWidget( d->ToCollectionWidget );
 
-  d->ManualDOFWidget = qSlicerLORManualDOFWidget::New();
-  d->CollectionTabsLayout->addWidget( d->ManualDOFWidget );
-  d->ManualDOFWidget->hide();
 
-  d->ManualSegmentationWidget = qSlicerLORManualSegmentationWidget::New();
-  d->CollectionTabsLayout->addWidget( d->ManualSegmentationWidget );
-  d->ManualSegmentationWidget->hide();
+  d->CollectTabs = new QTabBar( d->CollectGroupBox );
+  d->CollectTabsLayout->addWidget( d->CollectTabs );
 
-  d->AutomaticWidget = qSlicerLORAutomaticWidget::New();
-  d->CollectionTabsLayout->addWidget( d->AutomaticWidget );
-  d->AutomaticWidget->hide();
-
-  d->ModelWidget = qSlicerLORModelWidget::New( d->logic() );
-  d->CollectionTabsLayout->addWidget( d->ModelWidget );
-  d->ModelWidget->hide();
+  this->AddCollectWidget( qSlicerLORManualDOFWidget::New( d->logic() ) );
+  this->AddCollectWidget( qSlicerLORManualSegmentationWidget::New( d->logic() ) );
+  this->AddCollectWidget( qSlicerLORAutomaticWidget::New( d->logic() ) );
+  this->AddCollectWidget( qSlicerLORModelWidget::New( d->logic() ) );
 
   d->TransformPreviewWidget = qSlicerTransformPreviewWidget::New( d->logic()->GetMRMLScene() );
   d->PreviewTransformGroupBox->layout()->addWidget( d->TransformPreviewWidget );
@@ -250,6 +231,25 @@ qSlicerLinearObjectRegistrationModuleWidget
 
 
 void qSlicerLinearObjectRegistrationModuleWidget
+::AddCollectWidget( qSlicerLORCollectControlsWidget* newControlsWidget )
+{
+  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
+
+  // Create the collect widget
+  qSlicerLORCollectWidget* newCollectWidget = qSlicerLORCollectWidget::New( d->logic() );
+  newCollectWidget->SetControlsWidget( newControlsWidget );
+
+  // Add this to the collection tabs
+  int tabIndex = d->CollectTabs->addTab( QString::fromStdString( newControlsWidget->GetCollectModeName() ) );
+  this->CollectWidgets[ tabIndex ] = newCollectWidget;
+
+  // Add it to the collection tabs layout
+  d->CollectTabsLayout->addWidget( newCollectWidget );
+
+}
+
+
+void qSlicerLinearObjectRegistrationModuleWidget
 ::enter()
 {
   // Nothing to do
@@ -260,10 +260,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
 void qSlicerLinearObjectRegistrationModuleWidget
 ::exit()
 {
-  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
-
-  d->ModelWidget->disconnectMarkupsObservers();
-
+  // Nothing to do
   this->Superclass::exit();
 }
 
@@ -275,12 +272,10 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   connect( d->OutputNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
 
-  connect( d->CollectionTabs, SIGNAL( currentChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->CollectTabs, SIGNAL( currentChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
 
   connect( d->AutomaticMatchCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->AutomaticMergeCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-
-  connect( d->TransformNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
 
   connect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
@@ -300,12 +295,10 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   disconnect( d->OutputNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
   
-  disconnect( d->CollectionTabs, SIGNAL( currentChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->CollectTabs, SIGNAL( currentChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
   
   disconnect( d->AutomaticMatchCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->AutomaticMergeCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
-
-  disconnect( d->TransformNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( UpdateToMRMLNode() ) );
 
   disconnect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
@@ -316,6 +309,37 @@ void qSlicerLinearObjectRegistrationModuleWidget
   disconnect( d->MinimumCollectionPositionsSpinBox, SIGNAL( valueChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->TrimPositionsSpinBox, SIGNAL( valueChanged( int ) ), this, SLOT( UpdateToMRMLNode() ) );
 }
+
+
+void qSlicerLinearObjectRegistrationModuleWidget
+::EnableAllWidgets( bool enable )
+{
+  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
+
+    d->OutputNodeComboBox->setEnabled( enable );
+
+    d->CollectTabs->setEnabled( enable );
+    // Disable all of the collect widgets
+    for ( std::map< int, qSlicerLORCollectWidget* >::iterator itr = this->CollectWidgets.begin(); itr != this->CollectWidgets.end(); itr++ )
+    {
+      itr->second->setEnabled( enable );
+    }
+
+    d->FromCollectionWidget->setEnabled( false );
+    d->ToCollectionWidget->setEnabled( false );
+
+    d->TransformPreviewWidget->setEnabled( false );
+
+    d->AutomaticMatchCheckBox->setEnabled( enable );
+    d->AutomaticMergeCheckBox->setEnabled( enable );
+
+    d->MergeThresholdSpinBox->setEnabled( false );
+    d->NoiseThresholdSpinBox->setEnabled( false );
+    d->MatchingThresholdSpinBox->setEnabled( false );
+    d->MinimumCollectionPositionsSpinBox->setEnabled( false );
+    d->TrimPositionsSpinBox->setEnabled( false );
+}
+
 
 
 void qSlicerLinearObjectRegistrationModuleWidget
@@ -333,6 +357,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   this->qvtkBlockAll( true );
 
+  /*
   if ( d->TransformNodeComboBox->currentNode() == NULL )
   {
     linearObjectRegistrationNode->SetCollectTransformID( "", vtkMRMLLinearObjectRegistrationNode::NeverModify );
@@ -341,6 +366,7 @@ void qSlicerLinearObjectRegistrationModuleWidget
   {
     linearObjectRegistrationNode->SetCollectTransformID( d->TransformNodeComboBox->currentNode()->GetID(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
+  */
 
   if ( d->OutputNodeComboBox->currentNode() == NULL )
   {
@@ -369,22 +395,8 @@ void qSlicerLinearObjectRegistrationModuleWidget
     linearObjectRegistrationNode->SetToCollectionID( d->ToCollectionWidget->GetCurrentNode()->GetID(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
   }
 
-  if ( d->CollectionTabs->currentIndex() == COLLECTION_MANUAL_DOF_TAB )
-  {
-    linearObjectRegistrationNode->SetCollectionMode( LORConstants::MANUAL_DOF_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
-  }
-  if ( d->CollectionTabs->currentIndex() == COLLECTION_MANUAL_SEGMENTATION_TAB  )
-  {
-    linearObjectRegistrationNode->SetCollectionMode( LORConstants::MANUAL_SEGMENTATION_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
-  }
-  if ( d->CollectionTabs->currentIndex() == COLLECTION_AUTOMATIC_TAB  )
-  {
-    linearObjectRegistrationNode->SetCollectionMode( LORConstants::AUTOMATIC_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
-  }
-  if ( d->CollectionTabs->currentIndex() == COLLECTION_MODEL_TAB )
-  {
-    linearObjectRegistrationNode->SetCollectionMode( LORConstants::MODEL_STRING, vtkMRMLLinearObjectRegistrationNode::NeverModify );
-  }
+  // Add set collect mode function to linear object registration node
+  //linearObjectRegistrationNode->SetCollectMode( this->CollectWidgets[ d->CollectionTabs->currentIndex() ]->GetCollectModeName() );
 
   if ( d->AutomaticMatchCheckBox->isChecked() )
   {
@@ -427,100 +439,51 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   if ( linearObjectRegistrationNode == NULL )
   {
-    d->OutputNodeComboBox->setEnabled( false );
-    d->CollectionTabs->setEnabled( false );
-    d->AutomaticMatchCheckBox->setEnabled( false );
-    d->AutomaticMergeCheckBox->setEnabled( false );
-    d->ManualDOFWidget->setEnabled( false );
-    d->ManualSegmentationWidget->setEnabled( false );
-    d->AutomaticWidget->setEnabled( false );
-    d->ModelWidget->setEnabled( false );
-    d->FromCollectionWidget->setEnabled( false );
-    d->ToCollectionWidget->setEnabled( false );
-    d->TransformPreviewWidget->setEnabled( false );
-    d->MergeThresholdSpinBox->setEnabled( false );
-    d->NoiseThresholdSpinBox->setEnabled( false );
-    d->MatchingThresholdSpinBox->setEnabled( false );
-    d->MinimumCollectionPositionsSpinBox->setEnabled( false );
-    d->TrimPositionsSpinBox->setEnabled( false );
+    this->EnableAllWidgets( false );
     d->StatusLabel->setText( "No Linear Object Registration module node selected." );
     return;
   }
 
-  d->OutputNodeComboBox->setEnabled( true );
-  d->CollectionTabs->setEnabled( true );
-  d->AutomaticMergeCheckBox->setEnabled( true );
-  d->AutomaticMatchCheckBox->setEnabled( true );
-  d->ManualDOFWidget->setEnabled( true );
-  d->ManualSegmentationWidget->setEnabled( true );
-  d->AutomaticWidget->setEnabled( true );
-  d->ModelWidget->setEnabled( true );
-  d->FromCollectionWidget->setEnabled( true );
-  d->ToCollectionWidget->setEnabled( true );
-  d->TransformPreviewWidget->setEnabled( true );
-  d->MergeThresholdSpinBox->setEnabled( true );
-  d->NoiseThresholdSpinBox->setEnabled( true );
-  d->MatchingThresholdSpinBox->setEnabled( true );
-  d->MinimumCollectionPositionsSpinBox->setEnabled( true );
-  d->TrimPositionsSpinBox->setEnabled( true );
+  this->EnableAllWidgets( true );
 
   // Disconnect to prevent signals form cuing slots
   this->DisconnectWidgets();
 
-  d->TransformNodeComboBox->setCurrentNodeID( QString::fromStdString( linearObjectRegistrationNode->GetCollectTransformID() ) );
+  //d->TransformNodeComboBox->setCurrentNodeID( QString::fromStdString( linearObjectRegistrationNode->GetCollectTransformID() ) );
   d->OutputNodeComboBox->setCurrentNodeID( QString::fromStdString( linearObjectRegistrationNode->GetOutputTransformID() ) );
 
   d->FromCollectionWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetFromCollectionID() ) );
   d->ToCollectionWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetToCollectionID() ) );
   d->TransformPreviewWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetOutputTransformID() ) );
 
-  d->ManualDOFWidget->SetLORNode( linearObjectRegistrationNode );
-  d->ManualSegmentationWidget->SetLORNode( linearObjectRegistrationNode );
-  d->AutomaticWidget->SetLORNode( linearObjectRegistrationNode );
-  d->ModelWidget->SetLORNode( linearObjectRegistrationNode );
   d->FromCollectionWidget->SetLORNode( linearObjectRegistrationNode );
   d->ToCollectionWidget->SetLORNode( linearObjectRegistrationNode );
   
-  if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::MANUAL_DOF_STRING ) == 0 )
+  // Find the tab with the label equal to the collect mode
+  std::string tabString = linearObjectRegistrationNode->GetCollectionMode();
+  int tabIndex;
+  // Find the corresponding tab
+  for ( int i = 0; i < d->CollectTabs->count(); i++ )
   {
-    d->CollectionTabs->setCurrentIndex( COLLECTION_MANUAL_DOF_TAB );
-
-    d->TransformNodeComboBox->show();
-    d->ManualDOFWidget->show();
-    d->ManualSegmentationWidget->hide();
-    d->AutomaticWidget->hide();
-    d->ModelWidget->hide();
+    if ( tabString.compare( d->CollectTabs->tabText( i ).toStdString() ) == 0 )
+    {
+      tabIndex = i;
+    }
   }
-  if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::MANUAL_SEGMENTATION_STRING ) == 0 )
+  // Iterate over all tabs and hide all the non-equal tabs
+  for ( std::map< int, qSlicerLORCollectWidget* >::iterator itr = this->CollectWidgets.begin(); itr != this->CollectWidgets.end(); itr++ )
   {
-    d->CollectionTabs->setCurrentIndex( COLLECTION_MANUAL_SEGMENTATION_TAB );
-
-    d->TransformNodeComboBox->show();
-    d->ManualDOFWidget->hide();
-    d->ManualSegmentationWidget->show();
-    d->AutomaticWidget->hide();
-    d->ModelWidget->hide();
+    itr->second->SetLORNode( linearObjectRegistrationNode );
+    if ( itr->first == tabIndex )
+    {
+      itr->second->show();
+    }
+    else
+    {
+      itr->second->hide();
+    }
   }
-  if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
-  {
-    d->CollectionTabs->setCurrentIndex( COLLECTION_AUTOMATIC_TAB );
 
-    d->TransformNodeComboBox->show();
-    d->ManualDOFWidget->hide();
-    d->ManualSegmentationWidget->hide();
-    d->AutomaticWidget->show();
-    d->ModelWidget->hide();
-  }
-  if ( linearObjectRegistrationNode->GetCollectionMode().compare( LORConstants::MODEL_STRING ) == 0 )
-  {
-    d->CollectionTabs->setCurrentIndex( COLLECTION_MODEL_TAB );
-
-    d->TransformNodeComboBox->hide();
-    d->ManualDOFWidget->hide();
-    d->ManualSegmentationWidget->hide();
-    d->AutomaticWidget->hide();
-    d->ModelWidget->show();
-  }
 
   if ( linearObjectRegistrationNode->GetAutomaticMatch() )
   {

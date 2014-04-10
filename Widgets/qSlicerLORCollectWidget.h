@@ -42,10 +42,11 @@ qSlicerLORCollectWidget : public qSlicerWidget
   Q_OBJECT
 public:
   typedef qSlicerWidget Superclass;
-  qSlicerLORCollectWidget(QWidget *parent=0);
+  qSlicerLORCollectWidget( QWidget *parent = 0 );
+  qSlicerLORCollectWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget *parent = 0 );
   virtual ~qSlicerLORCollectWidget();
 
-  static qSlicerLORCollectWidget* New( vtkSlicerLinearObjectRegistrationLogic* LORLogic );
+  static qSlicerLORCollectWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
 
   void SetControlsWidget( qSlicerLORCollectControlsWidget* newControlsWidget );
   qSlicerLORCollectControlsWidget* GetControlsWidget();
@@ -54,9 +55,6 @@ public:
 
 
 public slots:
-
-  void show();
-  void hide();
   
   void widgetActivated();
   void widgetDeactivated();

@@ -40,6 +40,7 @@ qSlicerLORCollectControlsWidget : public qSlicerWidget
   Q_OBJECT
 public:
   typedef qSlicerWidget Superclass;
+  qSlicerLORCollectControlsWidget( QWidget *parent = 0 );
   qSlicerLORCollectControlsWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget *parent = 0 );
   virtual ~qSlicerLORCollectControlsWidget();
 
@@ -49,6 +50,7 @@ public:
   void SetAndObserveCollectNode( vtkMRMLNode* newCollectNode );
 
   virtual std::string GetCollectNodeType();
+  virtual std::string GetCollectModeName();
 
 public slots:
 
@@ -73,6 +75,8 @@ protected:
 
   virtual void setup();
   virtual void enter();
+
+  void initialize();
 
   vtkMRMLLinearObjectRegistrationNode* LORNode;
   vtkSlicerLinearObjectRegistrationLogic* LORLogic;

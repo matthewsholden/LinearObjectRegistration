@@ -40,13 +40,16 @@ qSlicerLORManualDOFWidget : public qSlicerLORCollectControlsWidget
 {
   Q_OBJECT
 public:
+  
   typedef qSlicerLORCollectControlsWidget Superclass;
+  qSlicerLORManualDOFWidget( QWidget *parent = 0 );
   qSlicerLORManualDOFWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget *parent = 0 );
   virtual ~qSlicerLORManualDOFWidget();
 
   static qSlicerLORManualDOFWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
 
   virtual std::string GetCollectNodeType();
+  virtual std::string GetCollectModeName();
 
 public slots:
 

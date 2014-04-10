@@ -41,12 +41,14 @@ qSlicerLORManualSegmentationWidget : public qSlicerLORCollectControlsWidget
   Q_OBJECT
 public:
   typedef qSlicerLORCollectControlsWidget Superclass;
+  qSlicerLORManualSegmentationWidget( QWidget *parent = 0 );
   qSlicerLORManualSegmentationWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget *parent = 0 );
   virtual ~qSlicerLORManualSegmentationWidget();
 
   static qSlicerLORManualSegmentationWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
 
   virtual std::string GetCollectNodeType();
+  virtual std::string GetCollectModeName();
 
 public slots:
 

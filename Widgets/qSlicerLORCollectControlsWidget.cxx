@@ -63,12 +63,18 @@ void qSlicerLORCollectControlsWidgetPrivate
 
 //-----------------------------------------------------------------------------
 qSlicerLORCollectControlsWidget
+::qSlicerLORCollectControlsWidget( QWidget* parentWidget ) : Superclass( parentWidget ) , d_ptr( new qSlicerLORCollectControlsWidgetPrivate(*this) )
+{
+  this->setup();
+}
+
+
+qSlicerLORCollectControlsWidget
 ::qSlicerLORCollectControlsWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget* parentWidget ) : Superclass( parentWidget ) , d_ptr( new qSlicerLORCollectControlsWidgetPrivate(*this) )
 {
+  this->LORLogic = newLORLogic; // So the scene can be set
+  this->initialize();
   this->LORLogic = newLORLogic;
-  this->LORNode = NULL;
-  this->CollectNode = NULL;
-  this->setup();
 }
 
 
@@ -81,7 +87,22 @@ qSlicerLORCollectControlsWidget
 qSlicerLORCollectControlsWidget* qSlicerLORCollectControlsWidget
 ::New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic )
 {
-  return new qSlicerLORCollectControlsWidget( newLORLogic );
+  qSlicerLORCollectControlsWidget* newControlsWidget = new qSlicerLORCollectControlsWidget( newLORLogic );
+  newControlsWidget->setup();
+  return newControlsWidget;
+}
+
+
+void qSlicerLORCollectControlsWidget
+::initialize()
+{
+  Q_D(qSlicerLORCollectControlsWidget);
+
+  this->setMRMLScene( this->LORLogic->GetMRMLScene() );
+
+  this->LORLogic = NULL;
+  this->LORNode = NULL;
+  this->CollectNode = NULL;
 }
 
 
@@ -91,7 +112,6 @@ void qSlicerLORCollectControlsWidget
   Q_D(qSlicerLORCollectControlsWidget);
 
   d->setupUi(this);
-  this->setMRMLScene( this->LORLogic->GetMRMLScene() );
 
   this->updateWidget();  
 }
@@ -106,14 +126,22 @@ void qSlicerLORCollectControlsWidget
 void qSlicerLORCollectControlsWidget
 ::show()
 {
-  // This does not necessarily mean the widget has been activated
+  if ( this->isHidden() )
+  {
+    this->Superclass::show();
+    this->widgetActivated();
+  }
 }
 
 
 void qSlicerLORCollectControlsWidget
 ::hide()
 {
-  // This does not necessarily mean the widget has been deactivated
+  if ( ! this->isHidden() )
+  {
+    this->widgetDeactivated();
+    this->Superclass::hide();
+  }
 }
 
 
@@ -158,6 +186,15 @@ void qSlicerLORCollectControlsWidget
 
 std::string qSlicerLORCollectControlsWidget
 ::GetCollectNodeType()
+{
+  Q_D(qSlicerLORCollectControlsWidget);
+  
+  return "";
+}
+
+
+std::string qSlicerLORCollectControlsWidget
+::GetCollectModeName()
 {
   Q_D(qSlicerLORCollectControlsWidget);
   

@@ -53,12 +53,14 @@ qSlicerLORModelWidget : public qSlicerLORCollectControlsWidget
   Q_OBJECT
 public:
   typedef qSlicerLORCollectControlsWidget Superclass;
+  qSlicerLORModelWidget( QWidget *parent = 0 );
   qSlicerLORModelWidget( vtkSlicerLinearObjectRegistrationLogic* LORLogic, QWidget *parent = 0 );
   virtual ~qSlicerLORModelWidget();
 
   static qSlicerLORModelWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
 
   virtual std::string GetCollectNodeType();
+  virtual std::string GetCollectModeName();
 
 public slots:
 

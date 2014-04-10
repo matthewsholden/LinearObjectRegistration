@@ -63,6 +63,12 @@ void qSlicerLORModelWidgetPrivate
 
 //-----------------------------------------------------------------------------
 qSlicerLORModelWidget
+::qSlicerLORModelWidget( QWidget* parentWidget) : Superclass( parentWidget ) , d_ptr( new qSlicerLORModelWidgetPrivate(*this) )
+{
+}
+
+
+qSlicerLORModelWidget
 ::qSlicerLORModelWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget* parentWidget) : Superclass( newLORLogic, parentWidget ) , d_ptr( new qSlicerLORModelWidgetPrivate(*this) )
 {
 }
@@ -77,7 +83,9 @@ qSlicerLORModelWidget
 qSlicerLORModelWidget* qSlicerLORModelWidget
 ::New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic )
 {
-  return new qSlicerLORModelWidget( newLORLogic );
+  qSlicerLORModelWidget* newControlsWidget = new qSlicerLORModelWidget( newLORLogic );
+  newControlsWidget->setup();
+  return newControlsWidget;
 }
 
 
@@ -87,7 +95,6 @@ void qSlicerLORModelWidget
   Q_D(qSlicerLORModelWidget);
 
   d->setupUi(this);
-  this->setMRMLScene( this->LORLogic->GetMRMLScene() );
   
   this->ConnectAllButtons();
 
@@ -124,6 +131,15 @@ std::string qSlicerLORModelWidget
   Q_D(qSlicerLORModelWidget);
   
   return "vtkMRMLModelNode";
+}
+
+
+std::string qSlicerLORModelWidget
+::GetCollectModeName()
+{
+  Q_D(qSlicerLORModelWidget);
+  
+  return "Model";
 }
 
 
@@ -216,7 +232,7 @@ void qSlicerLORModelWidget
   this->LORNode->StartCollecting( LORConstants::REFERENCE_STRING );
 
   // Add the positions to the active position buffer (based on selected model)
-  this->LORLogic->CreateModelReference( d->ModelNodeComboBox->currentNode(), this->LORNode->GetActivePositionBuffer(), this->LORNode );
+  this->LORLogic->CreateModelReference( this->CollectNode, this->LORNode->GetActivePositionBuffer(), this->LORNode );
 
   // Stop collecting
   this->LORNode->StopCollecting();
@@ -255,7 +271,7 @@ void qSlicerLORModelWidget
   this->LORNode->StartCollecting( LORConstants::POINT_STRING );
 
   // Add the positions to the active position buffer (based on selected model)
-  this->LORLogic->CreateModelPoint( d->ModelNodeComboBox->currentNode(), this->LORNode->GetActivePositionBuffer(), this->LORNode );
+  this->LORLogic->CreateModelPoint( this->CollectNode, this->LORNode->GetActivePositionBuffer(), this->LORNode );
 
   // Stop collecting
   this->LORNode->StopCollecting();
@@ -294,7 +310,7 @@ void qSlicerLORModelWidget
   this->LORNode->StartCollecting( LORConstants::LINE_STRING );
 
   // Add the positions to the active position buffer (based on selected model)
-  this->LORLogic->CreateModelLine( d->ModelNodeComboBox->currentNode(), this->LORNode->GetActivePositionBuffer(), this->LORNode );
+  this->LORLogic->CreateModelLine( this->CollectNode, this->LORNode->GetActivePositionBuffer(), this->LORNode );
 
   // Stop collecting
   this->LORNode->StopCollecting();
@@ -333,7 +349,7 @@ void qSlicerLORModelWidget
   this->LORNode->StartCollecting( LORConstants::PLANE_STRING );
 
   // Add the positions to the active position buffer (based on selected model)
-  this->LORLogic->CreateModelPlane( d->ModelNodeComboBox->currentNode(), this->LORNode->GetActivePositionBuffer(), this->LORNode );
+  this->LORLogic->CreateModelPlane( this->CollectNode, this->LORNode->GetActivePositionBuffer(), this->LORNode );
 
   // Stop collecting
   this->LORNode->StopCollecting();

@@ -62,6 +62,12 @@ void qSlicerLORManualDOFWidgetPrivate
 
 //-----------------------------------------------------------------------------
 qSlicerLORManualDOFWidget
+::qSlicerLORManualDOFWidget( QWidget* parentWidget ) : Superclass( parentWidget ) , d_ptr( new qSlicerLORManualDOFWidgetPrivate(*this) )
+{
+}
+
+
+qSlicerLORManualDOFWidget
 ::qSlicerLORManualDOFWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget* parentWidget ) : Superclass( newLORLogic, parentWidget ) , d_ptr( new qSlicerLORManualDOFWidgetPrivate(*this) )
 {
 }
@@ -76,7 +82,9 @@ qSlicerLORManualDOFWidget
 qSlicerLORManualDOFWidget* qSlicerLORManualDOFWidget
 ::New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic )
 {
-  return new qSlicerLORManualDOFWidget( newLORLogic );
+  qSlicerLORManualDOFWidget* newControlsWidget = new qSlicerLORManualDOFWidget( newLORLogic );
+  newControlsWidget->setup();
+  return newControlsWidget;
 }
 
 
@@ -86,7 +94,6 @@ void qSlicerLORManualDOFWidget
   Q_D(qSlicerLORManualDOFWidget);
 
   d->setupUi(this);
-  this->setMRMLScene( this->LORLogic->GetMRMLScene() );
   
   this->ConnectAllButtons();
 
@@ -124,6 +131,15 @@ std::string qSlicerLORManualDOFWidget
   Q_D(qSlicerLORManualDOFWidget);
   
   return "vtkMRMLLinearTransformNode";
+}
+
+
+std::string qSlicerLORManualDOFWidget
+::GetCollectModeName()
+{
+  Q_D(qSlicerLORManualDOFWidget);
+  
+  return "ManualDOF";
 }
 
 

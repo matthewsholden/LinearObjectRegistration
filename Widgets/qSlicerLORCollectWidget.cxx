@@ -63,9 +63,18 @@ void qSlicerLORCollectWidgetPrivate
 
 //-----------------------------------------------------------------------------
 qSlicerLORCollectWidget
-::qSlicerLORCollectWidget(QWidget* parentWidget) : Superclass( parentWidget ) , d_ptr( new qSlicerLORCollectWidgetPrivate(*this) )
+::qSlicerLORCollectWidget( QWidget* parentWidget ) : Superclass( parentWidget ) , d_ptr( new qSlicerLORCollectWidgetPrivate(*this) )
 {
+  this->setup();
+}
 
+
+qSlicerLORCollectWidget
+::qSlicerLORCollectWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget* parentWidget ) : Superclass( parentWidget ) , d_ptr( new qSlicerLORCollectWidgetPrivate(*this) )
+{
+  this->LORLogic = newLORLogic; // So the scene can be set
+  this->setup();
+  this->LORLogic = newLORLogic;
 }
 
 
@@ -78,12 +87,7 @@ qSlicerLORCollectWidget
 qSlicerLORCollectWidget* qSlicerLORCollectWidget
 ::New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic )
 {
-  qSlicerLORCollectWidget* newLORCollectWidget = new qSlicerLORCollectWidget();
-  newLORCollectWidget->LORLogic = newLORLogic;
-  newLORCollectWidget->LORNode = NULL;
-  newLORCollectWidget->ControlsWidget = NULL;
-  newLORCollectWidget->setup();
-  return newLORCollectWidget;
+  return new qSlicerLORCollectWidget( newLORLogic );
 }
 
 
@@ -94,6 +98,10 @@ void qSlicerLORCollectWidget
 
   d->setupUi(this);
   this->setMRMLScene( this->LORLogic->GetMRMLScene() );
+
+  this->LORLogic = NULL;
+  this->LORNode = NULL;
+  this->ControlsWidget = NULL;
   
   // Observe the collect node combo box
   connect( d->CollectNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( collectNodeChanged() ) );
@@ -104,18 +112,6 @@ void qSlicerLORCollectWidget
 
 void qSlicerLORCollectWidget
 ::enter()
-{
-}
-
-
-void qSlicerLORCollectWidget
-::show()
-{
-}
-
-
-void qSlicerLORCollectWidget
-::hide()
 {
 }
 

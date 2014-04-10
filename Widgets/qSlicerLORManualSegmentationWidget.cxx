@@ -63,6 +63,12 @@ void qSlicerLORManualSegmentationWidgetPrivate
 
 //-----------------------------------------------------------------------------
 qSlicerLORManualSegmentationWidget
+::qSlicerLORManualSegmentationWidget( QWidget* parentWidget ) : Superclass( parentWidget ) , d_ptr( new qSlicerLORManualSegmentationWidgetPrivate(*this) )
+{
+}
+
+
+qSlicerLORManualSegmentationWidget
 ::qSlicerLORManualSegmentationWidget( vtkSlicerLinearObjectRegistrationLogic* newLORLogic, QWidget* parentWidget ) : Superclass( newLORLogic, parentWidget ) , d_ptr( new qSlicerLORManualSegmentationWidgetPrivate(*this) )
 {
 }
@@ -77,7 +83,9 @@ qSlicerLORManualSegmentationWidget
 qSlicerLORManualSegmentationWidget* qSlicerLORManualSegmentationWidget
 ::New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic )
 {
-  return new qSlicerLORManualSegmentationWidget( newLORLogic );
+  qSlicerLORManualSegmentationWidget* newControlsWidget = new qSlicerLORManualSegmentationWidget( newLORLogic );
+  newControlsWidget->setup();
+  return newControlsWidget;
 }
 
 
@@ -87,11 +95,10 @@ void qSlicerLORManualSegmentationWidget
   Q_D(qSlicerLORManualSegmentationWidget);
 
   d->setupUi(this);
-  this->setMRMLScene( this->LORLogic->GetMRMLScene() );
 
   connect( d->CollectButton, SIGNAL( toggled( bool ) ), this, SLOT( onCollectButtonToggled() ) );
   
-  this->updateWidget();  
+  this->updateWidget();
 }
 
 
@@ -101,6 +108,15 @@ std::string qSlicerLORManualSegmentationWidget
   Q_D(qSlicerLORManualSegmentationWidget);
   
   return "vtkMRMLLinearTransformNode";
+}
+
+
+std::string qSlicerLORManualSegmentationWidget
+::GetCollectModeName()
+{
+  Q_D(qSlicerLORManualSegmentationWidget);
+  
+  return "ManualSegmentation";
 }
 
 

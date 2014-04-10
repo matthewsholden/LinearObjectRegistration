@@ -85,7 +85,7 @@
        </widget>
       </item>
       <item>
-       <widget class="ctkCollapsibleGroupBox" name="CollectionGroupBox">
+       <widget class="ctkCollapsibleGroupBox" name="CollectGroupBox">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -96,26 +96,11 @@
          <string>Collect Linear Objects</string>
         </property>
         <property name="collapsed">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
-          <layout class="QVBoxLayout" name="CollectionTabsLayout"/>
-         </item>
-         <item>
-          <widget class="qMRMLNodeComboBox" name="TransformNodeComboBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="nodeTypes">
-            <stringlist>
-             <string>vtkMRMLLinearTransformNode</string>
-            </stringlist>
-           </property>
-          </widget>
+          <layout class="QVBoxLayout" name="CollectTabsLayout"/>
          </item>
         </layout>
        </widget>
@@ -538,7 +523,7 @@
   <connection>
    <sender>qSlicerLinearObjectRegistrationModule</sender>
    <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>TransformNodeComboBox</receiver>
+   <receiver>ModuleNodeComboBox</receiver>
    <slot>setMRMLScene(vtkMRMLScene*)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -547,7 +532,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>195</x>
-     <y>277</y>
+     <y>50</y>
     </hint>
    </hints>
   </connection>
