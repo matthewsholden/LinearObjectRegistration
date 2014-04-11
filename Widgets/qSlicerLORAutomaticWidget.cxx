@@ -114,7 +114,7 @@ std::string qSlicerLORAutomaticWidget
 {
   Q_D(qSlicerLORAutomaticWidget);
   
-  return "Automatic";
+  return LORConstants::AUTOMATIC_COLLECT_MODE;
 }
 
 
@@ -131,7 +131,7 @@ void qSlicerLORAutomaticWidget
 
   if ( this->LORNode != NULL && this->LORNode->GetCollectState().compare( "" ) == 0 )
   {
-    this->LORNode->StartCollecting( this->CollectNode, LORConstants::AUTOMATIC_STRING );
+    this->LORNode->StartCollecting( this->CollectNode, LORConstants::UNKNOWNDOF_COLLECT_STATE );
   }
   this->updateWidget();
 }
@@ -142,7 +142,7 @@ void qSlicerLORAutomaticWidget
 {
   Q_D(qSlicerLORAutomaticWidget);
 
-  if ( this->LORNode != NULL && this->LORNode->GetCollectState().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
+  if ( this->LORNode != NULL && this->LORNode->GetCollectState().compare( LORConstants::UNKNOWNDOF_COLLECT_STATE ) == 0 )
   {
     this->LORNode->StopCollecting();
   }

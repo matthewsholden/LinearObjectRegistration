@@ -139,7 +139,7 @@ std::string qSlicerLORModelWidget
 {
   Q_D(qSlicerLORModelWidget);
   
-  return "Model";
+  return LORConstants::MODEL_COLLECT_MODE;
 }
 
 
@@ -178,19 +178,19 @@ void qSlicerLORModelWidget
 
   this->DisconnectAllButtons();
 
-  if ( checkString.compare( LORConstants::REFERENCE_STRING ) != 0 )
+  if ( checkString.compare( LORConstants::REFERENCE_COLLECT_STATE ) != 0 )
   {
     d->ReferenceButton->setChecked( Qt::Unchecked );
   }
-  if ( checkString.compare( LORConstants::POINT_STRING ) != 0 )
+  if ( checkString.compare( LORConstants::POINT_COLLECT_STATE ) != 0 )
   {
     d->PointButton->setChecked( Qt::Unchecked );
   }
-  if ( checkString.compare( LORConstants::LINE_STRING ) != 0 )
+  if ( checkString.compare( LORConstants::LINE_COLLECT_STATE ) != 0 )
   {
     d->LineButton->setChecked( Qt::Unchecked );
   }
-  if ( checkString.compare( LORConstants::PLANE_STRING ) != 0 )
+  if ( checkString.compare( LORConstants::PLANE_COLLECT_STATE ) != 0 )
   {
     d->PlaneButton->setChecked( Qt::Unchecked );
   }
@@ -215,7 +215,7 @@ void qSlicerLORModelWidget
     return;
   }
 
-  this->disconnectMarkupsObservers( LORConstants::REFERENCE_STRING );
+  this->disconnectMarkupsObservers( LORConstants::REFERENCE_COLLECT_STATE );
   interactionNode->SetCurrentInteractionMode( vtkMRMLInteractionNode::Place );
   this->qvtkConnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onReferenceFiducialDropped() ) );
   this->qvtkConnect( interactionNode, vtkMRMLInteractionNode::InteractionModeChangedEvent, this, SLOT( disconnectMarkupsObservers() ) );
@@ -229,7 +229,7 @@ void qSlicerLORModelWidget
   Q_D(qSlicerLORModelWidget);
 
   // Start collecting
-  this->LORNode->StartCollecting( this->CollectNode, LORConstants::REFERENCE_STRING );
+  this->LORNode->StartCollecting( this->CollectNode, LORConstants::REFERENCE_COLLECT_STATE );
 
   // Add the positions to the active position buffer (based on selected model)
   this->LORLogic->CreateModelReference( this->CollectNode, this->LORNode->GetActivePositionBuffer(), this->LORNode );
@@ -255,7 +255,7 @@ void qSlicerLORModelWidget
     return;
   }
 
-  this->disconnectMarkupsObservers( LORConstants::POINT_STRING );
+  this->disconnectMarkupsObservers( LORConstants::POINT_COLLECT_STATE );
   interactionNode->SetCurrentInteractionMode( vtkMRMLInteractionNode::Place );
   this->qvtkConnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onPointFiducialDropped() ) );
   this->qvtkConnect( interactionNode, vtkMRMLInteractionNode::InteractionModeChangedEvent, this, SLOT( disconnectMarkupsObservers() ) );
@@ -268,7 +268,7 @@ void qSlicerLORModelWidget
   Q_D(qSlicerLORModelWidget);
 
   // Start collecting
-  this->LORNode->StartCollecting( this->CollectNode, LORConstants::POINT_STRING );
+  this->LORNode->StartCollecting( this->CollectNode, LORConstants::POINT_COLLECT_STATE );
 
   // Add the positions to the active position buffer (based on selected model)
   this->LORLogic->CreateModelPoint( this->CollectNode, this->LORNode->GetActivePositionBuffer(), this->LORNode );
@@ -294,7 +294,7 @@ void qSlicerLORModelWidget
     return;
   }
 
-  this->disconnectMarkupsObservers( LORConstants::LINE_STRING );
+  this->disconnectMarkupsObservers( LORConstants::LINE_COLLECT_STATE );
   interactionNode->SetCurrentInteractionMode( vtkMRMLInteractionNode::Place );
   this->qvtkConnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onLineFiducialDropped() ) );
   this->qvtkConnect( interactionNode, vtkMRMLInteractionNode::InteractionModeChangedEvent, this, SLOT( disconnectMarkupsObservers() ) );
@@ -307,7 +307,7 @@ void qSlicerLORModelWidget
   Q_D(qSlicerLORModelWidget);
 
   // Start collecting
-  this->LORNode->StartCollecting( this->CollectNode, LORConstants::LINE_STRING );
+  this->LORNode->StartCollecting( this->CollectNode, LORConstants::LINE_COLLECT_STATE );
 
   // Add the positions to the active position buffer (based on selected model)
   this->LORLogic->CreateModelLine( this->CollectNode, this->LORNode->GetActivePositionBuffer(), this->LORNode );
@@ -333,7 +333,7 @@ void qSlicerLORModelWidget
     return;
   }
 
-  this->disconnectMarkupsObservers( LORConstants::PLANE_STRING );
+  this->disconnectMarkupsObservers( LORConstants::PLANE_COLLECT_STATE );
   interactionNode->SetCurrentInteractionMode( vtkMRMLInteractionNode::Place );
   this->qvtkConnect( this->LORLogic->GetActiveMarkupsNode(), vtkMRMLMarkupsNode::PointModifiedEvent, this, SLOT( onPlaneFiducialDropped() ) );
   this->qvtkConnect( interactionNode, vtkMRMLInteractionNode::InteractionModeChangedEvent, this, SLOT( disconnectMarkupsObservers() ) );
@@ -346,7 +346,7 @@ void qSlicerLORModelWidget
   Q_D(qSlicerLORModelWidget);
 
   // Start collecting
-  this->LORNode->StartCollecting( this->CollectNode, LORConstants::PLANE_STRING );
+  this->LORNode->StartCollecting( this->CollectNode, LORConstants::PLANE_COLLECT_STATE );
 
   // Add the positions to the active position buffer (based on selected model)
   this->LORLogic->CreateModelPlane( this->CollectNode, this->LORNode->GetActivePositionBuffer(), this->LORNode );

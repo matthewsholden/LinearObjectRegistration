@@ -412,7 +412,7 @@ void qSlicerLinearObjectCollectionWidget
     typeComboBox->addItem( QString::fromStdString( LORConstants::LINE_STRING ) );
     typeComboBox->addItem( QString::fromStdString( LORConstants::PLANE_STRING ) );
 
-    typeComboBox->setCurrentIndex( LORConstants::STRING_TO_INDEX( currentLinearObject->GetType() ) );
+    typeComboBox->setCurrentIndex( LORConstants::STRING_TO_SPINNER_INDEX( currentLinearObject->GetType() ) );
 
     connect( typeComboBox, SIGNAL( currentIndexChanged( int ) ), this, SLOT( onTypeSelected( int ) ) );
 
@@ -443,10 +443,10 @@ void qSlicerLinearObjectCollectionWidget
   vtkSmartPointer< vtkLORLinearObject > newLinearObject = NULL;
   if ( currentLinearObject->GetPositionBuffer() != NULL )
   {
-    int dof = LORConstants::STRING_TO_DOF( LORConstants::INDEX_TO_STRING( typeIndex ) );
+    int dof = LORConstants::SPINNER_INDEX_TO_DOF( typeIndex );
     newLinearObject = this->LORLogic->PositionBufferToLinearObject( currentLinearObject->GetPositionBuffer(), this->LORNode->GetNoiseThreshold(), dof );
   }
-  else if ( currentLinearObject->GetType().compare( LORConstants::POINT_STRING ) == 0 && typeIndex == LORConstants::REFERENCE_INDEX )
+  else if ( currentLinearObject->GetType().compare( LORConstants::POINT_STRING ) == 0 && typeIndex == LORConstants::REFERENCE_SPINNER_INDEX )
   {
     newLinearObject = vtkSmartPointer< vtkLORReference >::New();
     newLinearObject->SetBasePoint( currentLinearObject->GetBasePoint() );

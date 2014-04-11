@@ -65,7 +65,7 @@ vtkMRMLLinearObjectRegistrationNode
   this->AddNodeReferenceRole( TO_COLLECTION_REFERENCE_ROLE );
   this->AddNodeReferenceRole( OUTPUT_TRANSFORM_REFERENCE_ROLE );
 
-  this->CollectMode = LORConstants::MANUAL_DOF_STRING;
+  this->CollectMode = LORConstants::MANUAL_DOF_COLLECT_MODE;
   this->AutomaticMatch = true;
   this->AutomaticMerge = true;
 
@@ -701,7 +701,7 @@ void vtkMRMLLinearObjectRegistrationNode
   this->GetActivePositionBuffer()->AddPosition( newPosition );
 
   // If it is not automatic collection, then adding to the position buffer is all that is required
-  if ( this->CollectMode.compare( LORConstants::AUTOMATIC_STRING ) != 0 || this->CollectState.compare( LORConstants::AUTOMATIC_STRING ) != 0 )
+  if ( this->CollectMode.compare( LORConstants::AUTOMATIC_COLLECT_MODE ) != 0 )
   {
     return;
   }

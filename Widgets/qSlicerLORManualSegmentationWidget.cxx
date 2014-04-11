@@ -116,7 +116,7 @@ std::string qSlicerLORManualSegmentationWidget
 {
   Q_D(qSlicerLORManualSegmentationWidget);
   
-  return "ManualSegmentation";
+  return LORConstants::MANUAL_SEGMENTATION_COLLECT_MODE;
 }
 
 
@@ -152,7 +152,7 @@ void qSlicerLORManualSegmentationWidget
 
   if ( this->LORNode->GetCollectState().compare( "" ) == 0 )
   {
-    this->LORNode->StartCollecting( this->CollectNode, LORConstants::COLLECT_STRING );
+    this->LORNode->StartCollecting( this->CollectNode, LORConstants::UNKNOWNDOF_COLLECT_STATE );
   }
   else
   {
@@ -174,7 +174,7 @@ void qSlicerLORManualSegmentationWidget
 
   disconnect( d->CollectButton, SIGNAL( toggled( bool ) ), this, SLOT( onCollectButtonClicked() ) );
 
-  if ( this->LORNode->GetCollectState().compare( LORConstants::COLLECT_STRING ) )
+  if ( this->LORNode->GetCollectState().compare( LORConstants::UNKNOWNDOF_COLLECT_STATE ) )
   {
     d->CollectButton->setChecked( true );
   }
