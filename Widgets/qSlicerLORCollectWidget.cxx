@@ -239,7 +239,11 @@ void qSlicerLORCollectWidget
   vtkMRMLNode* currentNode = d->CollectNodeComboBox->currentNode();
 
   this->ControlsWidget->SetAndObserveCollectNode( currentNode );
-  this->LORNode->SetCollectTypeNode( currentNode );
+
+  if ( this->LORNode != NULL )
+  {
+    this->LORNode->SetCollectTypeNode( currentNode );
+  }
 }
 
 
