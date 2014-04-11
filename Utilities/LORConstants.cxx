@@ -29,6 +29,7 @@ const std::string LORConstants::MANUAL_DOF_COLLECT_MODE = "Manual DOF";
 const std::string LORConstants::MANUAL_SEGMENTATION_COLLECT_MODE = "Manual Segmentation";
 const std::string LORConstants::AUTOMATIC_COLLECT_MODE = "Automatic";
 const std::string LORConstants::MODEL_COLLECT_MODE = "Model";
+const std::string LORConstants::FIDUCIAL_COLLECT_MODE = "Fiducial";
 
 const double LORConstants::DIRECTION_SCALE = 100.0;
 const double LORConstants::ROTATION_THRESHOLD = 0.005;

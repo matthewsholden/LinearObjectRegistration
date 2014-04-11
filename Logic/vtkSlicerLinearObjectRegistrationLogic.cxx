@@ -602,6 +602,34 @@ void vtkSlicerLinearObjectRegistrationLogic
 
 
 void vtkSlicerLinearObjectRegistrationLogic
+::AddFiducialsToPositionBuffer( vtkLORPositionBuffer* positionBuffer, vtkMRMLNode* mNode )
+{
+  vtkMRMLMarkupsFiducialNode* markupsNode = vtkMRMLMarkupsFiducialNode::SafeDownCast( mNode );
+  if ( markupsNode == NULL )
+  {
+    return;
+  }
+
+  while ( markupsNode->GetNumberOfMarkups() > 0 )
+  {
+    double fiducialPosition[ 3 ] = { 0.0, 0.0, 0.0 };
+    markupsNode->GetNthFiducialPosition( markupsNode->GetNumberOfMarkups() - 1, fiducialPosition );
+    markupsNode->RemoveMarkup( markupsNode->GetNumberOfMarkups() - 1 ); // Remove the markup when done
+
+    std::vector< double > currentVector( 3, 0.0 );
+    currentVector.at(0) = fiducialPosition[0];
+    currentVector.at(1) = fiducialPosition[1];
+    currentVector.at(2) = fiducialPosition[2];
+
+    vtkSmartPointer< vtkLORPosition > currentPosition = vtkSmartPointer< vtkLORPosition >::New();
+    currentPosition->SetPositionVector( currentVector );
+    positionBuffer->AddPosition( currentPosition );
+  }
+
+}
+
+
+void vtkSlicerLinearObjectRegistrationLogic
 ::PairCollections( vtkMRMLLinearObjectCollectionNode* collection0, vtkMRMLLinearObjectCollectionNode* collection1 )
 {
   // Find the smaller size

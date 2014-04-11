@@ -638,7 +638,7 @@ void vtkMRMLLinearObjectRegistrationNode
 ::StopCollecting()
 {
   // Emit an event indicating that the position buffer is ready to be converted to a linear object
-  if ( this->GetActivePositionBuffer()->Size() > this->GetMinimumCollectionPositions() )
+  if ( this->GetCollectMode().compare( LORConstants::AUTOMATIC_COLLECT_MODE ) != 0 || this->GetActivePositionBuffer()->Size() > this->GetMinimumCollectionPositions() )
   {
     this->InvokeEvent( PositionBufferReady );
   }

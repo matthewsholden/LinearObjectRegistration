@@ -136,6 +136,8 @@ public:
   void CreateModelPoint( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode );
   void CreateModelReference( vtkMRMLNode* node, vtkLORPositionBuffer* positionBuffer, vtkMRMLLinearObjectRegistrationNode* lorNode );
 
+  void AddFiducialsToPositionBuffer( vtkLORPositionBuffer* positionBuffer, vtkMRMLNode* mNode );
+
   vtkMRMLLinearObjectCollectionNode* GetActiveCollectionNode();
   void SetActiveCollectionNode( vtkMRMLLinearObjectCollectionNode* newActiveCollectionNode );
   vtkMRMLMarkupsNode* GetActiveMarkupsNode();

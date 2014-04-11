@@ -24,6 +24,8 @@ set(${KIT}_SRCS
   qSlicerLORAutomaticWidget.h
   qSlicerLORModelWidget.cxx
   qSlicerLORModelWidget.h
+  qSlicerLORFiducialWidget.cxx
+  qSlicerLORFiducialWidget.h
   qSlicerTransformPreviewWidget.cxx
   qSlicerTransformPreviewWidget.h
   )
@@ -36,6 +38,7 @@ set(${KIT}_MOC_SRCS
   qSlicerLORManualSegmentationWidget.h
   qSlicerLORAutomaticWidget.h
   qSlicerLORModelWidget.h
+  qSlicerLORFiducialWidget.h
   qSlicerTransformPreviewWidget.h
   )
 
@@ -47,6 +50,7 @@ set(${KIT}_UI_SRCS
   ./Resources/UI/qSlicerLORManualSegmentationWidget.ui
   ./Resources/UI/qSlicerLORAutomaticWidget.ui
   ./Resources/UI/qSlicerLORModelWidget.ui
+  ./Resources/UI/qSlicerLORFiducialWidget.ui
   ./Resources/UI/qSlicerTransformPreviewWidget.ui
   )
 
@@ -58,6 +62,7 @@ set(${KIT}_RESOURCES
   ./Resources/UI/qSlicerLORManualSegmentationWidget.ui
   ./Resources/UI/qSlicerLORAutomaticWidget.ui
   ./Resources/UI/qSlicerLORModelWidget.ui
+  ./Resources/UI/qSlicerLORFiducialWidget.ui
   ./Resources/UI/qSlicerTransformPreviewWidget.ui
   )
 

@@ -16,17 +16,12 @@
 #include "qSlicerLORManualSegmentationWidget.h"
 #include "qSlicerLORAutomaticWidget.h"
 #include "qSlicerLORModelWidget.h"
+#include "qSlicerLORFiducialWidget.h"
 #include "qSlicerTransformPreviewWidget.h"
 
 #include "vtkMRMLModelNode.h"
 #include "vtkMRMLNode.h"
 
-
-int COLLECTION_MANUAL_DOF_TAB = 0;
-int COLLECTION_MANUAL_SEGMENTATION_TAB = 1;
-int COLLECTION_AUTOMATIC_TAB = 2;
-int COLLECTION_MODEL_TAB = 3;
-int COLLECTION_TABS = 4;
 
 int LINEAROBJECT_VISIBILITY_COLUMN = 0;
 int LINEAROBJECT_NAME_COLUMN = 1;
@@ -208,6 +203,7 @@ qSlicerLinearObjectRegistrationModuleWidget
   this->AddCollectWidget( qSlicerLORManualSegmentationWidget::New( d->logic() ) );
   this->AddCollectWidget( qSlicerLORAutomaticWidget::New( d->logic() ) );
   this->AddCollectWidget( qSlicerLORModelWidget::New( d->logic() ) );
+  this->AddCollectWidget( qSlicerLORFiducialWidget::New( d->logic() ) );
 
   d->TransformPreviewWidget = qSlicerTransformPreviewWidget::New( d->logic()->GetMRMLScene() );
   d->PreviewTransformGroupBox->layout()->addWidget( d->TransformPreviewWidget );

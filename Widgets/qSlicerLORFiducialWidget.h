@@ -18,8 +18,8 @@
 
 ==============================================================================*/
 
-#ifndef __qSlicerLORModelWidget_h
-#define __qSlicerLORModelWidget_h
+#ifndef __qSlicerLORFiducialWidget_h
+#define __qSlicerLORFiducialWidget_h
 
 // Qt includes
 #include "qSlicerWidget.h"
@@ -27,28 +27,27 @@
 
 // FooBar Widgets includes
 #include "qSlicerLinearObjectRegistrationModuleWidgetsExport.h"
-#include "ui_qSlicerLORModelWidget.h"
+#include "ui_qSlicerLORFiducialWidget.h"
 
 #include "vtkSlicerLinearObjectRegistrationLogic.h"
 
 #include "vtkMRMLInteractionNode.h"
 
 
-
-class qSlicerLORModelWidgetPrivate;
+class qSlicerLORFiducialWidgetPrivate;
 
 /// \ingroup Slicer_QtModules_CreateModels
 class Q_SLICER_MODULE_LINEAROBJECTREGISTRATION_WIDGETS_EXPORT 
-qSlicerLORModelWidget : public qSlicerLORCollectControlsWidget
+qSlicerLORFiducialWidget : public qSlicerLORCollectControlsWidget
 {
   Q_OBJECT
 public:
   typedef qSlicerLORCollectControlsWidget Superclass;
-  qSlicerLORModelWidget( QWidget *parent = 0 );
-  qSlicerLORModelWidget( vtkSlicerLinearObjectRegistrationLogic* LORLogic, QWidget *parent = 0 );
-  virtual ~qSlicerLORModelWidget();
+  qSlicerLORFiducialWidget( QWidget *parent = 0 );
+  qSlicerLORFiducialWidget( vtkSlicerLinearObjectRegistrationLogic* LORLogic, QWidget *parent = 0 );
+  virtual ~qSlicerLORFiducialWidget();
 
-  static qSlicerLORModelWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
+  static qSlicerLORFiducialWidget* New( vtkSlicerLinearObjectRegistrationLogic* newLORLogic );
 
   virtual std::string GetCollectNodeType();
   virtual std::string GetCollectModeName();
@@ -60,28 +59,19 @@ public slots:
 
 protected slots:
 
-  void onReferenceButtonToggled();
-  void onReferenceFiducialDropped();
-  void onPointButtonToggled();
-  void onPointFiducialDropped();
-  void onLineButtonToggled();
-  void onLineFiducialDropped();
-  void onPlaneButtonToggled();
-  void onPlaneFiducialDropped();
-
-  void disconnectMarkupsObservers( std::string checkString = "" );
+  void onConvertFiducialsButtonClicked();
 
   void updateWidget();
 
 protected:
-  QScopedPointer<qSlicerLORModelWidgetPrivate> d_ptr;
+  QScopedPointer<qSlicerLORFiducialWidgetPrivate> d_ptr;
 
   virtual void setup();
   virtual void enter();
 
 private:
-  Q_DECLARE_PRIVATE(qSlicerLORModelWidget);
-  Q_DISABLE_COPY(qSlicerLORModelWidget);
+  Q_DECLARE_PRIVATE(qSlicerLORFiducialWidget);
+  Q_DISABLE_COPY(qSlicerLORFiducialWidget);
 
   void ConnectAllButtons();
   void DisconnectAllButtons();

@@ -118,10 +118,16 @@ void qSlicerLORCollectWidget
 void qSlicerLORCollectWidget
 ::show()
 {
+  Q_D(qSlicerLORCollectWidget);
+
   if ( this->isHidden() )
   {
     this->Superclass::show();
     this->widgetActivated();
+  }
+  if ( this->GetControlsWidget()->GetCollectNodeType().compare( "" ) == 0 )
+  {
+    d->CollectNodeComboBox->hide();
   }
 }
 
@@ -129,6 +135,8 @@ void qSlicerLORCollectWidget
 void qSlicerLORCollectWidget
 ::hide()
 {
+  Q_D(qSlicerLORCollectWidget);
+
   if ( ! this->isHidden() )
   {
     this->widgetDeactivated();
