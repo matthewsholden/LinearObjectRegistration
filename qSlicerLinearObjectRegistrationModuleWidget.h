@@ -54,6 +54,7 @@ private:
   void DisconnectWidgets();
 
   void AddCollectWidget( qSlicerLORCollectControlsWidget* newControlsWidget );
+  void UpdateCollectWidgets( vtkMRMLLinearObjectRegistrationNode* linearObjectRegistrationNode );
 
   std::map< int, qSlicerLORCollectWidget* > CollectWidgets;  
 };

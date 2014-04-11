@@ -223,6 +223,7 @@ qSlicerLinearObjectRegistrationModuleWidget
   connect( d->ToCollectionWidget, SIGNAL( linearObjectSelected() ), this, SLOT( UpdateMatchCandidates() ) );
 
   this->UpdateMatchCandidates();
+  this->UpdateFromMRMLNode();
 }
 
 
@@ -241,6 +242,55 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   // Add it to the collection tabs layout
   d->CollectTabsLayout->addWidget( newCollectWidget );
+}
+
+
+void qSlicerLinearObjectRegistrationModuleWidget
+::UpdateCollectWidgets( vtkMRMLLinearObjectRegistrationNode* linearObjectRegistrationNode )
+{
+  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
+
+  // First, set the LOR node
+  for ( std::map< int, qSlicerLORCollectWidget* >::iterator itr = this->CollectWidgets.begin(); itr != this->CollectWidgets.end(); itr++ )
+  {
+    itr->second->SetLORNode( linearObjectRegistrationNode );
+  }
+
+  // Find the tab with the label equal to the collect mode
+  std::string tabString = "";
+  int tabIndex = -1;
+
+  if ( linearObjectRegistrationNode != NULL )
+  {
+    tabString = linearObjectRegistrationNode->GetCollectMode();
+  }
+  
+  // Find the corresponding tab
+  for ( int i = 0; i < d->CollectTabs->count(); i++ )
+  {
+    if ( tabString.compare( d->CollectTabs->tabText( i ).toStdString() ) == 0 )
+    {
+      tabIndex = i;
+    }
+  }
+
+  // Iterate over all tabs and hide all the non-equal tabs
+  d->CollectTabs->setCurrentIndex( tabIndex );
+  for ( std::map< int, qSlicerLORCollectWidget* >::iterator itr = this->CollectWidgets.begin(); itr != this->CollectWidgets.end(); itr++ )
+  {
+    itr->second->SetLORNode( linearObjectRegistrationNode );
+    if ( itr->first == tabIndex )
+    {
+      std::string collectNodeType = itr->second->GetControlsWidget()->GetCollectNodeType();
+      vtkMRMLNode* collectNode = this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetNodeReferenceID( collectNodeType.c_str() ) );
+      itr->second->SetCollectNode( collectNode );
+      itr->second->show();
+    }
+    else
+    {
+      itr->second->hide();
+    }
+  }
 
 }
 
@@ -433,6 +483,8 @@ void qSlicerLinearObjectRegistrationModuleWidget
   // Node in scene - no smart pointer
   vtkMRMLLinearObjectRegistrationNode* linearObjectRegistrationNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( d->ModuleNodeComboBox->currentNode() );
 
+  this->UpdateCollectWidgets( linearObjectRegistrationNode );
+
   if ( linearObjectRegistrationNode == NULL )
   {
     this->EnableAllWidgets( false );
@@ -455,35 +507,6 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->FromCollectionWidget->SetLORNode( linearObjectRegistrationNode );
   d->ToCollectionWidget->SetLORNode( linearObjectRegistrationNode );
   
-  // Find the tab with the label equal to the collect mode
-  std::string tabString = linearObjectRegistrationNode->GetCollectMode();
-  int tabIndex;
-  // Find the corresponding tab
-  for ( int i = 0; i < d->CollectTabs->count(); i++ )
-  {
-    if ( tabString.compare( d->CollectTabs->tabText( i ).toStdString() ) == 0 )
-    {
-      tabIndex = i;
-    }
-  }
-  // Iterate over all tabs and hide all the non-equal tabs
-  for ( std::map< int, qSlicerLORCollectWidget* >::iterator itr = this->CollectWidgets.begin(); itr != this->CollectWidgets.end(); itr++ )
-  {
-    itr->second->SetLORNode( linearObjectRegistrationNode );
-    if ( itr->first == tabIndex )
-    {
-      std::string collectNodeType = itr->second->GetControlsWidget()->GetCollectNodeType();
-      vtkMRMLNode* collectNode = this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetNodeReferenceID( collectNodeType.c_str() ) );
-      itr->second->SetCollectNode( collectNode );
-      itr->second->show();
-    }
-    else
-    {
-      itr->second->hide();
-    }
-  }
-
-
   if ( linearObjectRegistrationNode->GetAutomaticMatch() )
   {
     d->AutomaticMatchCheckBox->setChecked( Qt::Checked );
