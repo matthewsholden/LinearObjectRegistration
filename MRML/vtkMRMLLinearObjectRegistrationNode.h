@@ -117,6 +117,7 @@ public:
 
   bool DifferentFromPrevious( vtkMatrix4x4* newMatrix );
 
+  void SetCollectTypeNode( vtkMRMLNode* newCollectNode );
   void StartCollecting( vtkMRMLNode* newCollectNode, std::string newCollectState );
   void StopCollecting();
 

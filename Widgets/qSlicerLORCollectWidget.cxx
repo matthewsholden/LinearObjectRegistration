@@ -208,11 +208,30 @@ void qSlicerLORCollectWidget
 
 
 void qSlicerLORCollectWidget
+::SetCollectNode( vtkMRMLNode* newNode )
+{
+  Q_D(qSlicerLORCollectWidget);
+
+  vtkMRMLNode* newCollectNode = vtkMRMLNode::SafeDownCast( newNode );
+  if ( newCollectNode == NULL )
+  {
+    return;
+  }
+
+  // This will cause the collectNodeChanged slot to be called automatically (if there is a change in node)
+  d->CollectNodeComboBox->setCurrentNode( newCollectNode );
+}
+
+
+void qSlicerLORCollectWidget
 ::collectNodeChanged()
 {
   Q_D(qSlicerLORCollectWidget);
 
-  this->ControlsWidget->SetAndObserveCollectNode( d->CollectNodeComboBox->currentNode() );
+  vtkMRMLNode* currentNode = d->CollectNodeComboBox->currentNode();
+
+  this->ControlsWidget->SetAndObserveCollectNode( currentNode );
+  this->LORNode->SetCollectTypeNode( currentNode );
 }
 
 

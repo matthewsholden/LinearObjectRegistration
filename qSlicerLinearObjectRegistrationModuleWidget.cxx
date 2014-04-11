@@ -476,6 +476,9 @@ void qSlicerLinearObjectRegistrationModuleWidget
     itr->second->SetLORNode( linearObjectRegistrationNode );
     if ( itr->first == tabIndex )
     {
+      std::string collectNodeType = itr->second->GetControlsWidget()->GetCollectNodeType();
+      vtkMRMLNode* collectNode = this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetNodeReferenceID( collectNodeType.c_str() ) );
+      itr->second->SetCollectNode( collectNode );
       itr->second->show();
     }
     else

@@ -602,6 +602,21 @@ bool vtkMRMLLinearObjectRegistrationNode
 
 
 void vtkMRMLLinearObjectRegistrationNode
+::SetCollectTypeNode( vtkMRMLNode* newCollectNode )
+{
+  if ( newCollectNode == NULL )
+  {
+    return;
+  }
+
+  // Now, add the node with reference role based on its class name
+  // This way, we can share nodes between classes
+  this->AddNodeReferenceRole( newCollectNode->GetClassName() );
+  this->SetNodeReferenceID( newCollectNode->GetClassName(), newCollectNode->GetID() );
+}
+
+
+void vtkMRMLLinearObjectRegistrationNode
 ::StartCollecting( vtkMRMLNode* newCollectNode, std::string newCollectState )
 {
   this->GetActivePositionBuffer()->Clear();
@@ -611,6 +626,7 @@ void vtkMRMLLinearObjectRegistrationNode
     return;
   }
 
+  // Also, add and observe the node to be currently collected
   this->SetAndObserveNodeReferenceID( COLLECT_NODE_REFERENCE_ROLE, newCollectNode->GetID(), this->ObserveEvents.GetPointer() );
 
   // If the transform is not specified then collection will not occur

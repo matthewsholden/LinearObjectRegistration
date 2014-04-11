@@ -51,8 +51,9 @@ public:
   void SetControlsWidget( qSlicerLORCollectControlsWidget* newControlsWidget );
   qSlicerLORCollectControlsWidget* GetControlsWidget();
 
-  void SetLORNode( vtkMRMLNode* newNode );
+  void SetCollectNode( vtkMRMLNode* newCollectNode );
 
+  void SetLORNode( vtkMRMLNode* newNode );
 
 public slots:
 

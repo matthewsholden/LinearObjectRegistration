@@ -155,20 +155,13 @@ void qSlicerLORAutomaticWidget
 {
   Q_D(qSlicerLORAutomaticWidget);
 
-  if ( this->LORNode != NULL && this->LORNode->GetCollectState().compare( LORConstants::AUTOMATIC_STRING ) == 0 )
-  {
-    this->LORNode->StopCollecting();
-  }
+  this->widgetDeactivated();
 
   this->Superclass::SetAndObserveCollectNode( newCollectNode );
 
   this->qvtkConnect( this->CollectNode, vtkMRMLLinearTransformNode::TransformModifiedEvent, this, SLOT( updateWidget() ) );
 
-  if ( this->LORNode != NULL && this->LORNode->GetCollectState().compare( "" ) == 0 )
-  {
-    this->LORNode->StartCollecting( this->CollectNode, LORConstants::AUTOMATIC_STRING );
-  }  
-  this->updateWidget();
+  this->widgetActivated();
 }
 
 
