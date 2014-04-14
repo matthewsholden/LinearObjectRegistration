@@ -29,6 +29,9 @@ int LINEAROBJECT_TYPE_COLUMN = 2;
 int LINEAROBJECT_BUFFER_COLUMN = 3;
 int LINEAROBJECT_COLUMNS = 4;
 
+double FROM_COLLECTION_DEFAULT_COLOR[3] = { 1, 0, 0 };
+double TO_COLLECTION_DEFAULT_COLOR[3] = { 0, 0, 1 };
+
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
@@ -189,10 +192,12 @@ qSlicerLinearObjectRegistrationModuleWidget
   // Embed widgets here
   d->FromCollectionWidget = qSlicerLinearObjectCollectionWidget::New( d->logic() );
   d->FromCollectionWidget->SetNodeBaseName( "FromLinearObjects" );
+  d->FromCollectionWidget->SetDefaultNodeColor( FROM_COLLECTION_DEFAULT_COLOR );
   d->FromGroupBox->layout()->addWidget( d->FromCollectionWidget );
 
   d->ToCollectionWidget = qSlicerLinearObjectCollectionWidget::New( d->logic() );
   d->ToCollectionWidget->SetNodeBaseName( "ToLinearObjects" );
+  d->ToCollectionWidget->SetDefaultNodeColor( TO_COLLECTION_DEFAULT_COLOR );
   d->ToGroupBox->layout()->addWidget( d->ToCollectionWidget );
 
 

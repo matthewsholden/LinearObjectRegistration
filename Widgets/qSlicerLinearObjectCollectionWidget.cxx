@@ -100,6 +100,7 @@ void qSlicerLinearObjectCollectionWidget
   this->setMRMLScene( this->LORLogic->GetMRMLScene() );
 
   connect( d->LinearObjectCollectionNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onCollectionNodeChanged() ) );
+  connect( d->LinearObjectCollectionNodeComboBox, SIGNAL( nodeAddedByUser( vtkMRMLNode* ) ), this, SLOT( onCollectionNodeAdded( vtkMRMLNode* ) ) );
   
   // Use the toggled singal since it is checkable
   connect( d->ActivateButton, SIGNAL( clicked() ), this, SLOT( SetCurrentActive() ) );
@@ -173,14 +174,75 @@ void qSlicerLinearObjectCollectionWidget
 }
 
 
+void qSlicerLinearObjectCollectionWidget
+::SetDefaultNodeColor( double rgb[3] )
+{
+  this->DefaultNodeColor[ 0 ] = rgb[ 0 ];
+  this->DefaultNodeColor[ 1 ] = rgb[ 1 ];
+  this->DefaultNodeColor[ 2 ] = rgb[ 2 ];
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::SetNodeColor( double rgb[3] )
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  vtkMRMLLinearObjectCollectionNode* collectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( this->GetCurrentNode() );
+  if ( collectionNode == NULL )
+  {
+    return;
+  }
+  
+  vtkMRMLModelHierarchyNode* modelHierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast( this->mrmlScene()->GetNodeByID( collectionNode->GetModelHierarchyNodeID() ) );
+  if ( modelHierarchyNode == NULL )
+  {
+    return;
+  }
+
+  vtkMRMLModelDisplayNode* modelDisplayNode = modelHierarchyNode->GetModelDisplayNode();
+  if ( modelDisplayNode == NULL )
+  {
+    return;
+  }
+
+  modelDisplayNode->SetColor( rgb );
+  modelDisplayNode->SetSelectedColor( rgb );
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::GetNodeColor( double rgb[3] )
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  vtkMRMLLinearObjectCollectionNode* collectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( this->GetCurrentNode() );
+  if ( collectionNode == NULL )
+  {
+    return;
+  }
+  
+  vtkMRMLModelHierarchyNode* modelHierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast( this->mrmlScene()->GetNodeByID( collectionNode->GetModelHierarchyNodeID() ) );
+  if ( modelHierarchyNode == NULL )
+  {
+    return;
+  }
+
+  vtkMRMLModelDisplayNode* modelDisplayNode = modelHierarchyNode->GetModelDisplayNode();
+  if ( modelDisplayNode == NULL )
+  {
+    return;
+  }
+
+  modelDisplayNode->GetColor( rgb );
+}
+
+
 std::string qSlicerLinearObjectCollectionWidget
 ::GetQtStyleStringActive()
 {
   double NodeColor[ 3 ] = { 0, 0, 0 };
-  vtkMRMLLinearObjectCollectionNode* collectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( this->GetCurrentNode() );
-  vtkMRMLModelHierarchyNode* modelHierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast( this->mrmlScene()->GetNodeByID( collectionNode->GetModelHierarchyNodeID() ) );
-  vtkMRMLModelDisplayNode* modelDisplayNode = modelHierarchyNode->GetModelDisplayNode();
-  modelDisplayNode->GetColor( NodeColor );
+  this->GetNodeColor( NodeColor );
   int QtNodeColor[ 3 ] = { 255 * NodeColor[ 0 ], 255 * NodeColor[ 1 ], 255 * NodeColor[ 2 ] };
   std::stringstream styleStringstream;
   styleStringstream << "QGroupBox { font-weight : bold; background-color: rgb( " << QtNodeColor[0] << ", " << QtNodeColor[1] << ", " << QtNodeColor[2] << ") }";
@@ -228,6 +290,18 @@ void qSlicerLinearObjectCollectionWidget
   this->SetCurrentActive();
 
   this->updateWidget();
+}
+
+
+void qSlicerLinearObjectCollectionWidget
+::onCollectionNodeAdded( vtkMRMLNode* newNode )
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  vtkMRMLLinearObjectCollectionNode* newCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( newNode );
+  d->LinearObjectCollectionNodeComboBox->setCurrentNode( newCollectionNode );
+  this->SetNodeColor( this->DefaultNodeColor );
+  this->onCollectionNodeChanged();
 }
 
 

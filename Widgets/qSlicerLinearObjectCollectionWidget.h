@@ -54,12 +54,17 @@ public:
   void SetNodeBaseName( std::string newNodeBaseName );
   vtkLORLinearObject* GetCurrentLinearObject();
 
+  void GetNodeColor( double rgb[ 3 ] );
+  void SetNodeColor( double rgb[ 3 ] );
+  void SetDefaultNodeColor( double rgb[ 3 ] );
+
   std::string GetQtStyleStringActive();
   std::string GetQtStyleStringInactive();
 
 protected slots:
 
   void onCollectionNodeChanged(); // User selects a different node using the combo box
+  void onCollectionNodeAdded( vtkMRMLNode* newNode );
 
   void onVisibilityButtonClicked();
 
@@ -89,6 +94,8 @@ private:
   Q_DISABLE_COPY(qSlicerLinearObjectCollectionWidget);
 
   vtkMRMLLinearObjectRegistrationNode* LORNode;
+
+  double DefaultNodeColor[ 3 ];
 };
 
 #endif
