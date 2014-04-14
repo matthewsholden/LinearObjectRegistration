@@ -102,7 +102,7 @@ void qSlicerLinearObjectCollectionWidget
   connect( d->LinearObjectCollectionNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onCollectionNodeChanged() ) );
   
   // Use the toggled singal since it is checkable
-  connect( d->ActiveButton, SIGNAL( toggled( bool ) ), this, SLOT( SetCurrentActive() ) );
+  connect( d->ActivateButton, SIGNAL( clicked() ), this, SLOT( SetCurrentActive() ) );
 
   // Options buttons
   d->VisibilityButton->setIcon( QIcon( ":/Icons/Small/SlicerInvisible.png" ) );
@@ -170,6 +170,28 @@ void qSlicerLinearObjectCollectionWidget
   Q_D(qSlicerLinearObjectCollectionWidget);
 
   d->LinearObjectCollectionNodeComboBox->setBaseName( QString::fromStdString( newNodeBaseName ) );
+}
+
+
+std::string qSlicerLinearObjectCollectionWidget
+::GetQtStyleStringActive()
+{
+  double NodeColor[ 3 ] = { 0, 0, 0 };
+  vtkMRMLLinearObjectCollectionNode* collectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( this->GetCurrentNode() );
+  vtkMRMLModelHierarchyNode* modelHierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast( this->mrmlScene()->GetNodeByID( collectionNode->GetModelHierarchyNodeID() ) );
+  vtkMRMLModelDisplayNode* modelDisplayNode = modelHierarchyNode->GetModelDisplayNode();
+  modelDisplayNode->GetColor( NodeColor );
+  int QtNodeColor[ 3 ] = { 255 * NodeColor[ 0 ], 255 * NodeColor[ 1 ], 255 * NodeColor[ 2 ] };
+  std::stringstream styleStringstream;
+  styleStringstream << "QGroupBox { font-weight : bold; background-color: rgb( " << QtNodeColor[0] << ", " << QtNodeColor[1] << ", " << QtNodeColor[2] << ") }";
+  return styleStringstream.str();
+}
+
+
+std::string qSlicerLinearObjectCollectionWidget
+::GetQtStyleStringInactive()
+{
+  return "QGroupBox { font-weight : normal; background-color: white }";
 }
 
 
@@ -259,6 +281,8 @@ void qSlicerLinearObjectCollectionWidget
   }
 
   this->updateWidget();
+
+  emit collectionNodeActivated();
 }
 
 
@@ -477,23 +501,8 @@ void qSlicerLinearObjectCollectionWidget
     d->CollectionTableWidget->clear();
     d->CollectionTableWidget->setRowCount( 0 );
     d->CollectionTableWidget->setColumnCount( 0 );
-    d->ActiveButton->setChecked( false );
     return;
   }
-
-  // Set the button indicating if this list is active
-  d->ActiveButton->blockSignals( true );
-
-  if ( this->LORLogic->GetActiveCollectionNode() != NULL && strcmp( this->LORLogic->GetActiveCollectionNode()->GetID(), currentCollectionNode->GetID() ) == 0 )
-  {
-    d->ActiveButton->setChecked( true );
-  }
-  else
-  {
-    d->ActiveButton->setChecked( false );
-  }
-
-  d->ActiveButton->blockSignals( false );
 
   if ( this->LORLogic->GetLinearObjectCollectionModelVisibility( currentCollectionNode ) )
   {

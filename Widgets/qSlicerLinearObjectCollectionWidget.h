@@ -54,6 +54,9 @@ public:
   void SetNodeBaseName( std::string newNodeBaseName );
   vtkLORLinearObject* GetCurrentLinearObject();
 
+  std::string GetQtStyleStringActive();
+  std::string GetQtStyleStringInactive();
+
 protected slots:
 
   void onCollectionNodeChanged(); // User selects a different node using the combo box
@@ -73,6 +76,7 @@ signals:
 
   void collectionNodeChanged();
   void linearObjectSelected();
+  void collectionNodeActivated();
 
 protected:
   QScopedPointer<qSlicerLinearObjectCollectionWidgetPrivate> d_ptr;

@@ -324,7 +324,9 @@ void qSlicerLinearObjectRegistrationModuleWidget
   connect( d->AutomaticMergeCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
 
   connect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->FromCollectionWidget, SIGNAL( collectionNodeActivated() ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->ToCollectionWidget, SIGNAL( collectionNodeActivated() ), this, SLOT( UpdateToMRMLNode() ) );
 
   connect( d->MergeThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->NoiseThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
@@ -347,7 +349,9 @@ void qSlicerLinearObjectRegistrationModuleWidget
   disconnect( d->AutomaticMergeCheckBox, SIGNAL( toggled( bool ) ), this, SLOT( UpdateToMRMLNode() ) );
 
   disconnect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->FromCollectionWidget, SIGNAL( collectionNodeActivated() ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
+  disconnect( d->ToCollectionWidget, SIGNAL( collectionNodeActivated() ), this, SLOT( UpdateToMRMLNode() ) );
 
   disconnect( d->MergeThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
   disconnect( d->NoiseThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
@@ -403,16 +407,25 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   this->qvtkBlockAll( true );
 
-  /*
-  if ( d->TransformNodeComboBox->currentNode() == NULL )
+  // Set the to/from collection widgets to look active
+  if ( d->logic()->GetActiveCollectionNode() != NULL && linearObjectRegistrationNode->GetFromCollectionID().compare( d->logic()->GetActiveCollectionNode()->GetID() ) == 0 )
   {
-    linearObjectRegistrationNode->SetCollectTransformID( "", vtkMRMLLinearObjectRegistrationNode::NeverModify );
+    d->FromGroupBox->setStyleSheet( d->FromCollectionWidget->GetQtStyleStringActive().c_str() );
   }
   else
   {
-    linearObjectRegistrationNode->SetCollectTransformID( d->TransformNodeComboBox->currentNode()->GetID(), vtkMRMLLinearObjectRegistrationNode::NeverModify );
+    d->FromGroupBox->setStyleSheet( d->FromCollectionWidget->GetQtStyleStringInactive().c_str() );
   }
-  */
+
+  if ( d->logic()->GetActiveCollectionNode() != NULL && linearObjectRegistrationNode->GetToCollectionID().compare( d->logic()->GetActiveCollectionNode()->GetID() ) == 0 )
+  {
+    d->ToGroupBox->setStyleSheet( d->ToCollectionWidget->GetQtStyleStringActive().c_str() );
+  }
+  else
+  {
+    d->ToGroupBox->setStyleSheet( d->ToCollectionWidget->GetQtStyleStringInactive().c_str() );
+  }
+
 
   if ( d->OutputNodeComboBox->currentNode() == NULL )
   {
