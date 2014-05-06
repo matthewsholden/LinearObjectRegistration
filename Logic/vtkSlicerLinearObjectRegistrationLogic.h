@@ -153,7 +153,9 @@ public:
   vtkSmartPointer< vtkMRMLLinearObjectCollectionNode > GetNonReferences( vtkMRMLLinearObjectCollectionNode* collection );
 
   void CreateLinearObjectModelHierarchyNode( vtkLORLinearObject* linearObject, vtkMRMLLinearObjectCollectionNode* collection );
+  void DeleteLinearObjectModelHierarchyNode( vtkLORLinearObject* linearObject, vtkMRMLLinearObjectCollectionNode* collection );
   void CreateLinearObjectCollectionModelHierarchyNode( vtkMRMLLinearObjectCollectionNode* collection );
+  void DeleteLinearObjectCollectionModelHierarchyNode( vtkMRMLLinearObjectCollectionNode* collection );
   void CreateLinearObjectModelHierarchyNodes( vtkMRMLLinearObjectCollectionNode* collection );
 
   void ShowLinearObjectModel( vtkLORLinearObject* linearObject );

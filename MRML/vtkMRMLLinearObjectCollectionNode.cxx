@@ -172,6 +172,7 @@ int vtkMRMLLinearObjectCollectionNode
 void vtkMRMLLinearObjectCollectionNode
 ::AddLinearObject( vtkLORLinearObject* newObject )
 {
+  this->InvokeEvent( LinearObjectAboutToBeAddedEvent, newObject );
   this->LinearObjects.push_back( newObject );
   this->Modified();
 }
@@ -195,11 +196,19 @@ void vtkMRMLLinearObjectCollectionNode
     return;
   }
   // Add null linear object until we are the appropriate size
+  
   while ( this->Size() <= index )
   {
     this->AddLinearObject( NULL );
   }
+  if ( this->GetLinearObject( index ) != NULL )
+  {
+    this->RemoveLinearObject( index );
+  }
+
+  this->InvokeEvent( LinearObjectAboutToBeAddedEvent, newObject );
   this->LinearObjects.at( index ) = newObject;
+
   this->Modified();
 }
 
@@ -208,10 +217,13 @@ void vtkMRMLLinearObjectCollectionNode
 ::RemoveLinearObject( int index )
 {
   // The exact slot is important, so don't change anything else
-  if ( index <= this->Size() )
+  if ( index < 0 || index >= this->Size() )
   {
-    this->SetLinearObject( index, NULL );
+    return;
   }
+
+  this->InvokeEvent( LinearObjectAboutToBeRemovedEvent, this->GetLinearObject( index ) );
+  this->LinearObjects.at( index ) = NULL;
   this->Modified();
 }
 

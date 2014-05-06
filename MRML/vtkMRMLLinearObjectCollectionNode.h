@@ -15,6 +15,7 @@
 
 #include "vtkMRMLNode.h"
 #include "vtkMRMLStorableNode.h"
+#include "vtkCommand.h"
 
 // VNL includes
 #include "vnl/vnl_matrix.h"
@@ -60,6 +61,12 @@ protected:
   void operator=( const vtkMRMLLinearObjectCollectionNode& );
 
 public:
+
+  enum LinearObjectCollectionEvent
+  {
+    LinearObjectAboutToBeAddedEvent = vtkCommand::UserEvent + 1,
+    LinearObjectAboutToBeRemovedEvent = vtkCommand::UserEvent + 2
+  };
 
   // Basic collection functionality
   int Size();
