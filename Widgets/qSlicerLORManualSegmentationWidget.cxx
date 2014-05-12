@@ -130,6 +130,7 @@ void qSlicerLORManualSegmentationWidget
 ::widgetActivated()
 {
   Q_D(qSlicerLORManualSegmentationWidget);
+  this->updateWidget();
 }
 
 
@@ -142,6 +143,22 @@ void qSlicerLORManualSegmentationWidget
   {
     this->LORNode->StopCollecting();
   }
+  this->updateWidget();
+}
+
+
+void qSlicerLORManualSegmentationWidget
+::SetAndObserveCollectNode( vtkMRMLNode* newCollectNode )
+{
+  Q_D(qSlicerLORManualSegmentationWidget);
+
+  this->widgetDeactivated();
+
+  this->Superclass::SetAndObserveCollectNode( newCollectNode );
+
+  this->qvtkConnect( this->CollectNode, vtkMRMLLinearTransformNode::TransformModifiedEvent, this, SLOT( updateWidget() ) );
+
+  this->widgetActivated();
 }
 
 
@@ -158,6 +175,7 @@ void qSlicerLORManualSegmentationWidget
   {
     this->LORNode->StopCollecting();
   }
+  this->updateWidget();
 }
 
 
@@ -172,17 +190,25 @@ void qSlicerLORManualSegmentationWidget
     return;
   }
 
-  disconnect( d->CollectButton, SIGNAL( toggled( bool ) ), this, SLOT( onCollectButtonClicked() ) );
+  disconnect( d->CollectButton, SIGNAL( toggled( bool ) ), this, SLOT( onCollectButtonToggled() ) );
 
-  if ( this->LORNode->GetCollectState().compare( LORConstants::UNKNOWNDOF_COLLECT_STATE ) )
+  if ( this->LORNode->GetCollectState().compare( LORConstants::UNKNOWNDOF_COLLECT_STATE ) == 0 )
   {
     d->CollectButton->setChecked( true );
+    std::stringstream typeString;
+    typeString << "Collect (";
+    typeString << LORConstants::DOF_TO_STRING( this->LORNode->GetActivePositionBuffer()->GetDOF( this->LORNode->GetNoiseThreshold() ) );
+    typeString << ")";
+    d->CollectButton->setText( QString::fromStdString( typeString.str() ) );
   }
   else
   {
     d->CollectButton->setChecked( false );
+    std::stringstream typeString;
+    typeString << "Collect ()";
+    d->CollectButton->setText( QString::fromStdString( typeString.str() ) );
   }
 
-  connect( d->CollectButton, SIGNAL( toggled( bool ) ), this, SLOT( onCollectButtonClicked() ) );
+  connect( d->CollectButton, SIGNAL( toggled( bool ) ), this, SLOT( onCollectButtonToggled() ) );
 
 }
