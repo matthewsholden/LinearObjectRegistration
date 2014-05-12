@@ -16,6 +16,7 @@ vtkLORReference* vtkLORReference
 vtkLORReference
 ::vtkLORReference()
 {
+  this->Name = LORConstants::REFERENCE_STRING;
   this->Type = LORConstants::REFERENCE_STRING;
 }
 

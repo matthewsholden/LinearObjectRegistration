@@ -1261,13 +1261,13 @@ void vtkSlicerLinearObjectRegistrationLogic
   try
   {
     fromCentroid = fromCentroidCollection->CalculateCentroid();
-	toCentroid = toCentroidCollection->CalculateCentroid();
+	  toCentroid = toCentroidCollection->CalculateCentroid();
   }
   catch( std::logic_error e )
   {
     linearObjectRegistrationNode->AddObserver( vtkCommand::ModifiedEvent, ( vtkCommand* ) this->GetMRMLNodesCallbackCommand() );
     this->SetOutputMessage( linearObjectRegistrationNode->GetID(), e.what() );
-	return;
+	  return;
   }
 
   std::vector<double> negativeFromCentroid( fromCentroid.size(), 0.0 );

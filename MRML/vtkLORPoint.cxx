@@ -16,6 +16,7 @@ vtkLORPoint* vtkLORPoint
 vtkLORPoint
 ::vtkLORPoint()
 {
+  this->Name = LORConstants::POINT_STRING;
   this->Type = LORConstants::POINT_STRING;
 }
 

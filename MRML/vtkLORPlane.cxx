@@ -18,7 +18,8 @@ vtkLORPlane* vtkLORPlane
 vtkLORPlane
 ::vtkLORPlane()
 {
-  this->Type = "Plane";
+  this->Name = LORConstants::PLANE_STRING;
+  this->Type = LORConstants::PLANE_STRING;
 }
 
 

@@ -5,7 +5,7 @@
 vtkLORLinearObject
 ::vtkLORLinearObject()
 {
-  this->Name = "Unnamed";
+  this->Name = "LinearObject";
   this->Type = "LinearObject";
   this->PositionBuffer = NULL;
   this->ModelHierarchyNodeID = "";

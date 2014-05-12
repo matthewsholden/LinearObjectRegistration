@@ -17,7 +17,8 @@ vtkLORLine* vtkLORLine
 vtkLORLine
 ::vtkLORLine()
 {
-  this->Type = "Line";
+  this->Name = LORConstants::LINE_STRING;
+  this->Type = LORConstants::LINE_STRING;
 }
 
 
