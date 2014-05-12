@@ -177,4 +177,10 @@ void qSlicerLORAutomaticWidget
   }
 
   d->CollectProgressBar->setValue( int( 100 * this->LORNode->GetActivePositionBuffer()->Size() / this->LORNode->GetMinimumCollectionPositions() ) );
+
+  std::stringstream typeString;
+  typeString << "(";
+  typeString << LORConstants::DOF_TO_STRING( this->LORNode->GetActivePositionBuffer()->GetDOF( this->LORNode->GetNoiseThreshold() ) );
+  typeString << ")";
+  d->LinearObjectTypeLabel->setText( QString::fromStdString( typeString.str() ) );
 }

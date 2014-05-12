@@ -149,28 +149,33 @@ vnl_matrix<double>* vtkLORPositionBuffer
   vnl_matrix<double> *cov = new vnl_matrix<double>( vtkLORPosition::SIZE, vtkLORPosition::SIZE );
   cov->fill( 0.0 );
 
+  if ( this->Size() == 0 )
+  {
+    return cov;
+  }
+
   // Subtract the mean from each Position
   for ( int i = 0; i < this->Size(); i++ )
   {
     vtkSmartPointer< vtkLORPosition > newPosition = vtkSmartPointer< vtkLORPosition >::New();
     std::vector<double> newPositionVector = LORMath::Subtract( this->GetPosition(i)->GetPositionVector(), centroid );
     newPosition->SetPositionVector( newPositionVector );
-	zeroMeanBuffer->AddPosition( newPosition );
+	  zeroMeanBuffer->AddPosition( newPosition );
   }
 
   // Pick two dimensions, and find their covariance
   for ( int d1 = 0; d1 < vtkLORPosition::SIZE; d1++ )
   {
     for ( int d2 = 0; d2 < vtkLORPosition::SIZE; d2++ )
-	{
-	  // Iterate over all times
-	  for ( int i = 0; i < zeroMeanBuffer->Size(); i++ )
 	  {
-	    cov->put( d1, d2, cov->get( d1, d2 ) + zeroMeanBuffer->GetPosition(i)->GetPositionVector().at(d1) * zeroMeanBuffer->GetPosition(i)->GetPositionVector().at(d2) );
+	    // Iterate over all times
+	    for ( int i = 0; i < zeroMeanBuffer->Size(); i++ )
+	    {
+	      cov->put( d1, d2, cov->get( d1, d2 ) + zeroMeanBuffer->GetPosition(i)->GetPositionVector().at(d1) * zeroMeanBuffer->GetPosition(i)->GetPositionVector().at(d2) );
+	    }
+	    // Divide by the number of records
+	    cov->put( d1, d2, cov->get( d1, d2 ) / zeroMeanBuffer->Size() );
 	  }
-	  // Divide by the number of records
-	  cov->put( d1, d2, cov->get( d1, d2 ) / zeroMeanBuffer->Size() );
-	}
   }
 
   return cov;
@@ -183,13 +188,19 @@ std::vector<double> vtkLORPositionBuffer
 {
   // Calculate the centroid
   std::vector<double> centroid( vtkLORPosition::SIZE, 0.0 );
+  if ( this->Size() == 0 )
+  {
+    return centroid;
+  }
+
   for ( int i = 0; i < this->Size(); i++ )
   {
 	  for ( int d = 0; d < vtkLORPosition::SIZE; d++ )
-	{
+	  {
       centroid.at(d) = centroid.at(d) + this->GetPosition(i)->GetPositionVector().at(d);
-	}
+	  }
   }
+
   for ( int d = 0; d < vtkLORPosition::SIZE; d++ )
   {
     centroid.at(d) = centroid.at(d) / this->Size();
@@ -202,6 +213,11 @@ std::vector<double> vtkLORPositionBuffer
 int vtkLORPositionBuffer
 ::GetDOF( double noiseThreshold )
 {
+  if ( this->Size() == 0 )
+  {
+    return LORConstants::UNKNOWN_DOF;
+  }
+
   std::vector<double> centroid = this->CalculateCentroid();
   vnl_matrix<double>* cov = this->CovarianceMatrix( centroid );
 

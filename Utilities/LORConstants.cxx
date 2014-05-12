@@ -85,6 +85,30 @@ std::string LORConstants
 }
 
 
+std::string LORConstants
+::DOF_TO_STRING( int d )
+{
+  if ( d == REFERENCE_DOF )
+  {
+    return REFERENCE_STRING;
+  }
+  if ( d == POINT_DOF )
+  {
+    return POINT_STRING;
+  }
+  if ( d == LINE_DOF )
+  {
+    return LINE_STRING;
+  }
+  if ( d == PLANE_DOF )
+  {
+    return PLANE_STRING;
+  }
+
+  return "";
+}
+
+
 int LORConstants
 ::DOF_TO_SPINNER_INDEX( int d )
 {
