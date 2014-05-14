@@ -898,11 +898,21 @@ void vtkSlicerLinearObjectRegistrationLogic
   // Otherwise, create a new model
   vtkPolyData* linearObjectPolyData = linearObject->CreateModelPolyData();
 
+  // Calculate the colour from the parent hierarchynode
+  vtkMRMLModelHierarchyNode* parentHierachyNode = vtkMRMLModelHierarchyNode::SafeDownCast( this->GetMRMLScene()->GetNodeByID( collection->GetModelHierarchyNodeID().c_str() ) );
+  vtkMRMLDisplayNode* parentDisplayNode = parentHierachyNode->GetDisplayNode();
+  double ParentColor[ 3 ] = { 0, 0, 0 };
+  if ( parentDisplayNode != NULL )
+  {
+    parentDisplayNode->GetColor( ParentColor );
+  }
+
   vtkSmartPointer< vtkMRMLModelDisplayNode > linearObjectModelDisplay;
   linearObjectModelDisplay.TakeReference( vtkMRMLModelDisplayNode::SafeDownCast( this->GetMRMLScene()->CreateNodeByClass( "vtkMRMLModelDisplayNode" ) ) );
   linearObjectModelDisplay->SetInputPolyData( linearObjectPolyData );
   linearObjectModelDisplay->SetVisibility( false );
   linearObjectModelDisplay->BackfaceCullingOff();
+  linearObjectModelDisplay->SetColor( ParentColor );
   linearObjectModelDisplay->SetHideFromEditors( true );
   linearObjectModelDisplay->SetScene( this->GetMRMLScene() );
   this->GetMRMLScene()->AddNode( linearObjectModelDisplay );
