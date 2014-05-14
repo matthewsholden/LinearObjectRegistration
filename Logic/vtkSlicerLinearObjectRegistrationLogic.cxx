@@ -1039,6 +1039,13 @@ void vtkSlicerLinearObjectRegistrationLogic
     return;
   }
   displayNode->VisibilityOn();
+
+  vtkMRMLModelHierarchyNode* parentHierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast( hierarchyNode->GetParentNode() );
+  if ( parentHierarchyNode == NULL )
+  {
+    return;
+  }
+  parentHierarchyNode->ExpandedOn(); // Turns off "boss mode"
 }
 
 
@@ -1056,6 +1063,13 @@ void vtkSlicerLinearObjectRegistrationLogic
     return;
   }
   displayNode->VisibilityOff();
+
+  vtkMRMLModelHierarchyNode* parentHierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast( hierarchyNode->GetParentNode() );
+  if ( parentHierarchyNode == NULL )
+  {
+    return;
+  }
+  parentHierarchyNode->ExpandedOn(); // Turns off "boss mode"
 }
 
 
@@ -1089,6 +1103,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     return;
   }
+  hierarchyNode->ExpandedOff(); // Turns on "boss mode"
   displayNode->VisibilityOn();
 }
 
@@ -1106,6 +1121,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     return;
   }
+  hierarchyNode->ExpandedOff(); // Turns on "boss mode"
   displayNode->VisibilityOff();
 }
 
