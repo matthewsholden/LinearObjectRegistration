@@ -368,7 +368,7 @@ void qSlicerLinearObjectCollectionWidget
   QPoint globalPosition = d->CollectionTableWidget->viewport()->mapToGlobal( position );
 
   QMenu* collectionMenu = new QMenu( d->CollectionTableWidget );
-  QAction* deleteAction = new QAction( "Delete linear object", collectionMenu );
+  QAction* deleteAction = new QAction( "Delete selected linear object(s)", collectionMenu );
   deleteAction->setIcon( QIcon( ":/Icons/LinearObjectDelete.png" ) );
   QAction* upAction = new QAction( "Move linear object up", collectionMenu );
   upAction->setIcon( QIcon( ":/Icons/LinearObjectUp.png" ) );
@@ -398,7 +398,21 @@ void qSlicerLinearObjectCollectionWidget
   // Only do this for non-null node
   if ( selectedAction == deleteAction )
   {
-    currentCollection->RemoveLinearObject( currentIndex );
+    QItemSelectionModel* selectionModel = d->CollectionTableWidget->selectionModel();
+    std::vector< int > deleteRows;
+    // Need to find selected before removing because removing automatically refreshes the table
+    for ( int i = 0; i < d->CollectionTableWidget->rowCount(); i++ )
+    {
+      if ( selectionModel->rowIntersectsSelection( i, d->CollectionTableWidget->rootIndex() ) )
+      {
+        deleteRows.push_back( i );
+      }
+    }
+    //Traversing this way should be more efficient and correct
+    for ( int i = deleteRows.size() - 1; i >= 0; i-- )
+    {
+      currentCollection->RemoveLinearObject( deleteRows.at( i ) );
+    }
   }
 
   if ( selectedAction == upAction )
