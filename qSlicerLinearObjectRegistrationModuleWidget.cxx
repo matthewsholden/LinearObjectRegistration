@@ -303,8 +303,25 @@ void qSlicerLinearObjectRegistrationModuleWidget
 void qSlicerLinearObjectRegistrationModuleWidget
 ::enter()
 {
+  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
+
   // Nothing to do
   this->Superclass::enter();
+
+  // Create a node by default if none already exists
+  int numLORNodes = this->mrmlScene()->GetNumberOfNodesByClass( "vtkMRMLLinearObjectRegistrationNode" );
+  if ( numLORNodes == 0 )
+  {
+    vtkSmartPointer< vtkMRMLNode > lorNode;
+    lorNode.TakeReference( this->mrmlScene()->CreateNodeByClass( "vtkMRMLLinearObjectRegistrationNode" ) );
+    lorNode->SetScene( this->mrmlScene() );
+    this->mrmlScene()->AddNode( lorNode );
+    d->ModuleNodeComboBox->setCurrentNode( lorNode );
+  }
+  else
+  {
+    this->UpdateFromMRMLNode();
+  }
 }
 
 
