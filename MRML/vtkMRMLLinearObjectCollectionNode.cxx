@@ -259,6 +259,9 @@ void vtkMRMLLinearObjectCollectionNode
   vtkSmartPointer< vtkLORLinearObject > linearObject0 = this->GetLinearObject( index0 );
   vtkSmartPointer< vtkLORLinearObject > linearObject1 = this->GetLinearObject( index1 );
 
+  this->RemoveLinearObject( index0 );
+  this->RemoveLinearObject( index1 );
+
   this->SetLinearObject( index0, linearObject1 );
   this->SetLinearObject( index1, linearObject0 );
 
