@@ -150,15 +150,22 @@ vtkMRMLNode* qSlicerLinearObjectCollectionWidget
 
 
 void qSlicerLinearObjectCollectionWidget
-::SetCurrentNode( vtkMRMLNode* currentNode )
+::SetCurrentNode( vtkMRMLNode* newNode )
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
 
-  vtkMRMLLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( currentNode );
+  vtkMRMLLinearObjectCollectionNode* newCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( newNode );
+  vtkMRMLLinearObjectCollectionNode* oldCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
+  
+  // Only update the widget if it is a new collection node
+  if ( newCollectionNode == newCollectionNode )
+  {
+    return;
+  }
 
   // Prevent the active fiducial list from being changed when this is called programatically
   disconnect( d->LinearObjectCollectionNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onCollectionNodeChanged() ) );
-  d->LinearObjectCollectionNodeComboBox->setCurrentNode( currentCollectionNode );
+  d->LinearObjectCollectionNodeComboBox->setCurrentNode( newCollectionNode );
   connect( d->LinearObjectCollectionNodeComboBox, SIGNAL( currentNodeChanged( vtkMRMLNode* ) ), this, SLOT( onCollectionNodeChanged() ) );
 
   this->updateWidget(); // This will update the active button and table widget
@@ -277,19 +284,20 @@ void qSlicerLinearObjectCollectionWidget
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
 
-  emit collectionNodeChanged();
-
   vtkMRMLLinearObjectCollectionNode* currentCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
 
-  if ( currentCollectionNode == NULL )
+  // Create connections to update when the collection node is modified (parent widget does not need to update this widget)
+  this->qvtkDisconnectAll();
+  this->qvtkConnect( currentCollectionNode, vtkCommand::ModifiedEvent, this, SLOT( updateWidget() ) );
+
+  if ( currentCollectionNode != NULL )
   {
-    this->updateWidget(); // Have to update the widget anyway
-    return;
+    this->SetCurrentActive();
   }
 
-  this->SetCurrentActive();
-
   this->updateWidget();
+
+  emit collectionNodeChanged();
 }
 
 
