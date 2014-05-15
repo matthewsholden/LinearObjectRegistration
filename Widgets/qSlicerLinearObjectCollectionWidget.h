@@ -75,6 +75,8 @@ protected slots:
   void onCollectionTableClicked( int row, int col );
   void onTypeSelected( int );
 
+  void setScrollLinearObject( vtkObject* caller, void* callData );
+
   void updateWidget();
 
 signals:
@@ -96,6 +98,7 @@ private:
   vtkMRMLLinearObjectRegistrationNode* LORNode;
 
   double DefaultNodeColor[ 3 ];
+  vtkSmartPointer< vtkLORLinearObject > ScrollLinearObject;
 };
 
 #endif

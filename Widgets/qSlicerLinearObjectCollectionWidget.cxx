@@ -289,6 +289,7 @@ void qSlicerLinearObjectCollectionWidget
   // Create connections to update when the collection node is modified (parent widget does not need to update this widget)
   this->qvtkDisconnectAll();
   this->qvtkConnect( currentCollectionNode, vtkCommand::ModifiedEvent, this, SLOT( updateWidget() ) );
+  this->qvtkConnect( currentCollectionNode, vtkMRMLLinearObjectCollectionNode::LinearObjectAboutToBeAddedEvent, this, SLOT( setScrollLinearObject( vtkObject*, void* ) ) );
 
   if ( currentCollectionNode != NULL )
   {
@@ -587,6 +588,14 @@ void qSlicerLinearObjectCollectionWidget
 
 
 void qSlicerLinearObjectCollectionWidget
+::setScrollLinearObject( vtkObject* caller, void* callData )
+{
+  vtkLORLinearObject* scrollLinearObject = reinterpret_cast< vtkLORLinearObject* >( callData );
+  this->ScrollLinearObject = scrollLinearObject; // If it's null, that's ok
+}
+
+
+void qSlicerLinearObjectCollectionWidget
 ::updateWidget()
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
@@ -619,6 +628,8 @@ void qSlicerLinearObjectCollectionWidget
   d->CollectionTableWidget->setColumnCount( LINEAROBJECT_COLUMNS );
   d->CollectionTableWidget->setHorizontalHeaderLabels( CollectionTableHeaders );
   d->CollectionTableWidget->horizontalHeader()->setResizeMode( QHeaderView::Stretch );
+
+  QTableWidgetItem* scrollItem = NULL;
   
   for ( int i = 0; i < currentCollectionNode->Size(); i++ )
   {
@@ -640,12 +651,23 @@ void qSlicerLinearObjectCollectionWidget
     QTableWidgetItem* typeItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetType() ) );
     QTableWidgetItem* bufferItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetPositionBufferString() ) );
 
+    if ( this->ScrollLinearObject == currentCollectionNode->GetLinearObject( i ) )
+    {
+      scrollItem = nameItem;
+    }
+
     d->CollectionTableWidget->setItem( i, LINEAROBJECT_VISIBILITY_COLUMN, visItem );
     d->CollectionTableWidget->setItem( i, LINEAROBJECT_NAME_COLUMN, nameItem );
     d->CollectionTableWidget->setItem( i, LINEAROBJECT_TYPE_COLUMN, typeItem );
     d->CollectionTableWidget->setItem( i, LINEAROBJECT_BUFFER_COLUMN, bufferItem );
   }
   d->CollectionTableWidget->resizeRowsToContents();
+
+  if ( scrollItem != NULL )
+  {
+    d->CollectionTableWidget->scrollToItem( scrollItem );
+  }
+  this->ScrollLinearObject = NULL;
 
   d->CollectionTableWidget->blockSignals( false );
 }
