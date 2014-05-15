@@ -373,7 +373,13 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     return;
   }
+
   vtkSmartPointer< vtkPolyData > modelPolyData = this->GetTransformedModelPolyData( modelNode );
+  if ( modelPolyData->GetNumberOfCells() == 0 )
+  {
+    markupsNode->RemoveMarkup( markupsNode->GetNumberOfMarkups() - 1 ); // Remove the markup when done
+    return;
+  }
 
   // Calculate the normal vector and the basePoint
   double fiducialPosition[ 3 ] = { 0.0, 0.0, 0.0 };
@@ -435,7 +441,13 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     return;
   }
+
   vtkSmartPointer< vtkPolyData > modelPolyData = this->GetTransformedModelPolyData( modelNode );
+  if ( modelPolyData->GetNumberOfCells() == 0 )
+  {
+    markupsNode->RemoveMarkup( markupsNode->GetNumberOfMarkups() - 1 ); // Remove the markup when done
+    return;
+  }
 
   vtkSmartPointer< vtkFeatureEdges > edgesFilter = vtkSmartPointer< vtkFeatureEdges >::New();
   edgesFilter->FeatureEdgesOn();
@@ -444,6 +456,12 @@ void vtkSlicerLinearObjectRegistrationLogic
   edgesFilter->ManifoldEdgesOff();
   edgesFilter->SetInput( modelPolyData );
   edgesFilter->Update();
+
+  if ( edgesFilter->GetOutput()->GetNumberOfCells() == 0 )
+  {
+    markupsNode->RemoveMarkup( markupsNode->GetNumberOfMarkups() - 1 ); // Remove the markup when done
+    return;
+  }
   
 
   // Calculate the closest position
@@ -531,7 +549,13 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     return;
   }
+
   vtkSmartPointer< vtkPolyData > modelPolyData = this->GetTransformedModelPolyData( modelNode );
+  if ( modelPolyData->GetNumberOfCells() == 0 )
+  {
+    markupsNode->RemoveMarkup( markupsNode->GetNumberOfMarkups() - 1 ); // Remove the markup when done
+    return;
+  }
 
   // Calculate the closest position
   double fiducialPosition[ 3 ] = { 0.0, 0.0, 0.0 };
@@ -572,7 +596,13 @@ void vtkSlicerLinearObjectRegistrationLogic
   {
     return;
   }
+
   vtkSmartPointer< vtkPolyData > modelPolyData = this->GetTransformedModelPolyData( modelNode );
+  if ( modelPolyData->GetNumberOfCells() == 0 )
+  {
+    markupsNode->RemoveMarkup( markupsNode->GetNumberOfMarkups() - 1 ); // Remove the markup when done
+    return;
+  }
 
   // Calculate the normal vector and the basePoint
   double fiducialPosition[ 3 ] = { 0.0, 0.0, 0.0 };
