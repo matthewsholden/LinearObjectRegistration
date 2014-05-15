@@ -385,6 +385,8 @@ void qSlicerLinearObjectCollectionWidget
   downAction->setIcon( QIcon( ":/Icons/LinearObjectDown.png" ) );
   QAction* removeBufferAction = new QAction( "Remove position buffer", collectionMenu );
   removeBufferAction->setIcon( QIcon( ":/Icons/LinearObjectRemoveBuffer.png" ) );
+  QAction* removeBlankAction = new QAction( "Remove blank linear object(s)", collectionMenu );
+  removeBlankAction->setIcon( QIcon( ":/Icons/LinearObjectRemoveBlank.png" ) );
   QAction* mergeAction = new QAction( "Merge linear objects", collectionMenu );
   mergeAction->setIcon( QIcon( ":/Icons/LinearObjectMerge.png" ) );
 
@@ -392,6 +394,7 @@ void qSlicerLinearObjectCollectionWidget
   collectionMenu->addAction( upAction );
   collectionMenu->addAction( downAction );
   collectionMenu->addAction( removeBufferAction );
+  collectionMenu->addAction( removeBlankAction );
   collectionMenu->addAction( mergeAction );
 
   QAction* selectedAction = collectionMenu->exec( globalPosition );
@@ -442,10 +445,15 @@ void qSlicerLinearObjectCollectionWidget
 
   if ( selectedAction == removeBufferAction )
   {
-	if ( currentCollection->GetLinearObject( currentIndex ) != NULL )
+	  if ( currentCollection->GetLinearObject( currentIndex ) != NULL )
     {
       currentCollection->GetLinearObject( currentIndex )->SetPositionBuffer( NULL );
     }
+  }
+
+  if ( selectedAction == removeBlankAction )
+  {
+    currentCollection->ShuffleOutNull();
   }
 
   if ( selectedAction == mergeAction )

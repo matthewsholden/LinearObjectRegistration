@@ -5,6 +5,7 @@
     <file>Icons/LinearObjectDown.png</file>
     <file>Icons/LinearObjectDelete.png</file>
     <file>Icons/LinearObjectRemoveBuffer.png</file>
+    <file>Icons/LinearObjectRemoveBlank.png</file>
     <file>Icons/LinearObjectMerge.png</file>
   </qresource>
 </RCC>
