@@ -71,6 +71,14 @@ protected:
   virtual void setup();
   virtual void enter();
 
+  virtual void installShortcuts();
+  virtual void uninstallShortcuts();
+
+  QShortcut* ReferenceShortcutR;
+  QShortcut* PointShortcutP;
+  QShortcut* LineShortcutL;
+  QShortcut* PlaneShortcutA;
+
 private:
   Q_DECLARE_PRIVATE(qSlicerLORManualDOFWidget);
   Q_DISABLE_COPY(qSlicerLORManualDOFWidget);

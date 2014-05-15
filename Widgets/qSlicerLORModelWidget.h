@@ -25,6 +25,8 @@
 #include "qSlicerWidget.h"
 #include "qSlicerLORCollectControlsWidget.h"
 
+#include "qSlicerApplication.h"
+
 // FooBar Widgets includes
 #include "qSlicerLinearObjectRegistrationModuleWidgetsExport.h"
 #include "ui_qSlicerLORModelWidget.h"
@@ -60,14 +62,23 @@ public slots:
 
 protected slots:
 
+  void onReferenceShortcutRActivated();
   void onReferenceButtonToggled();
   void onReferenceFiducialDropped();
+
+  void onPointShortcutPActivated();
   void onPointButtonToggled();
   void onPointFiducialDropped();
+
+  void onLineShortcutLActivated();
   void onLineButtonToggled();
   void onLineFiducialDropped();
+
+  void onPlaneShortcutAActivated();
   void onPlaneButtonToggled();
   void onPlaneFiducialDropped();
+
+  void onClickRequested();
 
   void disconnectMarkupsObservers( std::string checkString = "" );
 
@@ -78,6 +89,14 @@ protected:
 
   virtual void setup();
   virtual void enter();
+
+  virtual void installShortcuts();
+  virtual void uninstallShortcuts();
+
+  QShortcut* ReferenceShortcutR;
+  QShortcut* PointShortcutP;
+  QShortcut* LineShortcutL;
+  QShortcut* PlaneShortcutA;
 
 private:
   Q_DECLARE_PRIVATE(qSlicerLORModelWidget);

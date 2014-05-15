@@ -69,6 +69,11 @@ protected:
   virtual void setup();
   virtual void enter();
 
+  virtual void installShortcuts();
+  virtual void uninstallShortcuts();
+
+  QShortcut* ConvertShortcutC;
+
 private:
   Q_DECLARE_PRIVATE(qSlicerLORFiducialWidget);
   Q_DISABLE_COPY(qSlicerLORFiducialWidget);

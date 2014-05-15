@@ -97,6 +97,8 @@ void qSlicerLORManualSegmentationWidget
   d->setupUi(this);
 
   connect( d->CollectButton, SIGNAL( toggled( bool ) ), this, SLOT( onCollectButtonToggled() ) );
+
+  this->CollectShortcutC = NULL;
   
   this->updateWidget();
 }
@@ -130,6 +132,9 @@ void qSlicerLORManualSegmentationWidget
 ::widgetActivated()
 {
   Q_D(qSlicerLORManualSegmentationWidget);
+
+  this->installShortcuts();
+
   this->updateWidget();
 }
 
@@ -143,7 +148,32 @@ void qSlicerLORManualSegmentationWidget
   {
     this->LORNode->StopCollecting();
   }
+
+  this->uninstallShortcuts();
+
   this->updateWidget();
+}
+
+
+void qSlicerLORManualSegmentationWidget
+::installShortcuts()
+{
+  Q_D(qSlicerLORManualSegmentationWidget);
+
+  if ( this->CollectShortcutC == NULL )
+  {
+    this->CollectShortcutC = new QShortcut( QKeySequence( QString( "c" ) ), this );
+  }
+  connect( this->CollectShortcutC, SIGNAL( activated() ), d->CollectButton, SLOT( toggle() ) );
+}
+
+
+void qSlicerLORManualSegmentationWidget
+::uninstallShortcuts()
+{
+  Q_D(qSlicerLORManualSegmentationWidget);
+
+  disconnect( this->CollectShortcutC, SIGNAL( activated() ), d->CollectButton, SLOT( toggle() ) );
 }
 
 

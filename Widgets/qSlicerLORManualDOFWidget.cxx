@@ -97,6 +97,11 @@ void qSlicerLORManualDOFWidget
   
   this->ConnectAllButtons();
 
+  this->ReferenceShortcutR = NULL;
+  this->PointShortcutP = NULL;
+  this->LineShortcutL = NULL;
+  this->PlaneShortcutA = NULL;
+
   this->updateWidget();  
 }
 
@@ -153,6 +158,10 @@ void qSlicerLORManualDOFWidget
 ::widgetActivated()
 {
   Q_D(qSlicerLORManualDOFWidget);
+
+  this->installShortcuts();
+
+  this->updateWidget();
 }
 
 
@@ -165,8 +174,52 @@ void qSlicerLORManualDOFWidget
   {
     this->LORNode->StopCollecting();
   }
+
+  this->uninstallShortcuts();
+
+  this->updateWidget();
 }
 
+
+void qSlicerLORManualDOFWidget
+::installShortcuts()
+{
+  Q_D(qSlicerLORManualDOFWidget);
+
+  if ( this->ReferenceShortcutR == NULL )
+  {
+    this->ReferenceShortcutR = new QShortcut( QKeySequence( QString( "r" ) ), this );
+  }
+  if ( this->PointShortcutP == NULL )
+  {
+    this->PointShortcutP = new QShortcut( QKeySequence( QString( "p" ) ), this );
+  }
+  if ( this->LineShortcutL == NULL )
+  {
+    this->LineShortcutL = new QShortcut( QKeySequence( QString( "l" ) ), this );
+  }
+  if ( this->PlaneShortcutA == NULL )
+  {
+    this->PlaneShortcutA = new QShortcut( QKeySequence( QString( "a" ) ), this );
+  }
+
+  connect( this->ReferenceShortcutR, SIGNAL( activated() ), d->ReferenceButton, SLOT( toggle() ) );
+  connect( this->PointShortcutP, SIGNAL( activated() ), d->PointButton, SLOT( toggle() ) );
+  connect( this->LineShortcutL, SIGNAL( activated() ), d->LineButton, SLOT( toggle() ) );
+  connect( this->PlaneShortcutA, SIGNAL( activated() ), d->PlaneButton, SLOT( toggle() ) );
+}
+
+
+void qSlicerLORManualDOFWidget
+::uninstallShortcuts()
+{
+  Q_D(qSlicerLORManualDOFWidget);
+
+  disconnect( this->ReferenceShortcutR, SIGNAL( activated() ), d->ReferenceButton, SLOT( toggle() ) );
+  disconnect( this->PointShortcutP, SIGNAL( activated() ), d->PointButton, SLOT( toggle() ) );
+  disconnect( this->LineShortcutL, SIGNAL( activated() ), d->LineButton, SLOT( toggle() ) );
+  disconnect( this->PlaneShortcutA, SIGNAL( activated() ), d->PlaneButton, SLOT( toggle() ) );
+}
 
 
 void qSlicerLORManualDOFWidget
@@ -182,6 +235,7 @@ void qSlicerLORManualDOFWidget
   {
     this->LORNode->StopCollecting();
   }
+  this->updateWidget();
 }
 
 
@@ -198,6 +252,7 @@ void qSlicerLORManualDOFWidget
   {
     this->LORNode->StopCollecting();
   }
+  this->updateWidget();
 }
 
 
@@ -214,6 +269,7 @@ void qSlicerLORManualDOFWidget
   {
     this->LORNode->StopCollecting();
   }
+  this->updateWidget();
 }
 
 
@@ -230,6 +286,7 @@ void qSlicerLORManualDOFWidget
   {
     this->LORNode->StopCollecting();
   }
+  this->updateWidget();
 }
 
 
@@ -246,7 +303,7 @@ void qSlicerLORManualDOFWidget
 
   this->DisconnectAllButtons();
 
-  if ( this->LORNode->GetCollectState().compare( LORConstants::REFERENCE_COLLECT_STATE ) )
+  if ( this->LORNode->GetCollectState().compare( LORConstants::REFERENCE_COLLECT_STATE ) == 0 )
   {
     d->ReferenceButton->setChecked( true );
   }
@@ -255,7 +312,7 @@ void qSlicerLORManualDOFWidget
     d->ReferenceButton->setChecked( false );
   }
 
-  if ( this->LORNode->GetCollectState().compare( LORConstants::POINT_COLLECT_STATE ) )
+  if ( this->LORNode->GetCollectState().compare( LORConstants::POINT_COLLECT_STATE ) == 0 )
   {
     d->PointButton->setChecked( true );
   }
@@ -264,7 +321,7 @@ void qSlicerLORManualDOFWidget
     d->PointButton->setChecked( false );
   }
 
-  if ( this->LORNode->GetCollectState().compare( LORConstants::LINE_COLLECT_STATE ) )
+  if ( this->LORNode->GetCollectState().compare( LORConstants::LINE_COLLECT_STATE ) == 0 )
   {
     d->LineButton->setChecked( true );
   }
@@ -273,7 +330,7 @@ void qSlicerLORManualDOFWidget
     d->LineButton->setChecked( false );
   }
 
-  if ( this->LORNode->GetCollectState().compare( LORConstants::PLANE_COLLECT_STATE ) )
+  if ( this->LORNode->GetCollectState().compare( LORConstants::PLANE_COLLECT_STATE ) == 0 )
   {
     d->PlaneButton->setChecked( true );
   }

@@ -80,6 +80,9 @@ protected:
   
   vtkMRMLNode* CollectNode;
 
+  virtual void installShortcuts();
+  virtual void uninstallShortcuts();
+
 private:
   Q_DECLARE_PRIVATE(qSlicerLORCollectControlsWidget);
   Q_DISABLE_COPY(qSlicerLORCollectControlsWidget);

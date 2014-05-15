@@ -283,11 +283,14 @@ void qSlicerLinearObjectRegistrationModuleWidget
   // We must deactivate all widgets before activating the appropriate one
   d->CollectTabs->setCurrentIndex( tabIndex );
 
-  // Hide all the tabs
+  // Hide all the non-active tabs
   for ( std::map< int, qSlicerLORCollectWidget* >::iterator itr = this->CollectWidgets.begin(); itr != this->CollectWidgets.end(); itr++ )
   {
-    itr->second->SetLORNode( linearObjectRegistrationNode );
-    itr->second->hide();
+    if ( itr->first != tabIndex )
+    {
+      itr->second->SetLORNode( linearObjectRegistrationNode );
+      itr->second->hide();
+    }
   }
 
   // Iterate over all tabs and show the relevant tab

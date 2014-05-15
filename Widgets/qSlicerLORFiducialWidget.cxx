@@ -98,6 +98,8 @@ void qSlicerLORFiducialWidget
   
   this->ConnectAllButtons();
 
+  this->ConvertShortcutC = NULL;
+
   this->updateWidget();  
 }
 
@@ -146,12 +148,38 @@ void qSlicerLORFiducialWidget
 void qSlicerLORFiducialWidget
 ::widgetActivated()
 {
+  this->installShortcuts();
+  this->updateWidget();
 }
 
 
 void qSlicerLORFiducialWidget
 ::widgetDeactivated()
 {
+  this->uninstallShortcuts();
+  this->updateWidget();
+}
+
+
+void qSlicerLORFiducialWidget
+::installShortcuts()
+{
+  Q_D(qSlicerLORFiducialWidget);
+
+  if ( this->ConvertShortcutC == NULL )
+  {
+    this->ConvertShortcutC = new QShortcut( QKeySequence( QString( "c" ) ), this );
+  }
+  connect( this->ConvertShortcutC, SIGNAL( activated() ), d->ConvertFiducialsButton, SLOT( click() ) );
+}
+
+
+void qSlicerLORFiducialWidget
+::uninstallShortcuts()
+{
+  Q_D(qSlicerLORFiducialWidget);
+
+  disconnect( this->ConvertShortcutC, SIGNAL( activated() ), d->ConvertFiducialsButton, SLOT( click() ) );
 }
 
 

@@ -69,6 +69,11 @@ protected:
   virtual void setup();
   virtual void enter();
 
+  virtual void installShortcuts();
+  virtual void uninstallShortcuts();
+
+  QShortcut* CollectShortcutC;
+
 private:
   Q_DECLARE_PRIVATE(qSlicerLORManualSegmentationWidget);
   Q_DISABLE_COPY(qSlicerLORManualSegmentationWidget);

@@ -137,6 +137,17 @@ void qSlicerLORCollectControlsWidget
 }
 
 
+void qSlicerLORCollectControlsWidget
+::installShortcuts()
+{
+}
+
+
+void qSlicerLORCollectControlsWidget
+::uninstallShortcuts()
+{
+}
+
 
 void qSlicerLORCollectControlsWidget
 ::SetLORNode( vtkMRMLNode* newNode )

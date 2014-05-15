@@ -98,6 +98,11 @@ void qSlicerLORModelWidget
   
   this->ConnectAllButtons();
 
+  this->ReferenceShortcutR = NULL;
+  this->PointShortcutP = NULL;
+  this->LineShortcutL = NULL;
+  this->PlaneShortcutA = NULL;
+
   this->updateWidget();  
 }
 
@@ -152,6 +157,8 @@ void qSlicerLORModelWidget
 void qSlicerLORModelWidget
 ::widgetActivated()
 {
+  this->installShortcuts();
+  this->updateWidget();
 }
 
 
@@ -159,6 +166,50 @@ void qSlicerLORModelWidget
 ::widgetDeactivated()
 {
   this->disconnectMarkupsObservers();
+
+  this->uninstallShortcuts();
+  this->updateWidget();
+}
+
+
+void qSlicerLORModelWidget
+::installShortcuts()
+{
+  Q_D(qSlicerLORModelWidget);
+
+  if ( this->ReferenceShortcutR == NULL )
+  {
+    this->ReferenceShortcutR = new QShortcut( QKeySequence( QString( "r" ) ), this );
+  }
+  if ( this->PointShortcutP == NULL )
+  {
+    this->PointShortcutP = new QShortcut( QKeySequence( QString( "p" ) ), this );
+  }
+  if ( this->LineShortcutL == NULL )
+  {
+    this->LineShortcutL = new QShortcut( QKeySequence( QString( "l" ) ), this );
+  }
+  if ( this->PlaneShortcutA == NULL )
+  {
+    this->PlaneShortcutA = new QShortcut( QKeySequence( QString( "a" ) ), this );
+  }
+
+  connect( this->ReferenceShortcutR, SIGNAL( activated() ), this, SLOT( onReferenceShortcutRActivated() ) );
+  connect( this->PointShortcutP, SIGNAL( activated() ), this, SLOT( onPointShortcutPActivated() ) );
+  connect( this->LineShortcutL, SIGNAL( activated() ), this, SLOT( onLineShortcutLActivated() ) );
+  connect( this->PlaneShortcutA, SIGNAL( activated() ), this, SLOT( onPlaneShortcutAActivated() ) );
+}
+
+
+void qSlicerLORModelWidget
+::uninstallShortcuts()
+{
+  Q_D(qSlicerLORModelWidget);
+
+  disconnect( this->ReferenceShortcutR, SIGNAL( activated() ), d->ReferenceButton, SLOT( onReferenceShortcutRActivated() ) );
+  disconnect( this->PointShortcutP, SIGNAL( activated() ), d->PointButton, SLOT( onPointShortcutPActivated() ) );
+  disconnect( this->LineShortcutL, SIGNAL( activated() ), d->LineButton, SLOT( onLineShortcutLActivated() ) );
+  disconnect( this->PlaneShortcutA, SIGNAL( activated() ), d->PlaneButton, SLOT( onPlaneShortcutAActivated() ) );
 }
 
 
@@ -200,6 +251,15 @@ void qSlicerLORModelWidget
 
 
 // Note: Observe the markups PointModifiedEvent - this is when the markups value is changed to the correct coordinates
+void qSlicerLORModelWidget
+::onReferenceShortcutRActivated()
+{
+  Q_D(qSlicerLORModelWidget);
+
+  d->ReferenceButton->toggle();
+  this->onClickRequested();
+}
+
 
 void qSlicerLORModelWidget
 ::onReferenceButtonToggled()
@@ -238,6 +298,16 @@ void qSlicerLORModelWidget
   this->LORNode->StopCollecting();
 
   this->disconnectMarkupsObservers();
+}
+
+
+void qSlicerLORModelWidget
+::onPointShortcutPActivated()
+{
+  Q_D(qSlicerLORModelWidget);
+
+  d->PointButton->toggle();
+  this->onClickRequested();
 }
 
 
@@ -281,6 +351,16 @@ void qSlicerLORModelWidget
 
 
 void qSlicerLORModelWidget
+::onLineShortcutLActivated()
+{
+  Q_D(qSlicerLORModelWidget);
+
+  d->LineButton->toggle();
+  this->onClickRequested();
+}
+
+
+void qSlicerLORModelWidget
 ::onLineButtonToggled()
 {
   Q_D(qSlicerLORModelWidget);
@@ -316,6 +396,16 @@ void qSlicerLORModelWidget
   this->LORNode->StopCollecting();
 
   this->disconnectMarkupsObservers();
+}
+
+
+void qSlicerLORModelWidget
+::onPlaneShortcutAActivated()
+{
+  Q_D(qSlicerLORModelWidget);
+
+  d->PlaneButton->toggle();
+  this->onClickRequested();
 }
 
 
@@ -358,6 +448,23 @@ void qSlicerLORModelWidget
 }
 
 
+// This function is a copy of the one available in the qMRMLMarkupsModuleWidget class
+void qSlicerLORModelWidget
+::onClickRequested()
+{
+  QPoint pos = QCursor::pos();
+
+  // find out which widget it was over
+  QWidget *widget = qSlicerApplication::application()->widgetAt(pos);
+
+  // simulate a mouse press inside the widget
+  QPoint widgetPos = widget->mapFromGlobal(pos);
+  QMouseEvent click(QEvent::MouseButtonRelease, widgetPos, Qt::LeftButton, 0, 0);
+  click.setAccepted(true);
+
+  // and send it to the widget
+  QCoreApplication::sendEvent(widget, &click);
+}
 
 
 void qSlicerLORModelWidget
