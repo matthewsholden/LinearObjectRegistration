@@ -457,6 +457,12 @@ void qSlicerLORModelWidget
   // find out which widget it was over
   QWidget *widget = qSlicerApplication::application()->widgetAt(pos);
 
+  // Add this to prevent crash when mouse not within Slicer window
+  if ( widget == NULL )
+  {
+    return;
+  }
+
   // simulate a mouse press inside the widget
   QPoint widgetPos = widget->mapFromGlobal(pos);
   QMouseEvent click(QEvent::MouseButtonRelease, widgetPos, Qt::LeftButton, 0, 0);
