@@ -61,6 +61,10 @@ public:
   std::string GetQtStyleStringActive();
   std::string GetQtStyleStringInactive();
 
+public slots:
+
+    void highlightNthLinearObject( int index );
+
 protected slots:
 
   void onCollectionNodeChanged(); // User selects a different node using the combo box
@@ -84,6 +88,7 @@ signals:
   void collectionNodeChanged();
   void linearObjectSelected();
   void collectionNodeActivated();
+  void updateFinished();
 
 protected:
   QScopedPointer<qSlicerLinearObjectCollectionWidgetPrivate> d_ptr;

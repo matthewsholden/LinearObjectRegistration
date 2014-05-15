@@ -596,6 +596,22 @@ void qSlicerLinearObjectCollectionWidget
 
 
 void qSlicerLinearObjectCollectionWidget
+::highlightNthLinearObject( int index )
+{
+  Q_D(qSlicerLinearObjectCollectionWidget);
+
+  if ( index >= 0 && index < d->CollectionTableWidget->rowCount() )
+  {
+    d->CollectionTableWidget->selectRow( index );
+  }
+  else
+  {
+    d->CollectionTableWidget->clearSelection();
+  }
+}
+
+
+void qSlicerLinearObjectCollectionWidget
 ::updateWidget()
 {
   Q_D(qSlicerLinearObjectCollectionWidget);
@@ -670,4 +686,6 @@ void qSlicerLinearObjectCollectionWidget
   this->ScrollLinearObject = NULL;
 
   d->CollectionTableWidget->blockSignals( false );
+
+  emit updateFinished();
 }

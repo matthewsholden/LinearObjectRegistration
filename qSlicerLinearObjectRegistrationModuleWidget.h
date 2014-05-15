@@ -37,6 +37,8 @@ public slots:
   void UpdateToMRMLNode();
   void UpdateFromMRMLNode();
 
+  void PostProcessCollectionWidgets();
+
 protected:
   QScopedPointer<qSlicerLinearObjectRegistrationModuleWidgetPrivate> d_ptr;
   

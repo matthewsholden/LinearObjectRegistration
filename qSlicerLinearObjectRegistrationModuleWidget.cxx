@@ -347,8 +347,10 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   connect( d->FromCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->FromCollectionWidget, SIGNAL( collectionNodeActivated() ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->FromCollectionWidget, SIGNAL( updateFinished() ), this, SLOT( PostProcessCollectionWidgets() ) );
   connect( d->ToCollectionWidget, SIGNAL( collectionNodeChanged() ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->ToCollectionWidget, SIGNAL( collectionNodeActivated() ), this, SLOT( UpdateToMRMLNode() ) );
+  connect( d->ToCollectionWidget, SIGNAL( updateFinished() ), this, SLOT( PostProcessCollectionWidgets() ) );
 
   connect( d->MergeThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
   connect( d->NoiseThresholdSpinBox, SIGNAL( valueChanged( double ) ), this, SLOT( UpdateToMRMLNode() ) );
@@ -574,3 +576,36 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->StatusLabel->setText( QString::fromStdString( statusString.str() ) ); // Also update the results
 }
 
+
+void qSlicerLinearObjectRegistrationModuleWidget
+::PostProcessCollectionWidgets()
+{
+  Q_D( qSlicerLinearObjectRegistrationModuleWidget );
+
+  vtkMRMLLinearObjectCollectionNode* activeCollectionNode = d->logic()->GetActiveCollectionNode();
+
+  vtkMRMLLinearObjectCollectionNode* fromCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->FromCollectionWidget->GetCurrentNode() );
+  vtkMRMLLinearObjectCollectionNode* toCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->ToCollectionWidget->GetCurrentNode() );
+
+  vtkMRMLLinearObjectRegistrationNode* linearObjectRegistrationNode = vtkMRMLLinearObjectRegistrationNode::SafeDownCast( d->ModuleNodeComboBox->currentNode() );
+
+  if ( fromCollectionNode == NULL || toCollectionNode == NULL || linearObjectRegistrationNode == NULL )
+  {
+    return;
+  }
+
+  if ( ! linearObjectRegistrationNode->GetAutomaticMatch() )
+  {
+    // Adding to "From" collection
+    if ( strcmp( activeCollectionNode->GetID(), fromCollectionNode->GetID() ) == 0 )
+    {
+      d->ToCollectionWidget->highlightNthLinearObject( fromCollectionNode->Size() );
+    }
+    // Adding to "To" collection
+    if ( strcmp( activeCollectionNode->GetID(), toCollectionNode->GetID() ) == 0 )
+    {
+      d->FromCollectionWidget->highlightNthLinearObject( toCollectionNode->Size() );
+    }
+  }
+
+}
