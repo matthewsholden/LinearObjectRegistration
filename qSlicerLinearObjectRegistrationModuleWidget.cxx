@@ -431,26 +431,6 @@ void qSlicerLinearObjectRegistrationModuleWidget
 
   this->qvtkBlockAll( true );
 
-  // Set the to/from collection widgets to look active
-  if ( d->logic()->GetActiveCollectionNode() != NULL && linearObjectRegistrationNode->GetFromCollectionID().compare( d->logic()->GetActiveCollectionNode()->GetID() ) == 0 )
-  {
-    d->FromGroupBox->setStyleSheet( d->FromCollectionWidget->GetQtStyleStringActive().c_str() );
-  }
-  else
-  {
-    d->FromGroupBox->setStyleSheet( d->FromCollectionWidget->GetQtStyleStringInactive().c_str() );
-  }
-
-  if ( d->logic()->GetActiveCollectionNode() != NULL && linearObjectRegistrationNode->GetToCollectionID().compare( d->logic()->GetActiveCollectionNode()->GetID() ) == 0 )
-  {
-    d->ToGroupBox->setStyleSheet( d->ToCollectionWidget->GetQtStyleStringActive().c_str() );
-  }
-  else
-  {
-    d->ToGroupBox->setStyleSheet( d->ToCollectionWidget->GetQtStyleStringInactive().c_str() );
-  }
-
-
   if ( d->OutputNodeComboBox->currentNode() == NULL )
   {
     linearObjectRegistrationNode->SetOutputTransformID( "", vtkMRMLLinearObjectRegistrationNode::NeverModify );
@@ -540,6 +520,25 @@ void qSlicerLinearObjectRegistrationModuleWidget
   d->FromCollectionWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetFromCollectionID() ) );
   d->ToCollectionWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetToCollectionID() ) );
   d->TransformPreviewWidget->SetCurrentNode( this->mrmlScene()->GetNodeByID( linearObjectRegistrationNode->GetOutputTransformID() ) );
+
+  // Set the to/from collection widgets to look active
+  if ( d->logic()->GetActiveCollectionNode() != NULL && linearObjectRegistrationNode->GetFromCollectionID().compare( d->logic()->GetActiveCollectionNode()->GetID() ) == 0 )
+  {
+    d->FromGroupBox->setStyleSheet( d->FromCollectionWidget->GetQtStyleStringActive().c_str() );
+  }
+  else
+  {
+    d->FromGroupBox->setStyleSheet( d->FromCollectionWidget->GetQtStyleStringInactive().c_str() );
+  }
+
+  if ( d->logic()->GetActiveCollectionNode() != NULL && linearObjectRegistrationNode->GetToCollectionID().compare( d->logic()->GetActiveCollectionNode()->GetID() ) == 0 )
+  {
+    d->ToGroupBox->setStyleSheet( d->ToCollectionWidget->GetQtStyleStringActive().c_str() );
+  }
+  else
+  {
+    d->ToGroupBox->setStyleSheet( d->ToCollectionWidget->GetQtStyleStringInactive().c_str() );
+  }
 
   d->FromCollectionWidget->SetLORNode( linearObjectRegistrationNode );
   d->ToCollectionWidget->SetLORNode( linearObjectRegistrationNode );
