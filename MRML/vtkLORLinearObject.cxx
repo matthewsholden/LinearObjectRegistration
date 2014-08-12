@@ -9,6 +9,7 @@ vtkLORLinearObject
   this->Type = "LinearObject";
   this->PositionBuffer = NULL;
   this->ModelHierarchyNodeID = "";
+  this->PositionBufferQuality = 0;
 }
 
 
@@ -31,6 +32,7 @@ void vtkLORLinearObject
 ::SetPositionBuffer( vtkLORPositionBuffer* newPositionBuffer )
 {
   this->PositionBuffer = newPositionBuffer;
+  this->PositionBufferQuality = this->CalculatePositionBufferQuality();
   this->Modified();
 }
 
@@ -42,6 +44,34 @@ double vtkLORLinearObject
 }
 
 
+double vtkLORLinearObject
+::CalculatePositionBufferQuality()
+{
+  if ( this->GetPositionBuffer()->Size() == 0 )
+  {
+    return 0;
+  }
+
+  std::vector<double> distances( this->GetPositionBuffer()->Size(), 0 );
+  double meanDistance = 0;
+  double stdev = 0;
+
+  // Calculate the distance of each point to the linear object
+  for ( int i = 0; i < this->GetPositionBuffer()->Size(); i++ )
+  {
+    distances.at(i) = this->DistanceToVector( this->GetPositionBuffer()->GetPosition( i )->GetPositionVector() ); // The position attribute is a vector
+    meanDistance = meanDistance + distances.at(i);
+    stdev = stdev + distances.at(i) * distances.at(i);
+  }
+    
+  meanDistance = meanDistance / this->GetPositionBuffer()->Size();
+  stdev = stdev / this->GetPositionBuffer()->Size();
+  stdev = sqrt( stdev - meanDistance * meanDistance );
+  
+  return stdev;
+}
+
+
 void vtkLORLinearObject
 ::Filter( int filterWidth )
 {
@@ -50,27 +80,20 @@ void vtkLORLinearObject
 
   while ( changed )
   {
-    std::vector<double> distances( this->GetPositionBuffer()->Size(), 0 );
-    double meanDistance = 0;
-    double stdev = 0;
 
+    std::vector<double> distances( this->GetPositionBuffer()->Size(), 0 );
+  
     // Calculate the distance of each point to the linear object
     for ( int i = 0; i < this->GetPositionBuffer()->Size(); i++ )
     {
       distances.at(i) = this->DistanceToVector( this->GetPositionBuffer()->GetPosition( i )->GetPositionVector() ); // The position attribute is a vector
-      meanDistance = meanDistance + distances.at(i);
-      stdev = stdev + distances.at(i) * distances.at(i);
     }
-    
-    meanDistance = meanDistance / this->GetPositionBuffer()->Size();
-    stdev = stdev / this->GetPositionBuffer()->Size();
-    stdev = sqrt( stdev - meanDistance * meanDistance );
     
     // Keep only the points that are within certain number of standard deviations
     vtkSmartPointer< vtkLORPositionBuffer > newPositionBuffer = vtkSmartPointer< vtkLORPositionBuffer >::New();
     for ( int i = 0; i < this->GetPositionBuffer()->Size(); i++ )
     {
-      if ( distances.at(i) < filterWidth * stdev || distances.at(i) < THRESHOLD )
+      if ( distances.at(i) < filterWidth * this->PositionBufferQuality || distances.at(i) < THRESHOLD )
       {
         newPositionBuffer->AddPosition( this->GetPositionBuffer()->GetPosition( i ) );
       }
@@ -133,6 +156,21 @@ std::string vtkLORLinearObject
   positionBufferString << this->GetPositionBuffer()->Size();
   positionBufferString << " Positions";
   return positionBufferString.str();
+}
+
+
+std::string vtkLORLinearObject
+::GetPositionBufferQualityString()
+{
+  if ( this->GetPositionBuffer() == NULL )
+  {
+    return "None";
+  }
+
+  std::stringstream positionBufferQualityString;
+  positionBufferQualityString << "Quality: ";
+  positionBufferQualityString << this->PositionBufferQuality;
+  return positionBufferQualityString.str();
 }
 
 

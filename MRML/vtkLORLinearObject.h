@@ -55,6 +55,7 @@ public:
   std::string GetType();
   void SetType( std::string newType );
   std::string GetPositionBufferString();
+  std::string GetPositionBufferQualityString();
   std::vector<double> GetSignature();
   void SetSignature( std::vector<double> newSignature );
   std::vector<double> GetBasePoint();
@@ -77,11 +78,14 @@ public:
 
 protected:
 
+  double CalculatePositionBufferQuality();
+
   std::string Name;
   std::string Type;
   std::string ModelHierarchyNodeID;
   std::vector<double> Signature;
   std::vector<double> BasePoint;
+  double PositionBufferQuality;
 
   vtkSmartPointer< vtkLORPositionBuffer > PositionBuffer;
 

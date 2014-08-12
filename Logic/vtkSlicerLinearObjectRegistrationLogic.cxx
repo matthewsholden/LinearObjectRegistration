@@ -339,7 +339,7 @@ vtkSmartPointer< vtkPolyData > vtkSlicerLinearObjectRegistrationLogic
 
   // Get the transformed poly data (the parents transforms are not applied to the poly data)
   vtkSmartPointer< vtkTransformPolyDataFilter > polyDataTransformer = vtkSmartPointer< vtkTransformPolyDataFilter >::New();
-  polyDataTransformer->SetInput( modelNode->GetPolyData() );
+  polyDataTransformer->SetInputData( modelNode->GetPolyData() );
 
   vtkSmartPointer< vtkGeneralTransform > modelNodeTransform = vtkSmartPointer< vtkGeneralTransform >::New();
   if ( modelNode->GetParentTransformNode() != NULL )
@@ -454,7 +454,7 @@ void vtkSlicerLinearObjectRegistrationLogic
   edgesFilter->BoundaryEdgesOn(); // Shouldn't matter because the model should be closed
   edgesFilter->NonManifoldEdgesOff();
   edgesFilter->ManifoldEdgesOff();
-  edgesFilter->SetInput( modelPolyData );
+  edgesFilter->SetInputData( modelPolyData );
   edgesFilter->Update();
 
   if ( edgesFilter->GetOutput()->GetNumberOfCells() == 0 )
@@ -939,7 +939,7 @@ void vtkSlicerLinearObjectRegistrationLogic
 
   vtkSmartPointer< vtkMRMLModelDisplayNode > linearObjectModelDisplay;
   linearObjectModelDisplay.TakeReference( vtkMRMLModelDisplayNode::SafeDownCast( this->GetMRMLScene()->CreateNodeByClass( "vtkMRMLModelDisplayNode" ) ) );
-  linearObjectModelDisplay->SetInputPolyData( linearObjectPolyData );
+  //linearObjectModelDisplay->SetInputPolyData( linearObjectPolyData );
   linearObjectModelDisplay->SetVisibility( false );
   linearObjectModelDisplay->BackfaceCullingOff();
   linearObjectModelDisplay->SetColor( ParentColor );
@@ -985,9 +985,9 @@ void vtkSlicerLinearObjectRegistrationLogic
     return;
   }
 
-  this->GetMRMLScene()->RemoveNode( hierarchyNode->GetModelDisplayNode() );
-  this->GetMRMLScene()->RemoveNode( hierarchyNode->GetModelNode() );
-  this->GetMRMLScene()->RemoveNode( hierarchyNode );
+  this->GetMRMLScene()->RemoveNode( hierarchyNode->GetDisplayNode() );
+  this->GetMRMLScene()->RemoveNode( hierarchyNode->GetDisplayableNode() );
+  //this->GetMRMLScene()->RemoveNode( hierarchyNode ); // Apparently the hierarchy node is automatically removed from the scane when its displayable node is removed
   linearObject->SetModelHierarchyNodeID( "" );
 }
 

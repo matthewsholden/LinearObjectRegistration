@@ -693,6 +693,7 @@ void qSlicerLinearObjectCollectionWidget
     QTableWidgetItem* nameItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetName() ) );
     QTableWidgetItem* typeItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetType() ) );
     QTableWidgetItem* bufferItem = new QTableWidgetItem( QString::fromStdString( currentCollectionNode->GetLinearObject( i )->GetPositionBufferString() ) );
+    bufferItem->setToolTip( currentCollectionNode->GetLinearObject( i )->GetPositionBufferQualityString().c_str() );
 
     if ( this->ScrollLinearObject == currentCollectionNode->GetLinearObject( i ) )
     {

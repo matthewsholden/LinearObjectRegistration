@@ -684,9 +684,9 @@ void vtkMRMLLinearObjectRegistrationNode
   // Do nothing if the matrix hasn't changed from the previous matrix
   vtkSmartPointer< vtkMatrix4x4 > transformMatrix = vtkSmartPointer< vtkMatrix4x4 >::New();
 #ifdef TRANSFORM_NODE_MATRIX_COPY_REQUIRED
-  transformNode->GetMatrixTransformToParent( transformMatrix );
+  transformNode->GetMatrixTransformToWorld( transformMatrix );
 #else
-  transformMatrix->DeepCopy( transformNode->GetMatrixTransformToParent() );
+  transformMatrix->DeepCopy( transformNode->GetMatrixTransformToWorld() );
 #endif
 
   if ( ! this->DifferentFromPrevious( transformMatrix ) )
