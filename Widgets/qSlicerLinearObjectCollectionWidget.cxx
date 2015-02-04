@@ -158,7 +158,7 @@ void qSlicerLinearObjectCollectionWidget
   vtkMRMLLinearObjectCollectionNode* oldCollectionNode = vtkMRMLLinearObjectCollectionNode::SafeDownCast( d->LinearObjectCollectionNodeComboBox->currentNode() );
   
   // Only update the widget if it is a new collection node
-  if ( newCollectionNode == newCollectionNode )
+  if ( newCollectionNode == oldCollectionNode )
   {
     return;
   }
