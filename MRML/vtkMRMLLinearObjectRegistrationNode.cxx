@@ -333,7 +333,7 @@ void vtkMRMLLinearObjectRegistrationNode
 {
   if ( newOutputTransformID.compare( "" ) == 0 )
   {
-    this->RemoveAllNodeReferenceIDs( OUTPUT_TRANSFORM_REFERENCE_ROLE );
+    this->RemoveNodeReferenceIDs( OUTPUT_TRANSFORM_REFERENCE_ROLE );
   }
   else if ( this->GetOutputTransformID().compare( newOutputTransformID ) != 0 )
   {
